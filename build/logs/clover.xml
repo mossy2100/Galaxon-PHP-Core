@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1763858672">
-  <project timestamp="1763858672" name="Clover Coverage">
+<coverage generated="1763864009">
+  <project timestamp="1763864009" name="Clover Coverage">
     <package name="Galaxon\Core">
       <file name="C:\Users\shaun\Projects\PHP\Galaxon\Core\src\Angle.php">
         <class name="Galaxon\Core\Angle" namespace="Galaxon\Core">
@@ -174,48 +174,48 @@
         <line num="761" type="stmt" count="7"/>
         <line num="762" type="stmt" count="5"/>
         <line num="763" type="stmt" count="7"/>
-        <line num="785" type="method" name="formatDMS" visibility="public" complexity="11" crap="11" count="4"/>
-        <line num="788" type="stmt" count="4"/>
-        <line num="791" type="stmt" count="4"/>
+        <line num="784" type="method" name="formatDMS" visibility="public" complexity="11" crap="11" count="4"/>
+        <line num="787" type="stmt" count="4"/>
+        <line num="790" type="stmt" count="4"/>
+        <line num="794" type="stmt" count="1"/>
         <line num="795" type="stmt" count="1"/>
         <line num="796" type="stmt" count="1"/>
-        <line num="797" type="stmt" count="1"/>
-        <line num="800" type="stmt" count="1"/>
+        <line num="799" type="stmt" count="1"/>
+        <line num="802" type="stmt" count="1"/>
         <line num="803" type="stmt" count="1"/>
-        <line num="804" type="stmt" count="1"/>
+        <line num="806" type="stmt" count="1"/>
         <line num="807" type="stmt" count="1"/>
         <line num="808" type="stmt" count="1"/>
-        <line num="809" type="stmt" count="1"/>
+        <line num="812" type="stmt" count="1"/>
         <line num="813" type="stmt" count="1"/>
-        <line num="814" type="stmt" count="1"/>
-        <line num="817" type="stmt" count="4"/>
+        <line num="816" type="stmt" count="4"/>
+        <line num="819" type="stmt" count="4"/>
         <line num="820" type="stmt" count="4"/>
-        <line num="821" type="stmt" count="4"/>
-        <line num="824" type="stmt" count="4"/>
+        <line num="823" type="stmt" count="4"/>
+        <line num="824" type="stmt" count="2"/>
         <line num="825" type="stmt" count="2"/>
-        <line num="826" type="stmt" count="2"/>
-        <line num="828" type="stmt" count="4"/>
+        <line num="827" type="stmt" count="4"/>
+        <line num="828" type="stmt" count="2"/>
         <line num="829" type="stmt" count="2"/>
-        <line num="830" type="stmt" count="2"/>
+        <line num="833" type="stmt" count="4"/>
         <line num="834" type="stmt" count="4"/>
-        <line num="835" type="stmt" count="4"/>
-        <line num="857" type="method" name="format" visibility="public" complexity="8" crap="8" count="5"/>
-        <line num="860" type="stmt" count="5"/>
-        <line num="861" type="stmt" count="1"/>
-        <line num="865" type="stmt" count="5"/>
-        <line num="868" type="stmt" count="5"/>
-        <line num="869" type="stmt" count="4"/>
+        <line num="856" type="method" name="format" visibility="public" complexity="8" crap="8" count="5"/>
+        <line num="859" type="stmt" count="5"/>
+        <line num="860" type="stmt" count="1"/>
+        <line num="864" type="stmt" count="5"/>
+        <line num="867" type="stmt" count="5"/>
+        <line num="868" type="stmt" count="4"/>
+        <line num="869" type="stmt" count="2"/>
         <line num="870" type="stmt" count="2"/>
         <line num="871" type="stmt" count="2"/>
-        <line num="872" type="stmt" count="2"/>
+        <line num="872" type="stmt" count="1"/>
         <line num="873" type="stmt" count="1"/>
         <line num="874" type="stmt" count="1"/>
-        <line num="875" type="stmt" count="1"/>
-        <line num="876" type="stmt" count="5"/>
-        <line num="879" type="stmt" count="4"/>
-        <line num="887" type="method" name="__toString" visibility="public" complexity="1" crap="1" count="3"/>
-        <line num="890" type="stmt" count="3"/>
-        <metrics loc="895" ncloc="488" classes="1" methods="40" coveredmethods="40" conditionals="0" coveredconditionals="0" statements="169" coveredstatements="169" elements="209" coveredelements="209"/>
+        <line num="875" type="stmt" count="5"/>
+        <line num="878" type="stmt" count="4"/>
+        <line num="886" type="method" name="__toString" visibility="public" complexity="1" crap="1" count="3"/>
+        <line num="889" type="stmt" count="3"/>
+        <metrics loc="894" ncloc="488" classes="1" methods="40" coveredmethods="40" conditionals="0" coveredconditionals="0" statements="169" coveredstatements="169" elements="209" coveredelements="209"/>
       </file>
       <file name="C:\Users\shaun\Projects\PHP\Galaxon\Core\src\Arrays.php">
         <class name="Galaxon\Core\Arrays" namespace="Galaxon\Core">
@@ -589,6 +589,6 @@
     <file name="C:\Users\shaun\Projects\PHP\Galaxon\Core\src\Equatable.php">
       <metrics loc="17" ncloc="11" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
     </file>
-    <metrics files="9" loc="2275" ncloc="1248" classes="8" methods="86" coveredmethods="86" conditionals="0" coveredconditionals="0" statements="449" coveredstatements="449" elements="535" coveredelements="535"/>
+    <metrics files="9" loc="2274" ncloc="1248" classes="8" methods="86" coveredmethods="86" conditionals="0" coveredconditionals="0" statements="449" coveredstatements="449" elements="535" coveredelements="535"/>
   </project>
 </coverage>
