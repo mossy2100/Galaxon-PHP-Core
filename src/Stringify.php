@@ -34,13 +34,13 @@ final class Stringify
      * Convert a value to a readable string representation.
      *
      * @param mixed $value The value to encode.
-     * @param bool $pretty_print Whether to use pretty printing with indentation (default false).
-     * @param int $indent_level The level of indentation for this structure (default 0).
+     * @param bool $prettyPrint Whether to use pretty printing with indentation (default false).
+     * @param int $indentLevel The level of indentation for this structure (default 0).
      * @return string The string representation of the value.
      * @throws ValueError If the value cannot be stringified.
      * @throws TypeError If the value has an unknown type.
      */
-    public static function stringify(mixed $value, bool $pretty_print = false, int $indent_level = 0): string
+    public static function stringify(mixed $value, bool $prettyPrint = false, int $indentLevel = 0): string
     {
         // Call the relevant method.
         switch (Types::getBasicType($value)) {
@@ -57,14 +57,14 @@ final class Stringify
 
             case 'array':
                 /** @var mixed[] $value */
-                return self::stringifyArray($value, $pretty_print, $indent_level);
+                return self::stringifyArray($value, $prettyPrint, $indentLevel);
 
             case 'resource':
                 return self::stringifyResource($value);
 
             case 'object':
                 /** @var object $value */
-                return self::stringifyObject($value, $pretty_print, $indent_level);
+                return self::stringifyObject($value, $prettyPrint, $indentLevel);
 
             // @codeCoverageIgnoreStart
             // This should never happen, but we'll include it for completeness/robustness.
@@ -116,12 +116,12 @@ final class Stringify
      * If pretty printing is enabled, the result will be formatted with new lines and indentation.
      *
      * @param mixed[] $ary The array to encode.
-     * @param bool $pretty_print Whether to use pretty printing (default false).
-     * @param int $indent_level The level of indentation for this structure (default 0).
+     * @param bool $prettyPrint Whether to use pretty printing (default false).
+     * @param int $indentLevel The level of indentation for this structure (default 0).
      * @return string The string representation of the array.
      * @throws ValueError If the array contains circular references.
      */
-    public static function stringifyArray(array $ary, bool $pretty_print = false, int $indent_level = 0): string
+    public static function stringifyArray(array $ary, bool $prettyPrint = false, int $indentLevel = 0): string
     {
         // Detect circular references.
         if (Arrays::containsRecursion($ary)) {
@@ -129,34 +129,34 @@ final class Stringify
         }
 
         $pairs = [];
-        $indent = $pretty_print ? str_repeat(' ', 4 * ($indent_level + 1)) : '';
-        $is_list = array_is_list($ary);
+        $indent = $prettyPrint ? str_repeat(' ', 4 * ($indentLevel + 1)) : '';
+        $isList = array_is_list($ary);
 
         // Generate the pairs.
         foreach ($ary as $key => $value) {
-            $value_str = self::stringify($value, $pretty_print, $indent_level + 1);
+            $valueStr = self::stringify($value, $prettyPrint, $indentLevel + 1);
             // Encode a list without keys.
-            if ($is_list) {
-                $pairs[] = "$indent$value_str";
+            if ($isList) {
+                $pairs[] = "$indent$valueStr";
             } else {
                 // Encode an associative array with keys.
-                $key_str = self::stringify($key, $pretty_print, $indent_level + 1);
-                $pairs[] = "$indent$key_str: $value_str";
+                $keyStr = self::stringify($key, $prettyPrint, $indentLevel + 1);
+                $pairs[] = "$indent$keyStr: $valueStr";
             }
         }
 
         // Determine the opening and closing brackets.
-        $open_bracket = $is_list ? '[' : '{';
-        $close_bracket = $is_list ? ']' : '}';
+        $openBracket = $isList ? '[' : '{';
+        $closeBracket = $isList ? ']' : '}';
 
         // If pretty print, return string formatted with new lines and indentation.
-        if ($pretty_print) {
-            $bracket_indent = str_repeat(' ', 4 * $indent_level);
-            return $open_bracket . "\n" . implode(",\n", $pairs) . "\n$bracket_indent" . $close_bracket;
+        if ($prettyPrint) {
+            $bracketIndent = str_repeat(' ', 4 * $indentLevel);
+            return $openBracket . "\n" . implode(",\n", $pairs) . "\n$bracketIndent" . $closeBracket;
         }
 
         // Otherwise, return the string in a single line.
-        return $open_bracket . implode(', ', $pairs) . $close_bracket;
+        return $openBracket . implode(', ', $pairs) . $closeBracket;
     }
 
     /**
@@ -191,12 +191,12 @@ final class Stringify
      * If pretty printing is enabled, the result will be formatted with new lines and indentation.
      *
      * @param object $obj The object to encode.
-     * @param bool $pretty_print Whether to use pretty printing (default false).
-     * @param int $indent_level The level of indentation for this structure (default 0).
+     * @param bool $prettyPrint Whether to use pretty printing (default false).
+     * @param int $indentLevel The level of indentation for this structure (default 0).
      * @return string The string representation of the object.
      * @throws TypeError If the object's class is anonymous.
      */
-    public static function stringifyObject(object $obj, bool $pretty_print = false, int $indent_level = 0): string
+    public static function stringifyObject(object $obj, bool $prettyPrint = false, int $indentLevel = 0): string
     {
         // Get the tag name.
         $class = get_class($obj);
@@ -217,27 +217,27 @@ final class Stringify
 
         // Generate the strings for key-value pairs. Each will be on its own line if pretty printing is enabled.
         $pairs = [];
-        $indent = $pretty_print ? str_repeat(' ', 4 * ($indent_level + 1)) : '';
+        $indent = $prettyPrint ? str_repeat(' ', 4 * ($indentLevel + 1)) : '';
 
         foreach ($a as $key => $value) {
             // Split on null bytes to determine the property name and visibility.
-            $name_parts = explode("\0", $key);
-            if (count($name_parts) === 1) {
+            $nameParts = explode("\0", $key);
+            if (count($nameParts) === 1) {
                 // Property is public.
-                $vis_symbol = '+';
+                $visSymbol = '+';
             } else {
-                // Property must be protected or private. If the second item in the $name_parts array is '*', the
+                // Property must be protected or private. If the second item in the $nameParts array is '*', the
                 // property is protected; otherwise, it's private.
-                $vis_symbol = $name_parts[1] === '*' ? '#' : '-';
-                $key = $name_parts[array_key_last($name_parts)];
+                $visSymbol = $nameParts[1] === '*' ? '#' : '-';
+                $key = $nameParts[array_key_last($nameParts)];
             }
 
-            $value_str = self::stringify($value, $pretty_print, $indent_level + 1);
-            $pairs[] = "$indent$vis_symbol$key: $value_str";
+            $valueStr = self::stringify($value, $prettyPrint, $indentLevel + 1);
+            $pairs[] = "$indent$visSymbol$key: $valueStr";
         }
 
         // If pretty print, return string formatted with new lines and indentation.
-        if ($pretty_print) {
+        if ($prettyPrint) {
             return "<$class\n" . implode(",\n", $pairs) . "\n>";
         }
 
@@ -248,16 +248,16 @@ final class Stringify
      * Get a short string representation of the given value for use in error messages, log messages, and the like.
      *
      * @param mixed $value The value to get the string representation for.
-     * @param int $max_len The maximum length of the result.
+     * @param int $maxLen The maximum length of the result.
      * @return string The short string representation.
      * @throws ValueError If the maximum length is less than 10.
      * @throws TypeError If the value has an unknown type.
      * @see stringify()
      */
-    public static function abbrev(mixed $value, int $max_len = 30): string
+    public static function abbrev(mixed $value, int $maxLen = 30): string
     {
         // Check the max length is reasonable.
-        if ($max_len < 10) {
+        if ($maxLen < 10) {
             throw new ValueError('The maximum string length must be at least 10.');
         }
 
@@ -265,8 +265,8 @@ final class Stringify
         $result = self::stringify($value);
 
         // Trim if necessary.
-        if (strlen($result) > $max_len) {
-            $result = substr($result, 0, $max_len - 3) . '...';
+        if (strlen($result) > $maxLen) {
+            $result = substr($result, 0, $maxLen - 3) . '...';
         }
 
         return $result;

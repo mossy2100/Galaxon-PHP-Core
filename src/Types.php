@@ -141,17 +141,17 @@ final class Types
     /**
      * Create a new TypeError using information about the parameter and expected type.
      *
-     * @param string $var_name The name of the argument or variable that failed validation, e.g. 'index'.
-     * @param string $expected_type The expected type (e.g., 'int', 'string', 'callable').
+     * @param string $varName The name of the argument or variable that failed validation, e.g. 'index'.
+     * @param string $expectedType The expected type (e.g., 'int', 'string', 'callable').
      * @param mixed $value The actual value that was provided (optional).
      */
-    public static function createError(string $var_name, string $expected_type, mixed $value = null): TypeError
+    public static function createError(string $varName, string $expectedType, mixed $value = null): TypeError
     {
-        $message = "Variable '$var_name' must be of type $expected_type";
+        $message = "Variable '$varName' must be of type $expectedType";
 
         if (func_num_args() > 2) {
-            $actual_type = get_debug_type($value);
-            $message .= ", $actual_type given.";
+            $actualType = get_debug_type($value);
+            $message .= ", $actualType given.";
         } else {
             $message .= '.';
         }
@@ -167,33 +167,33 @@ final class Types
      * Check if an object or class uses a given trait.
      * Handle both class names and objects, including trait inheritance.
      *
-     * @param object|string $obj_or_class The object or class to inspect.
+     * @param object|string $objOrClass The object or class to inspect.
      * @param string $trait The trait to check for.
      * @return bool True if the object or class uses the trait, false otherwise.
      */
-    public static function usesTrait(object|string $obj_or_class, string $trait): bool
+    public static function usesTrait(object|string $objOrClass, string $trait): bool
     {
-        $all_traits = self::getTraits($obj_or_class);
-        return in_array($trait, $all_traits, true);
+        $allTraits = self::getTraits($objOrClass);
+        return in_array($trait, $allTraits, true);
     }
 
     /**
      * Get all traits used by an object, class, interface, or trait, including those inherited from parent classes and
      * other traits.
      *
-     * @param object|string $obj_or_class The object or class (or interface or trait) to inspect.
+     * @param object|string $objOrClass The object or class (or interface or trait) to inspect.
      * @return string[] The list of traits used by the object or class.
      * @throws ValueError If the provided class name is invalid.
      */
-    public static function getTraits(object|string $obj_or_class): array
+    public static function getTraits(object|string $objOrClass): array
     {
         // Get class, interface, or trait name.
-        if (is_object($obj_or_class)) {
-            $class = get_class($obj_or_class);
-        } elseif (class_exists($obj_or_class) || interface_exists($obj_or_class) || trait_exists($obj_or_class)) {
-            $class = (string)$obj_or_class;
+        if (is_object($objOrClass)) {
+            $class = get_class($objOrClass);
+        } elseif (class_exists($objOrClass) || interface_exists($objOrClass) || trait_exists($objOrClass)) {
+            $class = (string)$objOrClass;
         } else {
-            throw new ValueError("Invalid class name: $obj_or_class");
+            throw new ValueError("Invalid class name: $objOrClass");
         }
 
         return self::getTraitsRecursive($class);
@@ -213,20 +213,20 @@ final class Types
         // Get traits from current class and all parent classes.
         do {
             // Get traits used by the current class.
-            $class_traits = class_uses($class);
+            $classTraits = class_uses($class);
 
             // Check for class not found. Should be never, but having this check satisfies phpstan.
-            if ($class_traits === false) {
+            if ($classTraits === false) {
                 break; // @codeCoverageIgnore
             }
 
             // Add traits from current class.
-            $traits = array_merge($traits, $class_traits);
+            $traits = array_merge($traits, $classTraits);
 
             // Also get traits used by the traits themselves.
-            foreach ($class_traits as $trait) {
-                $trait_traits = self::getTraitsRecursive($trait);
-                $traits = array_merge($traits, $trait_traits);
+            foreach ($classTraits as $trait) {
+                $traitTraits = self::getTraitsRecursive($trait);
+                $traits = array_merge($traits, $traitTraits);
             }
         } while ($class = get_parent_class($class));
 

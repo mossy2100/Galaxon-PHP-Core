@@ -9,7 +9,8 @@
     "require-dev": {
         "phpunit/phpunit": "^10.0 || ^11.0 || ^12.0",
         "squizlabs/php_codesniffer": "^4.0",
-        "phpstan/phpstan": "^2.1"
+        "phpstan/phpstan": "^2.1",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0"
     },
     "autoload": {
         "psr-4": {
@@ -34,5 +35,13 @@
             "@test",
             "@coverage"
         ]
+    },
+    "extra": {
+        "phpcodesniffer-search-depth": 3
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     }
 }

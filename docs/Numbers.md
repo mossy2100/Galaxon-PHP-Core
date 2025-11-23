@@ -11,17 +11,17 @@ This class provides utilities for working with the signs of numbers (both intege
 ### sign()
 
 ```php
-public static function sign(int|float $value, bool $zero_for_zero = true): int
+public static function sign(int|float $value, bool $zeroForZero = true): int
 ```
 
 Get the sign of a number. This method supports two modes of operation depending on how you want zero values to be handled.
 
 **Parameters:**
 - `$value` (int|float) - The number to check
-- `$zero_for_zero` (bool) - If `true` (default), return 0 for zero; if `false`, return the sign of zero (-1 for -0.0, 1 otherwise)
+- `$zeroForZero` (bool) - If `true` (default), return 0 for zero; if `false`, return the sign of zero (-1 for -0.0, 1 otherwise)
 
 **Returns:**
-- `int` - Returns 1 for positive, -1 for negative, or 0 for zero (if `$zero_for_zero` is `true`)
+- `int` - Returns 1 for positive, -1 for negative, or 0 for zero (if `$zeroForZero` is `true`)
 
 **Examples:**
 
@@ -36,7 +36,7 @@ Numbers::sign(INF);     // 1
 Numbers::sign(-INF);    // -1
 ```
 
-With `$zero_for_zero = false` (distinguish between -0.0 and +0.0):
+With `$zeroForZero = false` (distinguish between -0.0 and +0.0):
 ```php
 Numbers::sign(42, false);      // 1
 Numbers::sign(-42, false);     // -1
@@ -53,17 +53,17 @@ Numbers::sign(-0.0, false);    // -1
 ### copySign()
 
 ```php
-public static function copySign(int|float $num, int|float $sign_source): int|float
+public static function copySign(int|float $num, int|float $signSource): int|float
 ```
 
 Copy the sign of one number to another. Returns a value with the magnitude of the first parameter and the sign of the second parameter.
 
 **Parameters:**
 - `$num` (int|float) - The number whose magnitude to use
-- `$sign_source` (int|float) - The number whose sign to copy
+- `$signSource` (int|float) - The number whose sign to copy
 
 **Returns:**
-- `int|float` - The magnitude of `$num` with the sign of `$sign_source`
+- `int|float` - The magnitude of `$num` with the sign of `$signSource`
 
 **Throws:**
 - `ValueError` - If NaN is passed as either parameter (NaN doesn't have a defined sign)

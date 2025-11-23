@@ -139,9 +139,9 @@ final class Integers
         }
 
         // Check none of the values equal PHP_INT_MIN because otherwise abs() will not work properly.
-        $range_err = 'Arguments must be greater than PHP_INT_MIN (' . PHP_INT_MIN . ').';
+        $rangeErr = 'Arguments must be greater than PHP_INT_MIN (' . PHP_INT_MIN . ').';
         if ($nums[0] === PHP_INT_MIN) {
-            throw new RangeException($range_err);
+            throw new RangeException($rangeErr);
         }
 
         // Initialise to the first number.
@@ -151,7 +151,7 @@ final class Integers
         for ($i = 1, $n = count($nums); $i < $n; $i++) {
             // Check integer is in the valid range.
             if ($nums[$i] === PHP_INT_MIN) {
-                throw new RangeException($range_err);
+                throw new RangeException($rangeErr);
             }
 
             $a = $result;

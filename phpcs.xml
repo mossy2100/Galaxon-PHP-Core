@@ -2,16 +2,15 @@
 <ruleset name="Galaxon">
     <description>Coding standard for Galaxon libraries</description>
 
+    <!-- Register custom standard location -->
+    <config name="installed_paths" value="GalaCS"/>
+
     <!-- Paths to check -->
     <file>src</file>
     <file>tests</file>
+    <file>GalaCS</file>
 
-    <!-- Base standard -->
-    <rule ref="PSR12"/>
-
-    <!-- Allow multiple classes in test files for test fixtures -->
-    <rule ref="PSR1.Classes.ClassDeclaration.MultipleClasses">
-        <exclude-pattern>tests/*</exclude-pattern>
-    </rule>
+    <!-- Galaxon Coding Standard (includes PSR12 + custom rules) -->
+    <rule ref="GalaCS"/>
 
 </ruleset>

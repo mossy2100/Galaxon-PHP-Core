@@ -147,14 +147,14 @@ echo $angle->toDegrees(); // 45.0
 ### toDMS()
 
 ```php
-public function toDMS(int $smallest_unit = Angle::UNIT_ARCSECOND): array
+public function toDMS(int $smallestUnit = Angle::UNIT_ARCSECOND): array
 ```
 
 Get the angle in degrees, arcminutes, and arcseconds. The result will be an array with 1-3 values, depending on the requested smallest unit. Only the last item may have a fractional part; others will be whole numbers.
 
 If the angle is positive, the resulting values will all be positive. If the angle is zero, the resulting values will all be zero. If the angle is negative, the resulting values will all be negative.
 
-For the `$smallest_unit` parameter, you can use the UNIT_* class constants:
+For the `$smallestUnit` parameter, you can use the UNIT_* class constants:
 - `UNIT_DEGREE` (0) for degrees only
 - `UNIT_ARCMINUTE` (1) for degrees and arcminutes
 - `UNIT_ARCSECOND` (2) for degrees, arcminutes, and arcseconds (default)
@@ -162,13 +162,13 @@ For the `$smallest_unit` parameter, you can use the UNIT_* class constants:
 (Note: If the smallest unit is degrees, you may prefer to use `toDegrees()` instead, which returns a float instead of an array.)
 
 **Parameters:**
-- `$smallest_unit` (int) - 0 for degrees, 1 for arcminutes, 2 for arcseconds (default)
+- `$smallestUnit` (int) - 0 for degrees, 1 for arcminutes, 2 for arcseconds (default)
 
 **Returns:**
 - `float[]` - An array of 1-3 floats with the degrees, arcminutes, and arcseconds
 
 **Throws:**
-- `ValueError` - If $smallest_unit is not 0, 1, or 2
+- `ValueError` - If $smallestUnit is not 0, 1, or 2
 
 **Examples:**
 ```php
@@ -579,10 +579,10 @@ echo $angle->format('deg', 4); // 45.5042deg
 ### formatDMS()
 
 ```php
-public function formatDMS(int $smallest_unit = UNIT_ARCSECOND, ?int $decimals = null): string
+public function formatDMS(int $smallestUnit = UNIT_ARCSECOND, ?int $decimals = null): string
 ```
 
-Options for $smallest_unit:
+Options for $smallestUnit:
 - `UNIT_DEGREE` - Degrees only with ° symbol
 - `UNIT_ARCMINUTE` - Degrees and arcminutes with ° ′ symbols
 - `UNIT_ARCSECOND` - Degrees, arcminutes, and arcseconds with ° ′ ″ symbols

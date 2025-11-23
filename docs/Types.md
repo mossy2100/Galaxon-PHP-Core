@@ -140,14 +140,14 @@ Types::getUniqueString($obj);              // "o:1" (based on object ID)
 ### createError()
 
 ```php
-public static function createError(string $var_name, string $expected_type, mixed $value = null): TypeError
+public static function createError(string $varName, string $expectedType, mixed $value = null): TypeError
 ```
 
 Create a new `TypeError` with a formatted message about parameter validation failure.
 
 **Parameters:**
-- `$var_name` (string) - The name of the variable or parameter (e.g., `"index"`)
-- `$expected_type` (string) - The expected type (e.g., `"int"`, `"string"`, `"callable"`)
+- `$varName` (string) - The name of the variable or parameter (e.g., `"index"`)
+- `$expectedType` (string) - The expected type (e.g., `"int"`, `"string"`, `"callable"`)
 - `$value` (mixed) - The actual value that was provided (optional)
 
 **Returns:**
@@ -174,13 +174,13 @@ throw $error;
 ### usesTrait()
 
 ```php
-public static function usesTrait(object|string $obj_or_class, string $trait): bool
+public static function usesTrait(object|string $objOrClass, string $trait): bool
 ```
 
 Check if an object or class uses a given trait. This method detects traits used directly, inherited from parent classes, or used by other traits (nested traits).
 
 **Parameters:**
-- `$obj_or_class` (object|string) - The object or class name to inspect
+- `$objOrClass` (object|string) - The object or class name to inspect
 - `$trait` (string) - The fully qualified trait name to check for
 
 **Returns:**
@@ -228,13 +228,13 @@ Types::usesTrait(ChildClass::class, LoggerTrait::class); // true (inherited)
 ### getTraits()
 
 ```php
-public static function getTraits(object|string $obj_or_class): array
+public static function getTraits(object|string $objOrClass): array
 ```
 
 Get all traits used by an object, class, interface, or trait, including those inherited from parent classes and other traits.
 
 **Parameters:**
-- `$obj_or_class` (object|string) - The object or class (or interface or trait) to inspect
+- `$objOrClass` (object|string) - The object or class (or interface or trait) to inspect
 
 **Returns:**
 - `string[]` - Array of fully qualified trait names

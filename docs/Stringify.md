@@ -19,15 +19,15 @@ These features make the output more concise, readable, and informative for use i
 ### stringify()
 
 ```php
-public static function stringify(mixed $value, bool $pretty_print = false, int $indent_level = 0): string
+public static function stringify(mixed $value, bool $prettyPrint = false, int $indentLevel = 0): string
 ```
 
 Convert any PHP value to a readable string representation.
 
 **Parameters:**
 - `$value` (mixed) - The value to encode
-- `$pretty_print` (bool) - Whether to use pretty printing with indentation (default: `false`)
-- `$indent_level` (int) - The level of indentation for nested structures (default: `0`)
+- `$prettyPrint` (bool) - Whether to use pretty printing with indentation (default: `false`)
+- `$indentLevel` (int) - The level of indentation for nested structures (default: `0`)
 
 **Returns:**
 - `string` - The string representation of the value
@@ -94,15 +94,15 @@ Stringify::stringifyFloat(-INF);   // -∞
 ### stringifyArray()
 
 ```php
-public static function stringifyArray(array $ary, bool $pretty_print = false, int $indent_level = 0): string
+public static function stringifyArray(array $ary, bool $prettyPrint = false, int $indentLevel = 0): string
 ```
 
 Stringify an array in JSON-like style. Lists (sequential integer keys starting at 0) use square brackets and show values only. Associative arrays use curly brackets and show keys and values.
 
 **Parameters:**
 - `$ary` (array) - The array to encode
-- `$pretty_print` (bool) - Whether to use pretty printing (default: `false`)
-- `$indent_level` (int) - The level of indentation (default: `0`)
+- `$prettyPrint` (bool) - Whether to use pretty printing (default: `false`)
+- `$indentLevel` (int) - The level of indentation (default: `0`)
 
 **Returns:**
 - `string` - The string representation of the array
@@ -156,15 +156,15 @@ Stringify::stringifyResource($file);  // (resource type: "stream", id: 123)
 ### stringifyObject()
 
 ```php
-public static function stringifyObject(object $obj, bool $pretty_print = false, int $indent_level = 0): string
+public static function stringifyObject(object $obj, bool $prettyPrint = false, int $indentLevel = 0): string
 ```
 
 Stringify an object with properties shown using UML visibility notation.
 
 **Parameters:**
 - `$obj` (object) - The object to encode
-- `$pretty_print` (bool) - Whether to use pretty printing (default: `false`)
-- `$indent_level` (int) - The level of indentation (default: `0`)
+- `$prettyPrint` (bool) - Whether to use pretty printing (default: `false`)
+- `$indentLevel` (int) - The level of indentation (default: `0`)
 
 **Returns:**
 - `string` - The string representation of the object
@@ -212,14 +212,14 @@ Stringify::stringifyObject($user, true);
 ### abbrev()
 
 ```php
-public static function abbrev(mixed $value, int $max_len = 30): string
+public static function abbrev(mixed $value, int $maxLen = 30): string
 ```
 
 Get a short string representation of a value, truncated to a maximum length. Useful for error messages and logs where space is limited.
 
 **Parameters:**
 - `$value` (mixed) - The value to get the string representation for
-- `$max_len` (int) - The maximum length of the result (default: `30`, minimum: `10`)
+- `$maxLen` (int) - The maximum length of the result (default: `30`, minimum: `10`)
 
 **Returns:**
 - `string` - The abbreviated string representation

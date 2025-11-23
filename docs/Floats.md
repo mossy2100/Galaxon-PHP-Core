@@ -28,7 +28,7 @@ Several methods are provided to facilitate working with these values: `isNegativ
 
 ### Float-to-Integer Conversion
 
-Converting floats to integers can lose precision. The `tryConvertToInt()` method provides safe, lossless conversion when possible.
+Converting floats to integers can lose precision. The `toInt()` method provides safe, lossless conversion when possible, returning `null` if conversion would lose precision.
 
 ### Navigating the Float Space
 
@@ -36,7 +36,15 @@ The `next()` and `previous()` methods allow traversal of the IEEE-754 number lin
 
 ### Random Float Generation
 
-Two methods provide random floats for different use cases: `rand()` explores the full float space for fuzzing, while `randInRange()` generates values within specific bounds.
+Two methods provide random floats for different use cases:
+- `rand()` generates random floats within a specified range (or the full float space by default) using IEEE-754 component assembly
+- `randUniform()` generates uniformly distributed values within specific bounds using linear interpolation
+
+### IEEE-754 Component Access
+
+Two methods provide direct access to IEEE-754 double-precision components:
+- `disassemble()` extracts sign, exponent, and fraction from a float
+- `assemble()` constructs a float from sign, exponent, and fraction components
 
 ## Methods
 
@@ -295,59 +303,51 @@ Floats::toHex($a) !== Floats::toHex($b);  // true
 ### tryConvertToInt()
 
 ```php
-public static function tryConvertToInt(float $f, ?int &$i): bool
+public static function tryConvertToInt(float $f): ?int
 ```
 
-Attempt to convert a float to an integer losslessly. Returns `true` if the conversion succeeds (the float represents a whole number within the integer range), `false` otherwise.
+Try to convert a float to an integer losslessly. Returns the equivalent integer if the float represents a whole number, or `null` if conversion would lose precision.
 
 **Parameters:**
 - `$f` (float) - The float to convert
-- `$i` (int|null) - Output parameter that receives the converted integer on success
 
 **Returns:**
-- `bool` - `true` if the float can be converted to an integer losslessly, `false` otherwise
+- `?int` - The equivalent integer if the float can be converted losslessly, or `null` otherwise
 
 **Behavior:**
-- Returns `true` and sets `$i` if the float equals a whole number (e.g., 5.0, -10.0, 0.0)
-- Returns `false` and leaves `$i` unchanged if the float has a fractional part (e.g., 5.5, 0.1)
+- Returns the integer value if the float equals a whole number (e.g., 5.0 → 5, -10.0 → -10, 0.0 → 0)
+- Returns `null` if the float has a fractional part (e.g., 5.5, 0.1)
+- Returns `null` for non-finite values (NaN, ±INF)
 - Handles negative zero (-0.0) by converting it to integer 0
 - Works for any float value (without fractional part) within PHP's integer range (PHP_INT_MIN to PHP_INT_MAX)
-    
+
 **Examples:**
 
 ```php
 // Successful conversion - whole number
-$f = 5.0;
-if (Floats::tryConvertToInt($f, $i)) {
-    echo $i; // 5
-}
+Floats::tryConvertToInt(5.0);  // 5
 
 // Failed conversion - fractional part
-$f = 5.5;
-$i = null;
-if (!Floats::tryConvertToInt($f, $i)) {
-    echo "Cannot convert"; // $i remains null
-}
+Floats::tryConvertToInt(5.5);  // null
 
 // Large whole numbers
-$f = 1000000.0;
-Floats::tryConvertToInt($f, $i); // true, $i = 1000000
+Floats::tryConvertToInt(1000000.0);  // 1000000
 
 // Negative zero
-$f = -0.0;
-Floats::tryConvertToInt($f, $i); // true, $i = 0
+Floats::tryConvertToInt(-0.0);  // 0
 
 // Powers of 2 work well (within precision)
-$f = (float)(1 << 50); // 2^50
-Floats::tryConvertToInt($f, $i); // true
+Floats::tryConvertToInt((float)(1 << 50));  // 1125899906842624 (2^50)
 
 // PHP_INT_MIN is -2^63 (a power of 2), so it converts exactly
-$f = (float)PHP_INT_MIN;
-Floats::tryConvertToInt($f, $i); // true, $i = PHP_INT_MIN
+Floats::tryConvertToInt((float)PHP_INT_MIN);  // PHP_INT_MIN
 
 // PHP_INT_MAX is 2^63-1 (not a power of 2), loses precision as float
-$f = (float)PHP_INT_MAX;
-Floats::tryConvertToInt($f, $i); // false (loses precision)
+Floats::tryConvertToInt((float)PHP_INT_MAX);  // null (loses precision)
+
+// Non-finite values
+Floats::tryConvertToInt(INF);  // null
+Floats::tryConvertToInt(NAN);  // null
 ```
 
 **Use Cases:**
@@ -455,52 +455,181 @@ Floats::previous(Floats::next($f)) === $f;  // true
 - Generating test cases for numerical code
 - Exploring floating-point precision limits
 
-### rand()
+### disassemble()
 
 ```php
-public static function rand(): float
+public static function disassemble(float $f): array
 ```
 
-Generate a random finite float by creating random bytes and unpacking them as a double. Repeatedly generates values until a non-special float is produced.
+Disassemble a float into its IEEE-754 double-precision components.
+
+**Parameters:**
+- `$f` (float) - The float to disassemble
 
 **Returns:**
-- `float` - A random finite float (excludes NaN, ±INF, -0.0)
+- `array{sign: int, exponent: int, fraction: int}` - An associative array containing:
+  - `sign` (int): 0 for positive, 1 for negative
+  - `exponent` (int): 11-bit biased exponent (0-2047, bias is 1023)
+  - `fraction` (int): 52-bit fraction/mantissa
 
 **Throws:**
-- `RandomException` - If an appropriate source of randomness is unavailable
+- `RuntimeException` - If the system is not 64-bit
 
 **Examples:**
 
 ```php
-$f = Floats::rand();
-// $f is a finite float, could be any value in the full range
+// Disassemble 1.0
+$parts = Floats::disassemble(1.0);
+// $parts = ['sign' => 0, 'exponent' => 1023, 'fraction' => 0]
 
-// Generate 100 random floats
-for ($i = 0; $i < 100; $i++) {
-    $values[] = Floats::rand();
-}
+// Disassemble -1.0
+$parts = Floats::disassemble(-1.0);
+// $parts = ['sign' => 1, 'exponent' => 1023, 'fraction' => 0]
+
+// Disassemble 1.5 (binary: 1.1)
+$parts = Floats::disassemble(1.5);
+// $parts = ['sign' => 0, 'exponent' => 1023, 'fraction' => 2251799813685248] (2^51)
+
+// Positive and negative zero have different representations
+$pos = Floats::disassemble(0.0);   // sign = 0, exponent = 0, fraction = 0
+$neg = Floats::disassemble(-0.0);  // sign = 1, exponent = 0, fraction = 0
+
+// Infinity has exponent 2047 and fraction 0
+$inf = Floats::disassemble(INF);   // sign = 0, exponent = 2047, fraction = 0
+
+// NaN has exponent 2047 and non-zero fraction
+$nan = Floats::disassemble(NAN);   // sign = ?, exponent = 2047, fraction > 0
+```
+
+**Use Cases:**
+- Understanding IEEE-754 representation
+- Debugging floating-point issues
+- Implementing custom float manipulation algorithms
+- Educational purposes
+
+### assemble()
+
+```php
+public static function assemble(int $sign, int $exponent, int $fraction): float
+```
+
+Assemble a float from its IEEE-754 double-precision components.
+
+**Parameters:**
+- `$sign` (int) - The sign bit (0 = positive, 1 = negative)
+- `$exponent` (int) - The 11-bit biased exponent (0-2047)
+- `$fraction` (int) - The 52-bit fraction/mantissa (0 to 2^52 - 1)
+
+**Returns:**
+- `float` - The assembled float
+
+**Throws:**
+- `RuntimeException` - If the system is not 64-bit
+- `ValueError` - If sign is not 0 or 1
+- `ValueError` - If exponent is not in range [0, 2047]
+- `ValueError` - If fraction is not in range [0, 2^52 - 1]
+
+**Examples:**
+
+```php
+// Assemble 1.0
+$f = Floats::assemble(0, 1023, 0);  // 1.0
+
+// Assemble -1.0
+$f = Floats::assemble(1, 1023, 0);  // -1.0
+
+// Assemble 2.0 (exponent = 1024 = 1023 + 1)
+$f = Floats::assemble(0, 1024, 0);  // 2.0
+
+// Assemble 1.5
+$f = Floats::assemble(0, 1023, 1 << 51);  // 1.5
+
+// Assemble positive and negative zero
+$posZero = Floats::assemble(0, 0, 0);  // 0.0
+$negZero = Floats::assemble(1, 0, 0);  // -0.0
+
+// Assemble infinity
+$inf = Floats::assemble(0, 2047, 0);  // INF
+
+// Assemble NaN (exponent 2047 with non-zero fraction)
+$nan = Floats::assemble(0, 2047, 1);  // NAN
+```
+
+**Round-trip with disassemble():**
+
+```php
+$original = 42.5;
+$parts = Floats::disassemble($original);
+$reassembled = Floats::assemble($parts['sign'], $parts['exponent'], $parts['fraction']);
+$original === $reassembled;  // true
+```
+
+**Use Cases:**
+- Creating specific float bit patterns for testing
+- Implementing custom random float generators
+- Low-level float manipulation
+- Educational purposes
+
+### rand()
+
+```php
+public static function rand(float $min = -PHP_FLOAT_MAX, float $max = PHP_FLOAT_MAX): float
+```
+
+Generate a random float in the specified range by constructing IEEE-754 components. This method can return any representable float within the given range.
+
+**Parameters:**
+- `$min` (float) - The minimum value (inclusive, default: -PHP_FLOAT_MAX)
+- `$max` (float) - The maximum value (inclusive, default: PHP_FLOAT_MAX)
+
+**Returns:**
+- `float` - A random finite float in the range [min, max]
+
+**Throws:**
+- `RuntimeException` - If the system is not 64-bit
+- `ValueError` - If min or max are non-finite (NaN, ±INF), or if min > max
+
+**Examples:**
+
+```php
+// Random float across the entire finite float space
+$f = Floats::rand();
+
+// Random float in a specific range
+$f = Floats::rand(0.0, 100.0);
+
+// Random float between -1 and 1
+$f = Floats::rand(-1.0, 1.0);
+
+// When min equals max, returns that value
+$f = Floats::rand(5.0, 5.0);  // 5.0
 ```
 
 **Characteristics:**
-- Produces floats with **all possible exponents** (-1022 to 1023)
-- Can generate very small numbers (e.g., 1e-100) and very large numbers (e.g., 1e100)
-- Much better distribution across the float space than linear methods
-- Does not guarantee uniform distribution (biased by IEEE-754 representation)
+- Can return **any representable float** in the given range
+- Uses IEEE-754 component assembly (sign, exponent, fraction)
+- Distribution is **not uniform** - more values near zero due to IEEE-754 density
+- Handles ranges spanning zero correctly
+- Optimized for narrow ranges with same sign and exponent
+
+**How it works:**
+1. Determines valid sign values based on min/max
+2. Determines valid exponent range based on min/max
+3. Generates random fraction bits
+4. Assembles components and validates result is in range
 
 **Use Cases:**
-- Fuzzing and property-based testing
-- Finding edge cases in floating-point algorithms
-- Stress testing numerical code with diverse inputs
+- Fuzzing and property-based testing with full float coverage
+- Testing edge cases in floating-point algorithms
+- Generating test data that exercises the full precision of floats
 
-**Note:** This method uses `random_bytes()` to generate truly random bit patterns, then filters out special values. This means it explores the entire IEEE-754 float space, unlike range-based methods which are biased toward certain magnitudes.
-
-### randInRange()
+### randUniform()
 
 ```php
-public static function randInRange(float $min, float $max): float
+public static function randUniform(float $min, float $max): float
 ```
 
-Generate a random float uniformly distributed in the specified range using `mt_rand()`.
+Generate a random float with uniform distribution in the specified range using linear interpolation.
 
 **Parameters:**
 - `$min` (float) - The minimum value (inclusive)
@@ -510,41 +639,39 @@ Generate a random float uniformly distributed in the specified range using `mt_r
 - `float` - A random float in the range [min, max]
 
 **Throws:**
-- `ValueError` - If min or max are special values (NaN, ±INF, -0.0), or if min > max
+- `ValueError` - If min or max are non-finite (NaN, ±INF), or if min > max
 
 **Examples:**
 
 ```php
 // Random float between 0.0 and 1.0
-$f = Floats::randInRange(0.0, 1.0);
+$f = Floats::randUniform(0.0, 1.0);
 
 // Random temperature between -10°C and 40°C
-$temp = Floats::randInRange(-10.0, 40.0);
+$temp = Floats::randUniform(-10.0, 40.0);
 
 // When min equals max, returns that value
-$f = Floats::randInRange(5.0, 5.0);  // 5.0
+$f = Floats::randUniform(5.0, 5.0);  // 5.0
 ```
 
-**Limitations:**
-- Uses `mt_rand() / mt_getrandmax()` which can only produce 2^31 distinct values
-- Not all floats in the range are returnable
-- Uniform distribution in the numeric range, but biased by float density
-- For small ranges (e.g., -1.0 to 1.0), better coverage than large ranges
-
-**Validation:**
-```php
-// These throw ValueError
-Floats::randInRange(NAN, 10.0);      // min is NaN
-Floats::randInRange(0.0, INF);       // max is infinite
-Floats::randInRange(-0.0, 10.0);     // min is negative zero
-Floats::randInRange(20.0, 10.0);     // min > max
-```
+**Characteristics:**
+- **Uniform distribution** in the numeric range
+- Uses `mt_rand() / mt_getrandmax()` internally
+- Limited to ~2^31 distinct values
+- Faster than `rand()` but less precise
+- Not all representable floats in the range are returnable
 
 **Use Cases:**
+- Monte Carlo simulations requiring uniform distribution
 - Generating test data within specific ranges
-- Monte Carlo simulations
 - Random sampling for statistical analysis
+- Cases where uniform distribution is more important than full float coverage
 
 **Comparison with `rand()`:**
-- `rand()`: Explores full float space, good for finding edge cases
-- `randInRange()`: Constrained distribution, good for domain-specific testing
+
+| Feature | `rand()` | `randUniform()` |
+|---------|----------|-----------------|
+| Distribution | IEEE-754 density (more near zero) | Uniform |
+| Precision | Any representable float | ~2^31 distinct values |
+| Speed | Slower (rejection loop) | Faster (simple interpolation) |
+| Use case | Fuzzing, edge cases | Statistics, simulations |

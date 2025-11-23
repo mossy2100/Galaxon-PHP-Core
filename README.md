@@ -34,7 +34,7 @@ General number-related utility methods including sign operations.
 
 ### [Floats](docs/Floats.md)
 
-Float-specific utilities for handling special values like -0.0, ±INF, NaN, and hexadecimal conversion.
+Float-specific utilities for handling IEEE-754 special values (-0.0, ±INF, NaN), approximate comparison, float space navigation (next/previous), random generation, and IEEE-754 component assembly/disassembly.
 
 ### [Integers](docs/Integers.md)
 
