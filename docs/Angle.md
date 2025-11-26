@@ -10,35 +10,43 @@ Immutable class for working with angles in various units with high precision.
 - `TRIG_EPSILON` - Epsilon for trigonometric comparisons (1e-12)
 - `UNIT_DEGREE` (0), `UNIT_ARCMINUTE` (1), `UNIT_ARCSECOND` (2) - Constants for specifying the smallest unit in DMS conversions
 
-## Factory Methods
+## Constructor
 
-### fromRadians()
-
-```php
-public static function fromRadians(float $radians): self
-```
-
-Create angle from radians.
-
-**Example:**
-```php
-$angle = Angle::fromRadians(M_PI);
-echo $angle->toDegrees(); // 180.0
-```
-
-### fromDegrees()
+### __construct()
 
 ```php
-public static function fromDegrees(float $degrees): self
+public function __construct(float $qty, string $unit = 'rad')
 ```
 
-Create angle from degrees.
+Create an angle with a specified quantity and unit.
+
+**Parameters:**
+- `$qty` (float) - The quantity of the given unit
+- `$unit` (string) - The unit: `'rad'`, `'deg'`, `'grad'`, or `'turn'` (default: `'rad'`)
+
+**Throws:**
+- `ValueError` - If the quantity is non-finite (±∞ or NaN) or if the unit is invalid
 
 **Examples:**
 ```php
-$angle = Angle::fromDegrees(180);
-echo $angle->toRadians();  // 3.14159...
+// Radians (default unit)
+$angle = new Angle(M_PI);
+echo $angle->to('deg'); // 180.0
+
+// Degrees
+$angle = new Angle(180, 'deg');
+echo $angle->to('rad');  // 3.14159...
+
+// Gradians
+$angle = new Angle(100, 'grad');
+echo $angle->to('deg'); // 90.0
+
+// Turns
+$angle = new Angle(0.5, 'turn');
+echo $angle->to('deg'); // 180.0
 ```
+
+## Static Factory Methods
 
 ### fromDMS()
 
@@ -58,34 +66,6 @@ $angle = Angle::fromDMS(12, 34, 56);  // 12° 34′ 56″
 
 // Negative angle
 $angle = Angle::fromDMS(-12, -34, -56);
-```
-
-### fromGradians()
-
-```php
-public static function fromGradians(float $gradians): self
-```
-
-Create angle from gradians.
-
-**Example:**
-```php
-$angle = Angle::fromGradians(100);
-echo $angle->toDegrees(); // 90.0
-```
-
-### fromTurns()
-
-```php
-public static function fromTurns(float $turns): self
-```
-
-Create angle from full rotations.
-
-**Example:**
-```php
-$angle = Angle::fromTurns(0.5);
-echo $angle->toDegrees(); // 180.0
 ```
 
 ### parse()
@@ -116,32 +96,28 @@ $angle = Angle::parse('  45 DEG  ');
 
 ## Conversion Methods
 
-### toRadians()
+### to()
 
 ```php
-public function toRadians(): float
+public function to(string $unit): float
 ```
 
-Get angle in radians.
+Convert the angle to the specified unit.
 
-**Example:**
+**Parameters:**
+- `$unit` (string) - The target unit: `'rad'`, `'deg'`, `'grad'`, or `'turn'`
+
+**Returns:**
+- `float` - The angle in the specified unit
+
+**Examples:**
 ```php
-$angle = Angle::fromDegrees(180);
-echo $angle->toRadians(); // 3.14159...
-```
+$angle = new Angle(180, 'deg');
 
-### toDegrees()
-
-```php
-public function toDegrees(): float
-```
-
-Get angle in degrees.
-
-**Example:**
-```php
-$angle = Angle::fromRadians(M_PI / 4);
-echo $angle->toDegrees(); // 45.0
+echo $angle->to('rad');  // 3.14159...
+echo $angle->to('deg');  // 180.0
+echo $angle->to('grad'); // 200.0
+echo $angle->to('turn'); // 0.5
 ```
 
 ### toDMS()
@@ -159,7 +135,7 @@ For the `$smallestUnit` parameter, you can use the UNIT_* class constants:
 - `UNIT_ARCMINUTE` (1) for degrees and arcminutes
 - `UNIT_ARCSECOND` (2) for degrees, arcminutes, and arcseconds (default)
 
-(Note: If the smallest unit is degrees, you may prefer to use `toDegrees()` instead, which returns a float instead of an array.)
+(Note: If the smallest unit is degrees, you may prefer to use `to('deg')` instead, which returns a float instead of an array.)
 
 **Parameters:**
 - `$smallestUnit` (int) - 0 for degrees, 1 for arcminutes, 2 for arcseconds (default)
@@ -172,7 +148,7 @@ For the `$smallestUnit` parameter, you can use the UNIT_* class constants:
 
 **Examples:**
 ```php
-$angle = Angle::fromRadians(M_PI / 4);
+$angle = new Angle(M_PI / 4);
 
 // As decimal degrees only
 [$deg] = $angle->toDMS(Angle::UNIT_DEGREE);  // [45.0]
@@ -184,36 +160,8 @@ $angle = Angle::fromRadians(M_PI / 4);
 [$d, $m, $s] = $angle->toDMS(Angle::UNIT_ARCSECOND);  // [45.0, 0.0, 0.0]
 
 // Example with actual DMS values
-$angle = Angle::fromDegrees(12, 34, 56);
+$angle = Angle::fromDMS(12, 34, 56);
 [$d, $m, $s] = $angle->toDMS();  // [12.0, 34.0, 56.0]
-```
-
-### toGradians()
-
-```php
-public function toGradians(): float
-```
-
-Get angle in gradians.
-
-**Example:**
-```php
-$angle = Angle::fromDegrees(90);
-echo $angle->toGradians(); // 100.0
-```
-
-### toTurns()
-
-```php
-public function toTurns(): float
-```
-
-Get angle in turns (full rotations).
-
-**Example:**
-```php
-$angle = Angle::fromDegrees(180);
-echo $angle->toTurns(); // 0.5
 ```
 
 ## Arithmetic Methods
@@ -228,10 +176,10 @@ Add another angle to this angle.
 
 **Example:**
 ```php
-$a = Angle::fromDegrees(45);
-$b = Angle::fromDegrees(30);
+$a = new Angle(45, 'deg');
+$b = new Angle(30, 'deg');
 $sum = $a->add($b);
-echo $sum->toDegrees(); // 75.0
+echo $sum->to('deg'); // 75.0
 ```
 
 ### sub()
@@ -244,10 +192,10 @@ Subtract another angle from this angle.
 
 **Example:**
 ```php
-$a = Angle::fromDegrees(90);
-$b = Angle::fromDegrees(45);
+$a = new Angle(90, 'deg');
+$b = new Angle(45, 'deg');
 $diff = $a->sub($b);
-echo $diff->toDegrees(); // 45.0
+echo $diff->to('deg'); // 45.0
 ```
 
 ### mul()
@@ -260,9 +208,9 @@ Multiply angle by a scalar. Throws `ValueError` if the scalar is non-finite (±�
 
 **Example:**
 ```php
-$angle = Angle::fromDegrees(30);
+$angle = new Angle(30, 'deg');
 $doubled = $angle->mul(2);
-echo $doubled->toDegrees(); // 60.0
+echo $doubled->to('deg'); // 60.0
 ```
 
 ### div()
@@ -275,9 +223,9 @@ Divide angle by a scalar. Throws `DivisionByZeroError` if divisor is zero, `Valu
 
 **Example:**
 ```php
-$angle = Angle::fromDegrees(90);
+$angle = new Angle(90, 'deg');
 $half = $angle->div(2);
-echo $half->toDegrees(); // 45.0
+echo $half->to('deg'); // 45.0
 ```
 
 ### abs()
@@ -290,9 +238,9 @@ Get absolute value of angle.
 
 **Example:**
 ```php
-$angle = Angle::fromDegrees(-45);
+$angle = new Angle(-45, 'deg');
 $positive = $angle->abs();
-echo $positive->toDegrees(); // 45.0
+echo $positive->to('deg'); // 45.0
 ```
 
 ### wrap()
@@ -309,20 +257,20 @@ Normalize this angle. Returns a new Angle with the wrapped value (the original i
 **Examples:**
 ```php
 // Signed wrapping - DEFAULT
-$angle = Angle::fromDegrees(200);
+$angle = new Angle(200, 'deg');
 $wrapped = $angle->wrap();
-echo $wrapped->toDegrees(); // -160.0
+echo $wrapped->to('deg'); // -160.0
 
 // Unsigned wrapping
-$angle = Angle::fromDegrees(450);
+$angle = new Angle(450, 'deg');
 $wrapped = $angle->wrap(false);
-echo $wrapped->toDegrees(); // 90.0
+echo $wrapped->to('deg'); // 90.0
 
 // Chaining
-$result = Angle::fromDegrees(540)
+$result = new Angle(540, 'deg')
     ->wrap()
     ->mul(2);
-echo $result->toDegrees(); // 360.0
+echo $result->to('deg'); // 360.0
 ```
 
 ## Comparison Methods
@@ -351,16 +299,16 @@ Two angles are considered equal if their difference in radians is less than `RAD
 
 **Example:**
 ```php
-$a = Angle::fromDegrees(10);
-$b = Angle::fromDegrees(370);
+$a = new Angle(10, 'deg');
+$b = new Angle(370, 'deg');
 echo $a->compare($b); // -1 (10 < 370)
 
-$c = Angle::fromDegrees(10);
+$c = new Angle(10, 'deg');
 echo $a->compare($c); // 0 (equal)
 
 // Wrapped comparison
-$aWrapped = Angle::fromDegrees(10)->wrap();
-$bWrapped = Angle::fromDegrees(370)->wrap();
+$aWrapped = new Angle(10, 'deg')->wrap();
+$bWrapped = new Angle(370, 'deg')->wrap();
 echo $aWrapped->compare($bWrapped); // 0 (both normalized to 10°)
 ```
 
@@ -383,15 +331,15 @@ Angles are not normalized before comparison, so use `wrap()` first if you need t
 
 **Example:**
 ```php
-$a = Angle::fromDegrees(45);
-$b = Angle::fromDegrees(45);
-$c = Angle::fromDegrees(405); // 45° + 360°
+$a = new Angle(45, 'deg');
+$b = new Angle(45, 'deg');
+$c = new Angle(405, 'deg'); // 45° + 360°
 
 var_dump($a->equals($b)); // true
 var_dump($a->equals($c)); // false (45 ≠ 405)
 
 // After wrapping
-$cWrapped = Angle::fromDegrees(405)->wrap();
+$cWrapped = new Angle(405, 'deg')->wrap();
 var_dump($a->equals($cWrapped)); // true (both are 45°)
 
 // Gracefully handles wrong types
@@ -408,8 +356,8 @@ Check if this angle is less than another. Provided by the `Comparable` trait.
 
 **Example:**
 ```php
-$a = Angle::fromDegrees(30);
-$b = Angle::fromDegrees(60);
+$a = new Angle(30, 'deg');
+$b = new Angle(60, 'deg');
 
 var_dump($a->isLessThan($b)); // true
 var_dump($b->isLessThan($a)); // false
@@ -424,9 +372,9 @@ Check if this angle is less than or equal to another. Provided by the `Comparabl
 
 **Example:**
 ```php
-$a = Angle::fromDegrees(45);
-$b = Angle::fromDegrees(45);
-$c = Angle::fromDegrees(90);
+$a = new Angle(45, 'deg');
+$b = new Angle(45, 'deg');
+$c = new Angle(90, 'deg');
 
 var_dump($a->isLessThanOrEqual($b)); // true (equal)
 var_dump($a->isLessThanOrEqual($c)); // true (less than)
@@ -441,8 +389,8 @@ Check if this angle is greater than another. Provided by the `Comparable` trait.
 
 **Example:**
 ```php
-$a = Angle::fromDegrees(90);
-$b = Angle::fromDegrees(45);
+$a = new Angle(90, 'deg');
+$b = new Angle(45, 'deg');
 
 var_dump($a->isGreaterThan($b)); // true
 var_dump($b->isGreaterThan($a)); // false
@@ -457,9 +405,9 @@ Check if this angle is greater than or equal to another. Provided by the `Compar
 
 **Example:**
 ```php
-$a = Angle::fromDegrees(60);
-$b = Angle::fromDegrees(60);
-$c = Angle::fromDegrees(30);
+$a = new Angle(60, 'deg');
+$b = new Angle(60, 'deg');
+$c = new Angle(30, 'deg');
 
 var_dump($a->isGreaterThanOrEqual($b)); // true (equal)
 var_dump($a->isGreaterThanOrEqual($c)); // true (greater than)
@@ -479,7 +427,7 @@ Standard trigonometric functions.
 
 **Example:**
 ```php
-$angle = Angle::fromDegrees(30);
+$angle = new Angle(30, 'deg');
 echo $angle->sin(); // 0.5
 echo $angle->cos(); // 0.866...
 echo $angle->tan(); // 0.577...
@@ -499,7 +447,7 @@ Returns `±INF` at singularities (e.g., `sec(90°)`, `csc(0°)`, `cot(0°)`).
 
 **Example:**
 ```php
-$angle = Angle::fromDegrees(60);
+$angle = new Angle(60, 'deg');
 echo $angle->sec(); // 2.0
 echo $angle->csc(); // 1.154...
 echo $angle->cot(); // 0.577...
@@ -519,7 +467,7 @@ Hyperbolic functions.
 
 **Example:**
 ```php
-$angle = Angle::fromRadians(1.0);
+$angle = new Angle(1.0);
 echo $angle->sinh(); // 1.175...
 echo $angle->cosh(); // 1.543...
 echo $angle->tanh(); // 0.761...
@@ -539,7 +487,7 @@ Returns `±INF` at singularities (e.g., `csch(0)`, `coth(0)`).
 
 **Example:**
 ```php
-$angle = Angle::fromRadians(1.0);
+$angle = new Angle(1.0);
 echo $angle->sech(); // 0.648...
 echo $angle->csch(); // 0.850...
 echo $angle->coth(); // 1.313...
@@ -560,7 +508,7 @@ The `$decimals` parameter controls decimal places. If `null`, maximum precision 
 
 **Examples:**
 ```php
-$angle = Angle::fromDegrees(12.5);
+$angle = new Angle(12.5, 'deg');
 
 // Different units
 echo $angle->format('rad', 4);  // 0.2182rad
@@ -572,7 +520,7 @@ echo $angle->format('turn', 5); // 0.03472turn
 echo $angle->format('rad'); // 0.21816615649929rad
 
 // Complex angle
-$angle = Angle::fromDegrees(45, 30, 15);
+$angle = Angle::fromDMS(45, 30, 15);
 echo $angle->format('deg', 4); // 45.5042deg
 ```
 
@@ -590,7 +538,7 @@ Options for $smallestUnit:
 
 **Examples:**
 ```php
-$angle = Angle::fromDegrees(12.5);
+$angle = new Angle(12.5, 'deg');
 
 // DMS formats
 echo $angle->formatDMS(Angle::UNIT_DEGREE, 1);     // 12.5°
@@ -598,11 +546,11 @@ echo $angle->formatDMS(Angle::UNIT_ARCMINUTE, 0);  // 12° 30′
 echo $angle->formatDMS(Angle::UNIT_ARCSECOND, 2);  // 12° 30′ 0.00″
 
 // Complex angle
-$angle = Angle::fromDegrees(45, 30, 15);
+$angle = Angle::fromDMS(45, 30, 15);
 echo $angle->formatDMS(decimals: 1); // 45° 30′ 15.0″
 
 // Negative angles
-$angle = Angle::fromDegrees(-30, -15, -45);
+$angle = Angle::fromDMS(-30, -15, -45);
 echo $angle->formatDMS(); // -30° 15′ 45″
 ```
 
@@ -611,10 +559,10 @@ echo $angle->formatDMS(); // -30° 15′ 45″
 When rounding with `$decimals`, the formatter handles carry correctly:
 
 ```php
-$angle = Angle::fromDegrees(29, 59, 59.9999);
+$angle = Angle::fromDMS(29, 59, 59.9999);
 echo $angle->formatDMS(decimals: 3); // 30° 0′ 0.000″ (carried to next degree)
 
-$angle = Angle::fromDegrees(29, 59.9999);
+$angle = Angle::fromDMS(29, 59.9999);
 echo $angle->formatDMS(Angle::UNIT_ARCMINUTE, 3); // 30° 0.000′ (carried to next degree)
 ```
 
@@ -628,7 +576,7 @@ Convert to string in CSS notation using radians as the unit, with maximum precis
 
 **Example:**
 ```php
-$angle = Angle::fromDegrees(45);
+$angle = new Angle(45, 'deg');
 echo $angle; // 0.78539816339745rad
 echo (string)$angle; // 0.78539816339745rad
 ```
@@ -745,10 +693,10 @@ $wrapped = Angle::wrapTurns(-0.25, false); // 0.75 (negative wraps to positive)
 
 ```php
 // Create angle in various units
-$rad = Angle::fromRadians(M_PI / 2);
-$deg = Angle::fromDegrees(90);
-$grad = Angle::fromGradians(100);
-$turn = Angle::fromTurns(0.25);
+$rad = new Angle(M_PI / 2);
+$deg = new Angle(90, 'deg');
+$grad = new Angle(100, 'grad');
+$turn = new Angle(0.25, 'turn');
 
 // All represent the same angle (90°)
 var_dump($rad->equals($deg)); // true
@@ -763,7 +711,7 @@ var_dump($grad->equals($turn)); // true
 $latitude = Angle::fromDMS(40, 46, 11.5);  // New York City
 
 // Convert to different representations
-echo $latitude->toDegrees();  // 40.769861111111
+echo $latitude->to('deg');  // 40.769861111111
 
 // Get as DMS array
 [$d, $m, $s] = $latitude->toDMS();
@@ -777,19 +725,19 @@ echo $latitude->formatDMS(decimals: 1);  // "40° 46′ 11.5″"
 
 ```php
 // Calculate the sum of two angles
-$bearing1 = Angle::fromDegrees(45);
-$adjustment = Angle::fromDegrees(30);
+$bearing1 = new Angle(45, 'deg');
+$adjustment = new Angle(30, 'deg');
 $newBearing = $bearing1->add($adjustment);
 echo $newBearing->format('deg', 0);    // "75deg"
 
 // Scale an angle
-$angle = Angle::fromDegrees(30);
+$angle = new Angle(30, 'deg');
 $tripled = $angle->mul(3);
 echo $tripled->format('deg', 0);       // "90deg"
 
 // Calculate average angle
-$a1 = Angle::fromDegrees(30);
-$a2 = Angle::fromDegrees(60);
+$a1 = new Angle(30, 'deg');
+$a2 = new Angle(60, 'deg');
 $avg = $a1->add($a2)->div(2);
 echo $avg->format('deg', 0);           // "45deg"
 ```
@@ -798,12 +746,12 @@ echo $avg->format('deg', 0);           // "45deg"
 
 ```php
 // Normalize angle to [0, 360) range
-$angle = Angle::fromDegrees(450);
+$angle = new Angle(450, 'deg');
 $wrapped = $angle->wrap(false);
 echo $wrapped->format('deg', 0);       // "90deg"
 
 // Normalize to (-180, 180] range
-$angle = Angle::fromDegrees(270);
+$angle = new Angle(270, 'deg');
 $wrapped = $angle->wrap();
 echo $wrapped->format('deg', 0);       // "-90deg"
 ```
@@ -826,12 +774,12 @@ $angles = [
 ```php
 // Calculate height of a building
 $distance = 100; // meters
-$angle = Angle::fromDegrees(30);
+$angle = new Angle(30, 'deg');
 $height = $distance * $angle->tan();
 echo round($height, 2); // 57.74 meters
 
 // Navigate using bearings
-$bearing = Angle::fromDegrees(45);
+$bearing = new Angle(45, 'deg');
 $distance = 100;
 $eastward = $distance * $bearing->sin();
 $northward = $distance * $bearing->cos();
