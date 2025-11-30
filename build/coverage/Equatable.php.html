@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <title>Code Coverage for C:\Users\shaun\Projects\PHP\Galaxon\Core\src\Equatable.php</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="_css/bootstrap.min.css?v=12.4.0" rel="stylesheet" type="text/css">
-  <link href="_css/octicons.css?v=12.4.0" rel="stylesheet" type="text/css">
-  <link href="_css/style.css?v=12.4.0" rel="stylesheet" type="text/css">
+  <link href="_css/bootstrap.min.css?v=12.5.0" rel="stylesheet" type="text/css">
+  <link href="_css/octicons.css?v=12.5.0" rel="stylesheet" type="text/css">
+  <link href="_css/style.css?v=12.5.0" rel="stylesheet" type="text/css">
   <link href="_css/custom.css" rel="stylesheet" type="text/css">
  </head>
  <body>
@@ -67,16 +67,35 @@
     <tr class=" d-flex"><td  class="col-1 text-end"><a id="4" href="#4">4</a></td><td class="col-11 codeLine"></td></tr>
     <tr class=" d-flex"><td  class="col-1 text-end"><a id="5" href="#5">5</a></td><td class="col-11 codeLine"><span class="keyword">namespace</span><span class="default">&nbsp;</span><span class="default">Galaxon\Core</span><span class="keyword">;</span></td></tr>
     <tr class=" d-flex"><td  class="col-1 text-end"><a id="6" href="#6">6</a></td><td class="col-11 codeLine"></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-end"><a id="7" href="#7">7</a></td><td class="col-11 codeLine"><span class="keyword">interface</span><span class="default">&nbsp;</span><span class="default">Equatable</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-end"><a id="8" href="#8">8</a></td><td class="col-11 codeLine"><span class="keyword">{</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-end"><a id="9" href="#9">9</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="comment">/**</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-end"><a id="10" href="#10">10</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;Compare&nbsp;two&nbsp;objects&nbsp;and&nbsp;return&nbsp;true&nbsp;if&nbsp;they&nbsp;are&nbsp;equal.</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-end"><a id="11" href="#11">11</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-end"><a id="12" href="#12">12</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;@param&nbsp;mixed&nbsp;$other&nbsp;The&nbsp;value&nbsp;to&nbsp;compare&nbsp;with.</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-end"><a id="13" href="#13">13</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;@return&nbsp;bool&nbsp;True&nbsp;if&nbsp;the&nbsp;two&nbsp;values&nbsp;are&nbsp;equal,&nbsp;false&nbsp;otherwise.</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-end"><a id="14" href="#14">14</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-end"><a id="15" href="#15">15</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">public</span><span class="default">&nbsp;</span><span class="keyword">function</span><span class="default">&nbsp;</span><span class="default">equals</span><span class="keyword">(</span><span class="default">mixed</span><span class="default">&nbsp;</span><span class="default">$other</span><span class="keyword">)</span><span class="keyword">:</span><span class="default">&nbsp;</span><span class="default">bool</span><span class="keyword">;</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-end"><a id="16" href="#16">16</a></td><td class="col-11 codeLine"><span class="keyword">}</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="7" href="#7">7</a></td><td class="col-11 codeLine"><span class="comment">/**</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="8" href="#8">8</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;*&nbsp;Interface&nbsp;for&nbsp;objects&nbsp;that&nbsp;can&nbsp;be&nbsp;compared&nbsp;for&nbsp;equality.</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="9" href="#9">9</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;*</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="10" href="#10">10</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;*&nbsp;This&nbsp;interface&nbsp;defines&nbsp;a&nbsp;contract&nbsp;for&nbsp;objects&nbsp;that&nbsp;support&nbsp;equality&nbsp;comparison.&nbsp;Implementations&nbsp;should&nbsp;check&nbsp;for&nbsp;type</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="11" href="#11">11</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;*&nbsp;compatibility&nbsp;and&nbsp;return&nbsp;false&nbsp;for&nbsp;incompatible&nbsp;types&nbsp;rather&nbsp;than&nbsp;throwing&nbsp;exceptions.</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="12" href="#12">12</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;*</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="13" href="#13">13</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;*&nbsp;For&nbsp;types&nbsp;with&nbsp;a&nbsp;natural&nbsp;ordering,&nbsp;consider&nbsp;using&nbsp;the&nbsp;Comparable&nbsp;trait&nbsp;instead,&nbsp;which&nbsp;provides&nbsp;equals()&nbsp;along&nbsp;with</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="14" href="#14">14</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;*&nbsp;ordering&nbsp;methods&nbsp;like&nbsp;isLessThan(),&nbsp;isGreaterThan(),&nbsp;etc.</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="15" href="#15">15</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;*</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="16" href="#16">16</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;*&nbsp;@see&nbsp;Comparable&nbsp;For&nbsp;types&nbsp;with&nbsp;natural&nbsp;ordering.</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="17" href="#17">17</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;*/</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="18" href="#18">18</a></td><td class="col-11 codeLine"><span class="keyword">interface</span><span class="default">&nbsp;</span><span class="default">Equatable</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="19" href="#19">19</a></td><td class="col-11 codeLine"><span class="keyword">{</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="20" href="#20">20</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="comment">/**</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="21" href="#21">21</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;Compare&nbsp;this&nbsp;object&nbsp;with&nbsp;another&nbsp;value&nbsp;and&nbsp;determine&nbsp;if&nbsp;they&nbsp;are&nbsp;equal.</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="22" href="#22">22</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="23" href="#23">23</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;Implementations&nbsp;should:</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="24" href="#24">24</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;-&nbsp;Return&nbsp;false&nbsp;for&nbsp;incompatible&nbsp;types&nbsp;(do&nbsp;not&nbsp;throw&nbsp;exceptions)</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="25" href="#25">25</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;-&nbsp;Handle&nbsp;type&nbsp;checking&nbsp;gracefully</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="26" href="#26">26</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;-&nbsp;Consider&nbsp;using&nbsp;epsilon-based&nbsp;comparison&nbsp;for&nbsp;floating-point&nbsp;values</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="27" href="#27">27</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;-&nbsp;Be&nbsp;reflexive&nbsp;(x.equals(x)&nbsp;is&nbsp;always&nbsp;true)</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="28" href="#28">28</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;-&nbsp;Be&nbsp;symmetric&nbsp;(if&nbsp;x.equals(y)&nbsp;then&nbsp;y.equals(x))</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="29" href="#29">29</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;-&nbsp;Be&nbsp;transitive&nbsp;(if&nbsp;x.equals(y)&nbsp;and&nbsp;y.equals(z)&nbsp;then&nbsp;x.equals(z))</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="30" href="#30">30</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="31" href="#31">31</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;@param&nbsp;mixed&nbsp;$other&nbsp;The&nbsp;value&nbsp;to&nbsp;compare&nbsp;with&nbsp;(can&nbsp;be&nbsp;any&nbsp;type).</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="32" href="#32">32</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;@return&nbsp;bool&nbsp;True&nbsp;if&nbsp;the&nbsp;values&nbsp;are&nbsp;equal,&nbsp;false&nbsp;otherwise.</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="33" href="#33">33</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="34" href="#34">34</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">public</span><span class="default">&nbsp;</span><span class="keyword">function</span><span class="default">&nbsp;</span><span class="default">equals</span><span class="keyword">(</span><span class="default">mixed</span><span class="default">&nbsp;</span><span class="default">$other</span><span class="keyword">)</span><span class="keyword">:</span><span class="default">&nbsp;</span><span class="default">bool</span><span class="keyword">;</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-end"><a id="35" href="#35">35</a></td><td class="col-11 codeLine"><span class="keyword">}</span></td></tr>
 
 </tbody>
 </table>
@@ -87,15 +106,15 @@
     <h4>Legend</h4>
     <p><span class="legend covered-by-small-tests">Covered by small (and larger) tests</span><span class="legend covered-by-medium-tests">Covered by medium (and large) tests</span><span class="legend covered-by-large-tests">Covered by large tests (and tests of unknown size)</span><span class="legend not-covered">Not covered</span><span class="legend not-coverable">Not coverable</span></p>
     <p>
-     <small>Generated by <a href="https://github.com/sebastianbergmann/php-code-coverage" target="_top">php-code-coverage 12.4.0</a> using <a href="https://www.php.net/" target="_top">PHP 8.4.10</a> and <a href="https://phpunit.de/">PHPUnit 12.4.4</a> at Sun Nov 23 2:13:29 UTC 2025.</small>
+     <small>Generated by <a href="https://github.com/sebastianbergmann/php-code-coverage" target="_top">php-code-coverage 12.5.0</a> using <a href="https://www.php.net/" target="_top">PHP 8.4.10</a> and <a href="https://phpunit.de/">PHPUnit 12.4.4</a> at Sun Nov 30 23:48:47 UTC 2025.</small>
     </p>
     <a title="Back to the top" id="toplink" href="#">
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="16" viewBox="0 0 12 16"><path fill-rule="evenodd" d="M12 11L6 5l-6 6h12z"/></svg>
     </a>
    </footer>
   </div>
-  <script src="_js/jquery.min.js?v=12.4.0" type="text/javascript"></script>
-  <script src="_js/bootstrap.bundle.min.js?v=12.4.0" type="text/javascript"></script>
-  <script src="_js/file.js?v=12.4.0" type="text/javascript"></script>
+  <script src="_js/jquery.min.js?v=12.5.0" type="text/javascript"></script>
+  <script src="_js/bootstrap.bundle.min.js?v=12.5.0" type="text/javascript"></script>
+  <script src="_js/file.js?v=12.5.0" type="text/javascript"></script>
  </body>
 </html>

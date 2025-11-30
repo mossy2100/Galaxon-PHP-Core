@@ -52,10 +52,6 @@ Type checking and inspection utilities with methods for identifying numbers, uns
 
 Advanced value-to-string conversion with pretty printing, supporting all PHP types with improved readability.
 
-### [Angle](docs/Angle.md)
-
-Immutable angle class with support for multiple units (radians, degrees, gradians, turns, DMS), trigonometry, and arithmetic operations.
-
 ### [Equatable](docs/Equatable.md)
 
 Interface for objects that can be compared for equality. Provides a single `equals()` method for type-safe equality checks.

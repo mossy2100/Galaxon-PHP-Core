@@ -98,7 +98,7 @@ class Temperature implements Equatable
             return false;
         }
 
-        return abs($this->celsius - $other->celsius) < self::EPSILON;
+        return abs($this->celsius - $other->celsius) <= self::EPSILON;
     }
 }
 
@@ -151,13 +151,13 @@ For types that have a natural ordering, use the `Comparable` trait instead. The 
 
 See [Comparable.md](Comparable.md) for details.
 
-## Core Classes Implementing Equatable
+## Classes Implementing Equatable
 
-- `Angle` - Angular measurements (uses epsilon-based comparison)
-- `Complex` - Complex numbers (uses epsilon-based comparison, customizable)
-- `Rational` - Rational numbers (uses exact comparison)
-- `Collection`, `Dictionary`, `Set`, `Sequence` - Collection types (structural equality)
-- `Color` - Color values
+- `Galaxon\Units\Measurement` and derived types (uses epsilon-based comparison)
+- `Galaxon\Math\Complex` - Complex numbers (uses epsilon-based comparison, customizable)
+- `Galaxon\Math\Rational` - Rational numbers (uses exact comparison)
+- `Galaxon\Collections\Collection` and derived types `Dictionary`, `Set`, and `Sequence` (structural equality)
+- `Galaxon\Color\Color` - Color values (uses exact comparison)
 
 ## Best Practices
 

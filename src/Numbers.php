@@ -21,6 +21,61 @@ final class Numbers
     }
 
     /**
+     * Check if two numbers are equal.
+     *
+     * The purpose of this function is to:
+     * - Avoid numeric strings accidentally being converted to numbers and compared as such.
+     * - Avoid IDE warnings about using == vs === or != vs !==.
+     *
+     * The string problem is solved by `declare(strict_types=1);` at the top of this file.
+     * The comparison problem is solved by using === and casting the operands to float when necessary.
+     *
+     * @param int|float $a The first number.
+     * @param int|float $b The second number.
+     * @return bool True if the two numbers are equal, false otherwise.
+     */
+    public static function equal(int|float $a, int|float $b): bool
+    {
+        // If they're both ints, no need to cast.
+        if (is_int($a) && is_int($b)) {
+            return $a === $b;
+        }
+
+        // Compare as floats.
+        return (float)$a === (float)$b;
+    }
+
+    /**
+     * Check if two numbers are approximately equal within a given epsilon.
+     *
+     * If both are integers, they are compared as exactly equal.
+     * If one or both is a float, they are compared as within epsilon of each other.
+     *
+     * @param int|float $a The first number.
+     * @param int|float $b The second number.
+     * @param float $epsilon The maximum allowed difference (absolute or relative depending on $relative).
+     * @param bool $relative If true, use relative comparison; if false, use absolute comparison.
+     * @return bool True if the two numbers are approximately equal, false otherwise.
+     * @throws ValueError If epsilon is negative.
+     *
+     * @see Floats::approxEqual()
+     */
+    public static function approxEqual(
+        int|float $a,
+        int|float $b,
+        float $epsilon = Floats::EPSILON,
+        bool $relative = true
+    ): bool {
+        // If they're both ints, check for exact equality.
+        if (is_int($a) && is_int($b)) {
+            return $a === $b;
+        }
+
+        // Compare as floats.
+        return Floats::approxEqual((float)$a, (float)$b, $epsilon, $relative);
+    }
+
+    /**
      * Copy the sign of one number to another.
      *
      * @param int|float $num The number whose magnitude to use.

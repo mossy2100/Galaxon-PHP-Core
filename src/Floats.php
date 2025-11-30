@@ -13,6 +13,27 @@ use ValueError;
  */
 final class Floats
 {
+    // region Constants
+
+    /**
+     * The default epsilon used by approxEqual().
+     *
+     * @var float
+     */
+    public const EPSILON = 1e-10;
+
+    /**
+     * τ (tau) = 2π.
+     * One full turn in radians.
+     *
+     * @var float
+     */
+    public const TAU = 2 * M_PI;
+
+    // endregion
+
+    // region Constructor
+
     /**
      * Private constructor to prevent instantiation.
      *
@@ -22,16 +43,20 @@ final class Floats
     {
     }
 
+    // endregion
+
+    // region Comparison methods
+
     /**
-     * Check if two floats are approximately equal within a given epsilon.
+     * Check if two floats are approximately equal using an absolute epsilon.
      *
      * @param float $f1 The first float.
      * @param float $f2 The second float.
-     * @param float $epsilon The maximum allowed difference between the two floats.
+     * @param float $epsilon The maximum allowed absolute difference between the two floats.
      * @return bool True if the two floats are approximately equal, false otherwise.
      * @throws ValueError If epsilon is negative.
      */
-    public static function approxEqual(float $f1, float $f2, float $epsilon = 1e-10): bool
+    public static function approxEqualAbsolute(float $f1, float $f2, float $epsilon = self::EPSILON): bool
     {
         // Make sure epsilon is non-negative.
         if ($epsilon < 0) {
@@ -41,6 +66,183 @@ final class Floats
         // Compare absolute differences.
         return abs($f1 - $f2) <= $epsilon;
     }
+
+    /**
+     * Check if two floats are approximately equal using a relative epsilon.
+     *
+     * This method scales the comparison based on the magnitude of the values being compared,
+     * making it more appropriate for comparing values across different scales.
+     *
+     * @param float $f1 The first float.
+     * @param float $f2 The second float.
+     * @param float $epsilon The maximum allowed relative difference (as a fraction).
+     * @return bool True if the two floats are approximately equal, false otherwise.
+     * @throws ValueError If epsilon is negative.
+     */
+    public static function approxEqualRelative(float $f1, float $f2, float $epsilon = self::EPSILON): bool
+    {
+        // Make sure epsilon is non-negative.
+        if ($epsilon < 0) {
+            throw new ValueError('Epsilon must be non-negative.');
+        }
+
+        $diff = abs($f1 - $f2);
+        $maxAbs = max(abs($f1), abs($f2));
+
+        // Handle zero case with absolute comparison using PHP's machine epsilon.
+        if ($maxAbs < PHP_FLOAT_EPSILON) {
+            return $diff < PHP_FLOAT_EPSILON;
+        }
+
+        return $diff <= $epsilon * $maxAbs;
+    }
+
+    /**
+     * Check if two floats are approximately equal.
+     *
+     * @param float $f1 The first float.
+     * @param float $f2 The second float.
+     * @param float $epsilon The maximum allowed difference (absolute or relative depending on $relative).
+     * @param bool $relative If true, use relative comparison; if false, use absolute comparison.
+     * @return bool True if the two floats are approximately equal, false otherwise.
+     * @throws ValueError If epsilon is negative.
+     */
+    public static function approxEqual(
+        float $f1,
+        float $f2,
+        float $epsilon = self::EPSILON,
+        bool $relative = true
+    ): bool {
+        if ($relative) {
+            return self::approxEqualRelative($f1, $f2, $epsilon);
+        }
+        return self::approxEqualAbsolute($f1, $f2, $epsilon);
+    }
+
+    /**
+     * Compare two floats. They'll be considered equal if they're within epsilon of each other.
+     *
+     * @param float $f1 The first float.
+     * @param float $f2 The second float.
+     * @param float $epsilon The maximum allowed difference (absolute or relative depending on $relative).
+     * @param bool $relative If true, use relative comparison; if false, use absolute comparison.
+     * @return int -1 if f1 < f2, 0 if f1 == f2, 1 if f1 > f2.
+     * @throws ValueError If epsilon is negative.
+     */
+    public static function compare(
+        float $f1,
+        float $f2,
+        float $epsilon = self::EPSILON,
+        bool $relative = true
+    ): int {
+        // Check if the floats are approximately equal.
+        if (self::approxEqual($f1, $f2, $epsilon, $relative)) {
+            return 0;
+        }
+
+        // Use default comparison for less/greater than.
+        return Numbers::sign($f1 <=> $f2);
+    }
+
+    // endregion
+
+    // region Transformation methods
+
+    /**
+     * Normalize negative zero to positive zero. This can be used to avoid surprising results from certain operations.
+     *
+     * @param float $value The floating-point number to normalize.
+     * @return float The normalized floating-point number.
+     */
+    public static function normalizeZero(float $value): float
+    {
+        return self::isNegativeZero($value) ? 0.0 : $value;
+    }
+
+    /**
+     * Wrap a value to a specified range starting at 0.
+     *
+     * If $signed is true, the range is (-$range/2, $range/2], with the minimum excluded and maximum included.
+     * If $signed is false, the range is [0, $range), with the minimum included and maximum excluded.
+     *
+     * @param float $value The value to wrap.
+     * @param float $range The width of the range (must be positive).
+     * @param bool $signed If true, wrap to signed range; if false, wrap to unsigned range.
+     * @return float The wrapped value.
+     *
+     * @example
+     * Floats::wrap(270, 360, false) // returns 270.0 (unsigned range [0, 360))
+     * Floats::wrap(270, 360, true)  // returns -90.0 (signed range (-180, 180])
+     * Floats::wrap(M_PI, Floats::TAU, true) // returns M_PI (signed range (-π, π])
+     */
+    public static function wrap(float $value, float $range, bool $signed = true): float
+    {
+        // Reduce using fmod to avoid large magnitudes.
+        // $r will be in the range [0, $range) if $value is positive, or (-$range, 0] if negative.
+        $r = fmod($value, $range);
+
+        // Adjust to fit within range bounds.
+        if ($signed) {
+            // Signed range is (-$range/2, $range/2]
+            $half = $range / 2.0;
+            if ($r <= -$half) {
+                $r += $range;
+            } elseif ($r > $half) {
+                $r -= $range;
+            }
+        } else {
+            // Unsigned range is [0, $range)
+            if ($r < 0.0) {
+                $r += $range;
+            }
+        }
+
+        // Canonicalize -0.0 to 0.0.
+        return self::normalizeZero($r);
+    }
+
+    /**
+     * Convert a float to a hexadecimal string.
+     *
+     * The advantage of this method is that every possible float value will produce a unique 16-character hex string,
+     * including special values.
+     * Whereas, with a cast to string, or formatting with sprintf() or number_format(), the same string could be
+     * produced for different values.
+     *
+     * @param float $value The float to convert.
+     * @return string The hexadecimal string representation of the float.
+     */
+    public static function toHex(float $value): string
+    {
+        return bin2hex(pack('d', $value));
+    }
+
+    /**
+     * Try to convert a float to an integer losslessly.
+     *
+     * @param float $f The float to convert to an integer.
+     * @return null|int The equivalent integer, or null if conversion would lose precision.
+     */
+    public static function tryConvertToInt(float $f): ?int
+    {
+        // Check the provided value is finite.
+        if (!is_finite($f)) {
+            return null;
+        }
+
+        // Check if the argument is a float that can be converted losslessly to an integer.
+        $i = (int)$f;
+        if ($f === (float)$i) {
+            return $i;
+        }
+
+        // Argument is a float that cannot be losslessly converted to an integer.
+        return null;
+    }
+
+    // endregion
+
+    // region Inspection methods
 
     /**
      * Determines if a floating-point number is negative zero (-0.0).
@@ -74,17 +276,6 @@ final class Floats
     {
         // Using fdiv() to avoid a division by zero error.
         return $value === 0.0 && fdiv(1.0, $value) === INF;
-    }
-
-    /**
-     * Normalize negative zero to positive zero. This can be used to avoid surprising results from certain operations.
-     *
-     * @param float $value The floating-point number to normalize.
-     * @return float The normalized floating-point number.
-     */
-    public static function normalizeZero(float $value): float
-    {
-        return self::isNegativeZero($value) ? 0.0 : $value;
     }
 
     /**
@@ -129,44 +320,9 @@ final class Floats
         return !is_finite($value) || self::isNegativeZero($value);
     }
 
-    /**
-     * Convert a float to a hexadecimal string.
-     *
-     * The advantage of this method is that every possible float value will produce a unique 16-character hex string,
-     * including special values.
-     * Whereas, with a cast to string, or formatting with sprintf() or number_format(), the same string could be
-     * produced for different values.
-     *
-     * @param float $value The float to convert.
-     * @return string The hexadecimal string representation of the float.
-     */
-    public static function toHex(float $value): string
-    {
-        return bin2hex(pack('d', $value));
-    }
+    // endregion
 
-    /**
-     * Try to convert a float to an integer losslessly.
-     *
-     * @param float $f The float to convert to an integer.
-     * @return null|int The equivalent integer, or null if conversion would lose precision.
-     */
-    public static function tryConvertToInt(float $f): ?int
-    {
-        // Check the provided value is finite.
-        if (!is_finite($f)) {
-            return null;
-        }
-
-        // Check if the argument is a float that can be converted losslessly to an integer.
-        $i = (int)$f;
-        if ($f === (float)$i) {
-            return $i;
-        }
-
-        // Argument is a float that cannot be losslessly converted to an integer.
-        return null;
-    }
+    // region Adjacent float methods
 
     /**
      * Returns the next floating-point number after the given one.
@@ -227,6 +383,10 @@ final class Floats
         $bits += $bits >= 0 ? -1 : 1;
         return self::bitsToFloat($bits);
     }
+
+    // endregion
+
+    // region Bit manipulation methods
 
     /**
      * Check if the current system is a 64-bit system.
@@ -341,6 +501,10 @@ final class Floats
         // Convert bits to float.
         return self::bitsToFloat($bits);
     }
+
+    // endregion
+
+    // region Random methods
 
     /**
      * Generate a random finite float.
@@ -472,4 +636,6 @@ final class Floats
         // Uniform float in [min, max].
         return $min + (mt_rand() / mt_getrandmax()) * ($max - $min);
     }
+
+    // endregion
 }

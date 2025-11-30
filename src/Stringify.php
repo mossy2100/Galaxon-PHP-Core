@@ -94,8 +94,8 @@ final class Stringify
             return '-∞';
         }
 
-        // Convert the float to a string.
-        $s = (string)$value;
+        // Convert the float to a string, showing maximum useful precision.
+        $s = sprintf('%.16H', $value);
         // If the string representation of the float value has no decimal point or exponent (i.e. nothing to distinguish
         // it from an integer), append a decimal point.
         if (!preg_match('/[.eE]/', $s)) {

@@ -46,29 +46,133 @@ Two methods provide direct access to IEEE-754 double-precision components:
 - `disassemble()` extracts sign, exponent, and fraction from a float
 - `assemble()` constructs a float from sign, exponent, and fraction components
 
+## Constants
+
+### TAU
+
+```php
+public const TAU = 2 * M_PI;
+```
+
+The mathematical constant τ (tau), equal to 2π (approximately 6.283185307179586). Represents one full turn in radians (360 degrees). This constant is useful for angular calculations, particularly when working with full rotations.
+
+**Value:** `6.283185307179586` (2 × π)
+
+**Examples:**
+
+```php
+// Convert degrees to radians (360° = τ)
+$radians = ($degrees / 360.0) * Floats::TAU;
+
+// Convert radians to degrees
+$degrees = ($radians / Floats::TAU) * 360.0;
+
+// Full rotation
+$angle = Floats::TAU;  // 360° in radians
+
+// Half rotation
+$angle = Floats::TAU / 2;  // 180° (same as M_PI)
+
+// Quarter rotation
+$angle = Floats::TAU / 4;  // 90° (same as M_PI / 2)
+```
+
+**Use Cases:**
+- Angular calculations and conversions
+- Trigonometric functions
+- Wrapping angles to [0, 2π) range
+- Circle and rotation calculations
+
 ## Methods
+
+### wrap()
+
+```php
+public static function wrap(float $value, float $range, bool $signed = true): float
+```
+
+Wrap a floating-point value to fit within a specified range using modular arithmetic. This is useful for normalizing angles, coordinates, or other cyclic values.
+
+**Parameters:**
+- `$value` (float) - The value to wrap
+- `$range` (float) - The range width (must be positive)
+- `$signed` (bool) - If `true` (default), wrap to [-range/2, range/2]; if `false`, wrap to [0, range)
+
+**Returns:**
+- `float` - The wrapped value within the specified range
+
+**Examples:**
+
+Signed wrapping (centered on zero):
+```php
+// Wrap angle in radians to [-π, π]
+Floats::wrap(7.0, Floats::TAU);  // ~0.7168 (7 - 2π)
+Floats::wrap(-7.0, Floats::TAU);  // ~-0.7168
+
+// Wrap degrees to [-180, 180]
+Floats::wrap(270.0, 360.0);  // -90.0
+Floats::wrap(-270.0, 360.0);  // 90.0
+
+// Values already in range are unchanged
+Floats::wrap(1.5, Floats::TAU);  // 1.5
+Floats::wrap(-2.0, Floats::TAU);  // -2.0
+```
+
+Unsigned wrapping (starting from zero):
+```php
+// Wrap angle in radians to [0, 2π)
+Floats::wrap(7.0, Floats::TAU, false);  // ~0.7168
+Floats::wrap(-1.0, Floats::TAU, false);  // ~5.2832 (2π - 1)
+
+// Wrap degrees to [0, 360)
+Floats::wrap(450.0, 360.0, false);  // 90.0
+Floats::wrap(-90.0, 360.0, false);  // 270.0
+
+// Values already in range are unchanged
+Floats::wrap(180.0, 360.0, false);  // 180.0
+```
+
+**Behavior:**
+- Uses `fmod()` internally for modular arithmetic
+- Normalizes any result of `-0.0` to `+0.0`
+- Handles negative values correctly in both modes
+- **Signed mode**: Result is in range (-range/2, range/2]
+- **Unsigned mode**: Result is in range [0, range)
+
+**Use Cases:**
+- Normalizing angles to standard ranges
+- Wrapping coordinates in toroidal/cylindrical spaces
+- Implementing periodic boundary conditions
+- Game development (wrapping player positions)
 
 ### approxEqual()
 
 ```php
-public static function approxEqual(float $f1, float $f2, float $epsilon = 1e-10): bool
+public static function approxEqual(
+    float $f1,
+    float $f2,
+    float $epsilon = 1e-10,
+    bool $relative = true
+): bool
 ```
 
-Check if two floats are approximately equal within a given epsilon (tolerance). This is the recommended way to compare floating-point numbers for equality, as direct comparison (`===`) can fail due to precision issues.
+Check if two floats are approximately equal within a given epsilon (tolerance). This is the recommended way to compare floating-point numbers for equality, as direct comparison (`===`) can fail due to precision issues. By default, uses relative comparison which scales with magnitude.
 
 **Parameters:**
 - `$f1` (float) - The first float
 - `$f2` (float) - The second float
-- `$epsilon` (float) - The maximum allowed absolute difference between the two floats (default: `1e-10`)
+- `$epsilon` (float) - The tolerance for comparison (default: `1e-10`)
+- `$relative` (bool) - If `true` (default), use relative comparison; if `false`, use absolute comparison
 
 **Returns:**
-- `bool` - Returns `true` if the absolute difference between the two floats is less than or equal to epsilon, `false` otherwise
+- `bool` - Returns `true` if the floats are approximately equal, `false` otherwise
 
 **Throws:**
 - `ValueError` - If epsilon is negative
 
 **Examples:**
 
+Basic usage (default relative comparison):
 ```php
 // Direct float comparison can fail due to precision issues
 0.1 + 0.2 === 0.3;  // false (!)
@@ -79,40 +183,257 @@ Floats::approxEqual(0.1 + 0.2, 0.3);  // true
 // Identical values
 Floats::approxEqual(1.0, 1.0);  // true
 
-// Values within default epsilon (1e-10)
-Floats::approxEqual(1.0, 1.0 + 1e-11);  // true
-Floats::approxEqual(1.0, 1.0 + 1e-9);   // false
+// Relative comparison scales with magnitude
+Floats::approxEqual(1000000.0, 1000000.1, 1e-6);  // true (difference 0.1 is within 1e-6 * 1000000)
+Floats::approxEqual(1.0, 1.1, 1e-6);  // false (difference 0.1 exceeds 1e-6 * 1)
+```
+
+With absolute comparison:
+```php
+// Absolute comparison uses fixed epsilon
+Floats::approxEqual(1.0, 1.0 + 1e-11, 1e-10, false);  // true
+Floats::approxEqual(1.0, 1.0 + 1e-9, 1e-10, false);   // false
 
 // Custom epsilon for looser comparison
-Floats::approxEqual(1.0, 1.1, 0.2);  // true
-Floats::approxEqual(1.0, 1.3, 0.2);  // false
+Floats::approxEqual(1.0, 1.1, 0.2, false);  // true
+Floats::approxEqual(1.0, 1.3, 0.2, false);  // false
+```
 
-// Zero epsilon for exact comparison
-Floats::approxEqual(1.0, 1.0, 0.0);  // true
-Floats::approxEqual(1.0, 1.0 + PHP_FLOAT_EPSILON, 0.0);  // false
-
+Special values:
+```php
 // Handles positive and negative zero
 Floats::approxEqual(0.0, -0.0);  // true
 ```
 
 **Behavior:**
-- Uses **absolute difference**: `abs($f1 - $f2) <= $epsilon`
+- **Relative mode** (default): Uses `approxEqualRelative()`, scales epsilon with magnitude
+- **Absolute mode**: Uses `approxEqualAbsolute()`, fixed epsilon threshold
 - **Symmetric**: `approxEqual($a, $b)` equals `approxEqual($b, $a)`
-- Positive and negative zero are considered equal (their difference is 0)
+
+**Choosing Comparison Mode:**
+- **Relative** (default): Best for comparing values of varying magnitudes (1e-10 to 1e10)
+- **Absolute**: Best for values near zero or when tolerance should be fixed
 
 **Choosing Epsilon:**
 - `1e-10` (default): Good for most general-purpose comparisons
 - `1e-6` to `1e-9`: Suitable for results of moderate computation
 - `1e-14` to `1e-15`: Near machine precision for doubles
-- Domain-specific: Use tolerances appropriate to your application (e.g., 0.01 for percentages)
+- Domain-specific: Use tolerances appropriate to your application
 
 **Use Cases:**
 - Comparing results of floating-point calculations
 - Unit testing numerical code
 - Checking convergence in iterative algorithms
-- Color space conversions (RGB ↔ HSL)
+- Scientific and engineering calculations
 
-**Note:** This method uses absolute difference, which works well when values are near zero or of similar magnitude. For comparing values of very different magnitudes, consider relative comparison methods.
+**See Also:**
+- `approxEqualAbsolute()` - Explicit absolute comparison
+- `approxEqualRelative()` - Explicit relative comparison
+- `compare()` - Three-way comparison with approximate equality
+
+### approxEqualAbsolute()
+
+```php
+public static function approxEqualAbsolute(float $f1, float $f2, float $epsilon = 1e-10): bool
+```
+
+Check if two floats are approximately equal using absolute difference comparison. Returns `true` if the absolute difference between the values is less than or equal to epsilon.
+
+**Parameters:**
+- `$f1` (float) - The first float
+- `$f2` (float) - The second float
+- `$epsilon` (float) - The maximum allowed absolute difference (default: `1e-10`)
+
+**Returns:**
+- `bool` - Returns `true` if `abs($f1 - $f2) <= $epsilon`, `false` otherwise
+
+**Throws:**
+- `ValueError` - If epsilon is negative
+
+**Examples:**
+
+```php
+// Values within epsilon
+Floats::approxEqualAbsolute(1.0, 1.0 + 1e-11);  // true (diff 1e-11 < 1e-10)
+Floats::approxEqualAbsolute(1.0, 1.0 + 1e-9);   // false (diff 1e-9 > 1e-10)
+
+// Works well for small values
+Floats::approxEqualAbsolute(1e-15, 2e-15, 1e-14);  // true
+
+// But doesn't scale with magnitude
+Floats::approxEqualAbsolute(1e10, 1e10 + 1.0, 1e-10);  // false (1.0 > 1e-10)
+Floats::approxEqualAbsolute(1e10, 1e10 + 1.0, 10.0);   // true (1.0 < 10.0)
+
+// Zero epsilon for exact comparison
+Floats::approxEqualAbsolute(1.0, 1.0, 0.0);  // true
+Floats::approxEqualAbsolute(1.0, 1.0 + PHP_FLOAT_EPSILON, 0.0);  // false
+```
+
+**Behavior:**
+- Formula: `abs($f1 - $f2) <= $epsilon`
+- **Symmetric**: `approxEqualAbsolute($a, $b)` equals `approxEqualAbsolute($b, $a)`
+- Does not scale with magnitude
+- Positive and negative zero are considered equal
+
+**When to Use:**
+- Comparing values near zero
+- When tolerance should be absolute, not relative
+- When all values are of similar magnitude
+- Color components (0-255 range)
+
+**When NOT to Use:**
+- Comparing values of vastly different magnitudes
+- Scientific calculations with wide ranges (use `approxEqualRelative()` instead)
+
+**See Also:**
+- `approxEqual()` - Dispatcher with choice of absolute or relative
+- `approxEqualRelative()` - Relative comparison that scales with magnitude
+
+### approxEqualRelative()
+
+```php
+public static function approxEqualRelative(float $f1, float $f2, float $epsilon = 1e-10): bool
+```
+
+Check if two floats are approximately equal using relative difference comparison. The epsilon scales with the magnitude of the values, making this suitable for comparing numbers across different scales.
+
+**Parameters:**
+- `$f1` (float) - The first float
+- `$f2` (float) - The second float
+- `$epsilon` (float) - The relative tolerance (default: `1e-10`)
+
+**Returns:**
+- `bool` - Returns `true` if the relative difference is within epsilon, `false` otherwise
+
+**Throws:**
+- `ValueError` - If epsilon is negative
+
+**Examples:**
+
+```php
+// Scales with magnitude - same relative difference
+Floats::approxEqualRelative(1000000.0, 1000000.1, 1e-6);  // true
+Floats::approxEqualRelative(1.0, 1.0000001, 1e-6);  // true
+
+// Both have ~0.01% relative difference
+Floats::approxEqualRelative(10000.0, 10001.0, 1e-4);  // true (0.01% diff)
+Floats::approxEqualRelative(100.0, 100.01, 1e-4);     // true (0.01% diff)
+
+// Exceeds relative tolerance
+Floats::approxEqualRelative(1.0, 1.1, 1e-10);  // false (10% difference)
+
+// Handles small values near zero
+Floats::approxEqualRelative(1e-20, 2e-20, 1.0);  // true (100% tolerance)
+Floats::approxEqualRelative(1e-20, 2e-20, 0.5);  // false (exceeds 50%)
+```
+
+**Behavior:**
+- Formula: `abs($f1 - $f2) <= $epsilon * max(abs($f1), abs($f2))`
+- For very small values (both < PHP_FLOAT_EPSILON), uses absolute comparison
+- **Symmetric**: `approxEqualRelative($a, $b)` equals `approxEqualRelative($b, $a)`
+- Scales epsilon based on the larger magnitude
+
+**When to Use:**
+- Comparing values of different magnitudes (1e-10 to 1e10)
+- Scientific and engineering calculations
+- Financial calculations with varying amounts
+- Any domain where relative error is more meaningful than absolute error
+
+**When NOT to Use:**
+- Comparing values very close to zero (use `approxEqualAbsolute()` instead)
+- When absolute tolerance is more appropriate
+
+**Epsilon Interpretation:**
+- `1e-6`: 0.0001% relative tolerance (tight)
+- `1e-9`: 0.0000001% relative tolerance (very tight)
+- `1e-10` (default): 0.00000001% relative tolerance (extremely tight)
+
+**See Also:**
+- `approxEqual()` - Dispatcher with choice of absolute or relative
+- `approxEqualAbsolute()` - Absolute comparison without scaling
+
+### compare()
+
+```php
+public static function compare(
+    float $f1,
+    float $f2,
+    float $epsilon = 1e-10,
+    bool $relative = true
+): int
+```
+
+Three-way comparison of two floats with approximate equality support. Returns an integer indicating whether the first float is less than, equal to (within epsilon), or greater than the second float.
+
+**Parameters:**
+- `$f1` (float) - The first float
+- `$f2` (float) - The second float
+- `$epsilon` (float) - The tolerance for equality comparison (default: `1e-10`)
+- `$relative` (bool) - If `true` (default), use relative comparison; if `false`, use absolute comparison
+
+**Returns:**
+- `int` - Returns `-1` if `$f1 < $f2`, `0` if approximately equal, `1` if `$f1 > $f2`
+
+**Throws:**
+- `ValueError` - If epsilon is negative
+
+**Examples:**
+
+```php
+// Basic three-way comparison
+Floats::compare(1.0, 2.0);  // -1 (less than)
+Floats::compare(2.0, 1.0);  // 1 (greater than)
+Floats::compare(1.0, 1.0);  // 0 (equal)
+
+// Approximate equality with default epsilon
+Floats::compare(1.0, 1.0 + 1e-11);  // 0 (within tolerance)
+Floats::compare(1.0, 1.1);          // -1 (exceeds tolerance)
+
+// Relative comparison (default) - scales with magnitude
+Floats::compare(1000000.0, 1000000.1, 1e-6);  // 0 (within relative tolerance)
+Floats::compare(1.0, 1.1, 1e-6);              // -1 (exceeds relative tolerance)
+
+// Absolute comparison
+Floats::compare(1.0, 1.0 + 1e-11, 1e-10, false);  // 0
+Floats::compare(1.0, 1.0 + 1e-9, 1e-10, false);   // 1
+
+// Handles precision issues
+Floats::compare(0.1 + 0.2, 0.3);  // 0 (approximately equal)
+
+// With special values
+Floats::compare(INF, 1000.0);   // 1
+Floats::compare(-INF, -1000.0); // -1
+Floats::compare(0.0, -0.0);     // 0 (equal)
+```
+
+**Behavior:**
+- First checks approximate equality using `approxEqual()` with the specified mode
+- If approximately equal, returns `0`
+- Otherwise uses spaceship operator (`<=>`) to determine ordering
+- Inherits epsilon behavior from `approxEqual()` (relative or absolute)
+
+**Use Cases:**
+- Implementing `compare()` methods in custom classes
+- Sorting floats with epsilon tolerance
+- Building comparison logic that needs three-way results
+- Switch statements based on comparison results
+
+**Example Usage in Sorting:**
+
+```php
+$values = [1.0000001, 1.0, 0.9999999];
+
+usort($values, function($a, $b) {
+    return Floats::compare($a, $b, 1e-6);
+});
+
+// Result: All three values may be considered equal with epsilon 1e-6
+```
+
+**See Also:**
+- `approxEqual()` - Two-way approximate equality check
+- `approxEqualRelative()` - Relative comparison
+- `approxEqualAbsolute()` - Absolute comparison
 
 ### isNegativeZero()
 

@@ -7,7 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.0] - 2025-01-16
+## [0.2.0] - 2025-01-29
+
+### Breaking Changes
+
+- **Angle class removed** - Moved to `galaxon/units` package
+  - Use `Galaxon\Units\Angle` instead of `Galaxon\Core\Angle`
+  - All Angle functionality now available in the separate Units package
+
+- **Floats::approxEqual() behavior changed**
+  - Now uses relative comparison by default instead of absolute comparison
+  - New 4th parameter `$relative` (defaults to `true`)
+  - Relative comparison scales epsilon with magnitude, better for comparing values across different scales
+  - To maintain old behavior, pass `false` for the `$relative` parameter
+
+### Added
+
+- **Floats** - New constants and methods for float operations
+  - `TAU` constant - The mathematical constant τ (tau) = 2π, useful for angular calculations
+  - `EPSILON` constant - Default epsilon value (1e-10) for approximate comparisons
+  - `wrap()` - Wrap values to fit within a range using modular arithmetic (signed/unsigned modes)
+  - `approxEqualAbsolute()` - Explicit absolute epsilon comparison
+  - `approxEqualRelative()` - Explicit relative epsilon comparison (scales with magnitude)
+  - `compare()` - Three-way comparison with approximate equality support
+
+- **Numbers** - New comparison methods
+  - `equal()` - Exact equality check for int|float values
+  - `approxEqual()` - Approximate equality with relative/absolute mode selection
+
+### Changed
+
+- **Floats::compare()** - Now uses `Numbers::sign()` to guarantee exactly -1, 0, or 1 return values
+- **Floats::approxEqual()** - Added 4th parameter `$relative` (defaults to `true`)
+- **Numbers::approxEqual()** - Added 3rd parameter `$epsilon` and 4th parameter `$relative`
+
+### Documentation
+
+- **Enhanced PHPDoc comments** in `Equatable` and `Comparable` with detailed implementation guidelines
+- **Comprehensive documentation updates**:
+  - `docs/Floats.md` - Added TAU, wrap(), compare(), and all three approxEqual variants
+  - `docs/Numbers.md` - Added equal() and updated approxEqual() documentation
+  - `docs/Equatable.md` - Updated epsilon examples and best practices
+  - `docs/Comparable.md` - Corrected implementation details and added TypeError documentation
+  - Removed `docs/Angle.md` (moved to Units package)
+
+### Tests
+
+- Added comprehensive tests for new Floats methods (approxEqualAbsolute, approxEqualRelative, compare, wrap)
+- Added comprehensive tests for Numbers methods (equal, approxEqual)
+- All tests passing with 100% code coverage maintained
+
+## [0.1.0] - 2025-01-16
 
 ### Added
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Galaxon\Core;
 
-// Throwables
 use TypeError;
 use ValueError;
 

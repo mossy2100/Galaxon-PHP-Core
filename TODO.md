@@ -1,3 +1,3 @@
-Check exception types.
-InvalidArgumentException shouldn't generally be needed if strict_types is enabled.
-Use DomainException if an argument is out of range.
+- Update Angle doc to include new public members.
+- Make sure tests check for new exceptions in Comparable.
+- Update doc for Comparable as needed.

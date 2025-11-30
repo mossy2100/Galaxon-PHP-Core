@@ -76,10 +76,13 @@ Check if this object equals another. Provided by the trait - delegates to `compa
 
 **Implementation:**
 ```php
-return $other instanceof static && $this->compare($other) === 0;
+return $this->hasSameType($other) && $this->compare($other) === 0;
 ```
 
-Note: Returns `false` gracefully for incompatible types (doesn't throw).
+**Behavior:**
+- First checks type compatibility using `get_debug_type()` comparison
+- Returns `false` gracefully for incompatible types (doesn't throw)
+- Only calls `compare()` if types match
 
 ### isLessThan()
 
@@ -95,8 +98,12 @@ Check if this object is less than another.
 **Returns:**
 - `bool` - `true` if this < other, `false` otherwise
 
+**Throws:**
+- `TypeError` - If `$other` is not the same type as this object
+
 **Implementation:**
 ```php
+$this->checkSameType($other);
 return $this->compare($other) === -1;
 ```
 
@@ -114,8 +121,12 @@ Check if this object is less than or equal to another.
 **Returns:**
 - `bool` - `true` if this <= other, `false` otherwise
 
+**Throws:**
+- `TypeError` - If `$other` is not the same type as this object
+
 **Implementation:**
 ```php
+$this->checkSameType($other);
 return !$this->isGreaterThan($other);
 ```
 
@@ -133,8 +144,12 @@ Check if this object is greater than another.
 **Returns:**
 - `bool` - `true` if this > other, `false` otherwise
 
+**Throws:**
+- `TypeError` - If `$other` is not the same type as this object
+
 **Implementation:**
 ```php
+$this->checkSameType($other);
 return $this->compare($other) === 1;
 ```
 
@@ -152,8 +167,12 @@ Check if this object is greater than or equal to another.
 **Returns:**
 - `bool` - `true` if this >= other, `false` otherwise
 
+**Throws:**
+- `TypeError` - If `$other` is not the same type as this object
+
 **Implementation:**
 ```php
+$this->checkSameType($other);
 return !$this->isLessThan($other);
 ```
 
@@ -341,10 +360,10 @@ class MyClass implements Equatable
 
 The trait provides `equals()` automatically, satisfying the `Equatable` interface contract.
 
-## Core Classes Using Comparable
+## Classes Using Comparable
 
-- `Angle` - Angular measurements with epsilon-based comparison
-- `Rational` - Rational numbers with exact comparison
+- `Galaxon\Units\Measurement` and derived types - Measurements with epsilon-based comparison
+- `Galaxon\Math\Rational` - Rational numbers with exact comparison
 
 ## Best Practices
 
