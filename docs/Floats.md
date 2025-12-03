@@ -54,96 +54,9 @@ Two methods provide direct access to IEEE-754 double-precision components:
 public const TAU = 2 * M_PI;
 ```
 
-The mathematical constant τ (tau), equal to 2π (approximately 6.283185307179586). Represents one full turn in radians (360 degrees). This constant is useful for angular calculations, particularly when working with full rotations.
-
-**Value:** `6.283185307179586` (2 × π)
-
-**Examples:**
-
-```php
-// Convert degrees to radians (360° = τ)
-$radians = ($degrees / 360.0) * Floats::TAU;
-
-// Convert radians to degrees
-$degrees = ($radians / Floats::TAU) * 360.0;
-
-// Full rotation
-$angle = Floats::TAU;  // 360° in radians
-
-// Half rotation
-$angle = Floats::TAU / 2;  // 180° (same as M_PI)
-
-// Quarter rotation
-$angle = Floats::TAU / 4;  // 90° (same as M_PI / 2)
-```
-
-**Use Cases:**
-- Angular calculations and conversions
-- Trigonometric functions
-- Wrapping angles to [0, 2π) range
-- Circle and rotation calculations
+The circle constant τ (tau), equal to 2π ≈ 6.283185307179586, which is the number of radians in one turn. Apart from circles and angles, TAU appears throughout mathematics in areas such as complex analysis, Fourier transforms, the normal distribution, and many integral formulas.
 
 ## Methods
-
-### wrap()
-
-```php
-public static function wrap(float $value, float $range, bool $signed = true): float
-```
-
-Wrap a floating-point value to fit within a specified range using modular arithmetic. This is useful for normalizing angles, coordinates, or other cyclic values.
-
-**Parameters:**
-- `$value` (float) - The value to wrap
-- `$range` (float) - The range width (must be positive)
-- `$signed` (bool) - If `true` (default), wrap to [-range/2, range/2]; if `false`, wrap to [0, range)
-
-**Returns:**
-- `float` - The wrapped value within the specified range
-
-**Examples:**
-
-Signed wrapping (centered on zero):
-```php
-// Wrap angle in radians to [-π, π]
-Floats::wrap(7.0, Floats::TAU);  // ~0.7168 (7 - 2π)
-Floats::wrap(-7.0, Floats::TAU);  // ~-0.7168
-
-// Wrap degrees to [-180, 180]
-Floats::wrap(270.0, 360.0);  // -90.0
-Floats::wrap(-270.0, 360.0);  // 90.0
-
-// Values already in range are unchanged
-Floats::wrap(1.5, Floats::TAU);  // 1.5
-Floats::wrap(-2.0, Floats::TAU);  // -2.0
-```
-
-Unsigned wrapping (starting from zero):
-```php
-// Wrap angle in radians to [0, 2π)
-Floats::wrap(7.0, Floats::TAU, false);  // ~0.7168
-Floats::wrap(-1.0, Floats::TAU, false);  // ~5.2832 (2π - 1)
-
-// Wrap degrees to [0, 360)
-Floats::wrap(450.0, 360.0, false);  // 90.0
-Floats::wrap(-90.0, 360.0, false);  // 270.0
-
-// Values already in range are unchanged
-Floats::wrap(180.0, 360.0, false);  // 180.0
-```
-
-**Behavior:**
-- Uses `fmod()` internally for modular arithmetic
-- Normalizes any result of `-0.0` to `+0.0`
-- Handles negative values correctly in both modes
-- **Signed mode**: Result is in range (-range/2, range/2]
-- **Unsigned mode**: Result is in range [0, range)
-
-**Use Cases:**
-- Normalizing angles to standard ranges
-- Wrapping coordinates in toroidal/cylindrical spaces
-- Implementing periodic boundary conditions
-- Game development (wrapping player positions)
 
 ### approxEqual()
 

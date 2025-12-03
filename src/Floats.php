@@ -23,8 +23,7 @@ final class Floats
     public const EPSILON = 1e-10;
 
     /**
-     * τ (tau) = 2π.
-     * One full turn in radians.
+     * The circle constant tau τ (tau) = 2π. One full turn in radians.
      *
      * @var float
      */
@@ -157,48 +156,6 @@ final class Floats
     public static function normalizeZero(float $value): float
     {
         return self::isNegativeZero($value) ? 0.0 : $value;
-    }
-
-    /**
-     * Wrap a value to a specified range starting at 0.
-     *
-     * If $signed is true, the range is (-$range/2, $range/2], with the minimum excluded and maximum included.
-     * If $signed is false, the range is [0, $range), with the minimum included and maximum excluded.
-     *
-     * @param float $value The value to wrap.
-     * @param float $range The width of the range (must be positive).
-     * @param bool $signed If true, wrap to signed range; if false, wrap to unsigned range.
-     * @return float The wrapped value.
-     *
-     * @example
-     * Floats::wrap(270, 360, false) // returns 270.0 (unsigned range [0, 360))
-     * Floats::wrap(270, 360, true)  // returns -90.0 (signed range (-180, 180])
-     * Floats::wrap(M_PI, Floats::TAU, true) // returns M_PI (signed range (-π, π])
-     */
-    public static function wrap(float $value, float $range, bool $signed = true): float
-    {
-        // Reduce using fmod to avoid large magnitudes.
-        // $r will be in the range [0, $range) if $value is positive, or (-$range, 0] if negative.
-        $r = fmod($value, $range);
-
-        // Adjust to fit within range bounds.
-        if ($signed) {
-            // Signed range is (-$range/2, $range/2]
-            $half = $range / 2.0;
-            if ($r <= -$half) {
-                $r += $range;
-            } elseif ($r > $half) {
-                $r -= $range;
-            }
-        } else {
-            // Unsigned range is [0, $range)
-            if ($r < 0.0) {
-                $r += $range;
-            }
-        }
-
-        // Canonicalize -0.0 to 0.0.
-        return self::normalizeZero($r);
     }
 
     /**

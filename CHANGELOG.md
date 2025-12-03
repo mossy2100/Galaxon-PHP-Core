@@ -26,7 +26,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Floats** - New constants and methods for float operations
   - `TAU` constant - The mathematical constant τ (tau) = 2π, useful for angular calculations
   - `EPSILON` constant - Default epsilon value (1e-10) for approximate comparisons
-  - `wrap()` - Wrap values to fit within a range using modular arithmetic (signed/unsigned modes)
   - `approxEqualAbsolute()` - Explicit absolute epsilon comparison
   - `approxEqualRelative()` - Explicit relative epsilon comparison (scales with magnitude)
   - `compare()` - Three-way comparison with approximate equality support
