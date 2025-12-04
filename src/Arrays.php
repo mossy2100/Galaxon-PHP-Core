@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Galaxon\Core;
 
 use JsonException;
+use TypeError;
 
 /**
  * Container for useful array-related methods.
@@ -37,5 +38,31 @@ final class Arrays
         }
 
         return false;
+    }
+
+    /**
+     * Wrap each string value in the array with quotes.
+     *
+     * Useful for formatting lists in error messages or output.
+     * Does not perform escaping - values containing quotes will not be escaped.
+     *
+     * @param array<string> $arr Array of strings to quote.
+     * @param bool $doubleQuotes Use double quotes instead of single quotes.
+     * @return array<string> Array with each value wrapped in quotes.
+     * @throws TypeError If any array value is not a string.
+     */
+    public static function quoteValues(array $arr, bool $doubleQuotes = false): array
+    {
+        $quoteChar = $doubleQuotes ? '"' : "'";
+        return array_map(static function ($value) use ($quoteChar) {
+            // Type check.
+            // @phpstan-ignore function.alreadyNarrowedType
+            if (!is_string($value)) {
+                throw new TypeError('The array values must be strings.');
+            }
+
+            // Wrap the value in quotes.
+            return $quoteChar . $value . $quoteChar;
+        }, $arr);
     }
 }

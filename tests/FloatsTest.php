@@ -587,6 +587,241 @@ final class FloatsTest extends TestCase
 
     // endregion
 
+    // region Precision method tests
+
+    /**
+     * Test ulp with standard values.
+     */
+    public function testUlpWithStandardValues(): void
+    {
+        // ULP of 1.0 should be PHP_FLOAT_EPSILON
+        $this->assertSame(PHP_FLOAT_EPSILON, Floats::ulp(1.0));
+
+        // ULP scales with magnitude
+        $this->assertSame(1000.0 * PHP_FLOAT_EPSILON, Floats::ulp(1000.0));
+        $this->assertSame(0.001 * PHP_FLOAT_EPSILON, Floats::ulp(0.001));
+    }
+
+    /**
+     * Test ulp with positive zero.
+     */
+    public function testUlpWithPositiveZero(): void
+    {
+        $expected = PHP_FLOAT_EPSILON * PHP_FLOAT_MIN;
+        $this->assertSame($expected, Floats::ulp(0.0));
+    }
+
+    /**
+     * Test ulp with negative zero.
+     */
+    public function testUlpWithNegativeZero(): void
+    {
+        $expected = PHP_FLOAT_EPSILON * PHP_FLOAT_MIN;
+        $this->assertSame($expected, Floats::ulp(-0.0));
+    }
+
+    /**
+     * Test ulp with negative values uses absolute value.
+     */
+    public function testUlpWithNegativeValues(): void
+    {
+        // ULP is the same for positive and negative values
+        $this->assertSame(Floats::ulp(100.0), Floats::ulp(-100.0));
+        $this->assertSame(Floats::ulp(1.0), Floats::ulp(-1.0));
+    }
+
+    /**
+     * Test ulp with large values.
+     */
+    public function testUlpWithLargeValues(): void
+    {
+        $large = 1e20;
+        $ulp = Floats::ulp($large);
+
+        // ULP should be proportional to the magnitude
+        $this->assertSame($large * PHP_FLOAT_EPSILON, $ulp);
+
+        // Verify it's actually the spacing
+        $next = $large + $ulp;
+        $this->assertGreaterThan($large, $next);
+    }
+
+    /**
+     * Test ulp with small values.
+     */
+    public function testUlpWithSmallValues(): void
+    {
+        $small = 1e-100;
+        $ulp = Floats::ulp($small);
+
+        $this->assertSame($small * PHP_FLOAT_EPSILON, $ulp);
+    }
+
+    /**
+     * Test ulp with infinity returns INF.
+     */
+    public function testUlpWithInfinity(): void
+    {
+        $this->assertSame(INF, Floats::ulp(INF));
+        $this->assertSame(INF, Floats::ulp(-INF));
+    }
+
+    /**
+     * Test ulp with NaN returns INF.
+     */
+    public function testUlpWithNaN(): void
+    {
+        $this->assertSame(INF, Floats::ulp(NAN));
+    }
+
+    /**
+     * Test ulp relationship with next().
+     */
+    public function testUlpRelationshipWithNext(): void
+    {
+        $value = 42.0;
+        $ulp = Floats::ulp($value);
+        $next = Floats::next($value);
+
+        // The difference should approximately equal the ULP
+        // (may have rounding in floating-point subtraction)
+        $diff = $next - $value;
+        $this->assertGreaterThan(0, $diff);
+        $this->assertLessThanOrEqual($ulp * 2, $diff);
+    }
+
+    /**
+     * Test isExactInt with whole number floats.
+     */
+    public function testIsExactIntWithWholeNumbers(): void
+    {
+        $this->assertTrue(Floats::isExactInt(0.0));
+        $this->assertTrue(Floats::isExactInt(1.0));
+        $this->assertTrue(Floats::isExactInt(-1.0));
+        $this->assertTrue(Floats::isExactInt(42.0));
+        $this->assertTrue(Floats::isExactInt(-99.0));
+        $this->assertTrue(Floats::isExactInt(1000000.0));
+    }
+
+    /**
+     * Test isExactInt with fractional floats.
+     */
+    public function testIsExactIntWithFractionalNumbers(): void
+    {
+        $this->assertFalse(Floats::isExactInt(0.5));
+        $this->assertFalse(Floats::isExactInt(1.1));
+        $this->assertFalse(Floats::isExactInt(-3.14));
+        $this->assertFalse(Floats::isExactInt(0.001));
+        $this->assertFalse(Floats::isExactInt(99.999));
+    }
+
+    /**
+     * Test isExactInt with negative zero.
+     */
+    public function testIsExactIntWithNegativeZero(): void
+    {
+        $this->assertTrue(Floats::isExactInt(-0.0));
+    }
+
+    /**
+     * Test isExactInt at the boundary of exact representation (2^53).
+     */
+    public function testIsExactIntAtExactBoundary(): void
+    {
+        // 2^53 is the largest consecutive integer exactly representable
+        $boundary = 1 << 53; // 9007199254740992
+        $this->assertTrue(Floats::isExactInt((float)$boundary));
+        $this->assertTrue(Floats::isExactInt((float)-$boundary));
+    }
+
+    /**
+     * Test isExactInt beyond exact representation boundary.
+     */
+    public function testIsExactIntBeyondBoundary(): void
+    {
+        // 2^54 is beyond our ±2^53 range
+        $this->assertFalse(Floats::isExactInt((float)(1 << 54)));
+        $this->assertFalse(Floats::isExactInt((float)(-(1 << 54))));
+
+        // Very large values are beyond the range
+        $this->assertFalse(Floats::isExactInt((float)PHP_INT_MAX));
+        $this->assertFalse(Floats::isExactInt(1e20));
+    }
+
+    /**
+     * Test isExactInt with large integers within exact range.
+     */
+    public function testIsExactIntWithLargeIntegers(): void
+    {
+        // Powers of 2 up to 2^53
+        $this->assertTrue(Floats::isExactInt((float)(1 << 40)));
+        $this->assertTrue(Floats::isExactInt((float)(1 << 50)));
+        $this->assertTrue(Floats::isExactInt((float)(1 << 52)));
+    }
+
+    /**
+     * Test isExactInt with non-finite values.
+     */
+    public function testIsExactIntWithNonFinite(): void
+    {
+        $this->assertFalse(Floats::isExactInt(INF));
+        $this->assertFalse(Floats::isExactInt(-INF));
+        $this->assertFalse(Floats::isExactInt(NAN));
+    }
+
+    /**
+     * Test isExactInt vs tryConvertToInt relationship.
+     */
+    public function testIsExactIntVsTryConvertToIntRelationship(): void
+    {
+        // isExactInt checks for exact integer representation within ±2^53
+        // tryConvertToInt checks for lossless conversion to PHP int (±2^63-1)
+
+        // Both should agree for small integers
+        $testValues = [0.0, 1.0, -1.0, 42.0, -99.0, 1000.0];
+        foreach ($testValues as $value) {
+            $isExact = Floats::isExactInt($value);
+            $canConvert = Floats::tryConvertToInt($value) !== null;
+            $this->assertSame($isExact, $canConvert, "Mismatch for $value");
+        }
+
+        // Fractional values fail both
+        $this->assertFalse(Floats::isExactInt(1.5));
+        $this->assertNull(Floats::tryConvertToInt(1.5));
+    }
+
+    /**
+     * Test isExactInt comprehensive coverage.
+     */
+    public function testIsExactIntComprehensive(): void
+    {
+        // Test various integer values within range
+        $testValues = [
+            [0.0, true],
+            [1.0, true],
+            [-1.0, true],
+            [100.0, true],
+            [-100.0, true],
+            [(float)(1 << 52), true], // 2^52 is within range
+            [(float)(1 << 53), true], // 2^53 is the boundary
+            [(float)(1 << 54), false], // 2^54 is beyond range
+            [0.5, false], // Fractional
+            [1.1, false], // Fractional
+            [1e20, false], // Too large
+        ];
+
+        foreach ($testValues as [$value, $expected]) {
+            $result = Floats::isExactInt($value);
+            $this->assertSame(
+                $expected,
+                $result,
+                sprintf('isExactInt(%s) should be %s', $value, $expected ? 'true' : 'false')
+            );
+        }
+    }
+
+    // endregion
+
     // region Inspection method tests
 
     /**

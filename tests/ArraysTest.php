@@ -8,6 +8,7 @@ use Galaxon\Core\Arrays;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
+use TypeError;
 
 /**
  * Test class for Arrays utility class.
@@ -163,5 +164,239 @@ final class ArraysTest extends TestCase
 
         // Test that no recursion is detected.
         $this->assertFalse(Arrays::containsRecursion($arr));
+    }
+
+    /**
+     * Test quoteValues with single quotes (default).
+     */
+    public function testQuoteValuesWithSingleQuotes(): void
+    {
+        $input = ['foo', 'bar', 'baz'];
+        $expected = ["'foo'", "'bar'", "'baz'"];
+        $result = Arrays::quoteValues($input);
+
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * Test quoteValues with double quotes.
+     */
+    public function testQuoteValuesWithDoubleQuotes(): void
+    {
+        $input = ['foo', 'bar', 'baz'];
+        $expected = ['"foo"', '"bar"', '"baz"'];
+        $result = Arrays::quoteValues($input, true);
+
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * Test quoteValues with empty array.
+     */
+    public function testQuoteValuesWithEmptyArray(): void
+    {
+        $result = Arrays::quoteValues([]);
+
+        $this->assertEquals([], $result);
+    }
+
+    /**
+     * Test quoteValues with single element.
+     */
+    public function testQuoteValuesWithSingleElement(): void
+    {
+        $input = ['hello'];
+        $expected = ["'hello'"];
+        $result = Arrays::quoteValues($input);
+
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * Test quoteValues preserves array keys.
+     */
+    public function testQuoteValuesPreservesKeys(): void
+    {
+        $input = ['first' => 'apple', 'second' => 'banana', 'third' => 'cherry'];
+        $expected = ['first' => "'apple'", 'second' => "'banana'", 'third' => "'cherry'"];
+        $result = Arrays::quoteValues($input);
+
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * Test quoteValues with values containing quotes.
+     */
+    public function testQuoteValuesWithQuotesInValues(): void
+    {
+        // Single quotes in values with single quote wrapping.
+        $input = ["it's", "can't", "won't"];
+        $expected = ["'it's'", "'can't'", "'won't'"];
+        $result = Arrays::quoteValues($input);
+
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * Test quoteValues with values containing double quotes.
+     */
+    public function testQuoteValuesWithDoubleQuotesInValues(): void
+    {
+        // Double quotes in values with double quote wrapping.
+        $input = ['say "hello"', 'the "word"'];
+        $expected = ['"say "hello""', '"the "word""'];
+        $result = Arrays::quoteValues($input, true);
+
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * Test quoteValues with empty strings.
+     */
+    public function testQuoteValuesWithEmptyStrings(): void
+    {
+        $input = ['', 'foo', '', 'bar'];
+        $expected = ["''", "'foo'", "''", "'bar'"];
+        $result = Arrays::quoteValues($input);
+
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * Test quoteValues with whitespace strings.
+     */
+    public function testQuoteValuesWithWhitespace(): void
+    {
+        $input = [' ', '  spaces  ', "\t", "\n"];
+        $expected = ["' '", "'  spaces  '", "'\t'", "'\n'"];
+        $result = Arrays::quoteValues($input);
+
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * Test quoteValues with special characters.
+     */
+    public function testQuoteValuesWithSpecialCharacters(): void
+    {
+        $input = ["hello\nworld", "tab\there", 'back\\slash'];
+        $expected = ["'hello\nworld'", "'tab\there'", "'back\\slash'"];
+        $result = Arrays::quoteValues($input);
+
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * Test quoteValues with numeric strings.
+     */
+    public function testQuoteValuesWithNumericStrings(): void
+    {
+        $input = ['123', '45.67', '0', '-999'];
+        $expected = ["'123'", "'45.67'", "'0'", "'-999'"];
+        $result = Arrays::quoteValues($input);
+
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * Test quoteValues throws TypeError for non-string values (integers).
+     */
+    public function testQuoteValuesThrowsTypeErrorForIntegers(): void
+    {
+        $input = ['foo', 123, 'bar'];
+
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('The array values must be strings.');
+        // @phpstan-ignore argument.type
+        Arrays::quoteValues($input);
+    }
+
+    /**
+     * Test quoteValues throws TypeError for non-string values (floats).
+     */
+    public function testQuoteValuesThrowsTypeErrorForFloats(): void
+    {
+        $input = ['foo', 3.14, 'bar'];
+
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('The array values must be strings.');
+        // @phpstan-ignore argument.type
+        Arrays::quoteValues($input);
+    }
+
+    /**
+     * Test quoteValues throws TypeError for non-string values (booleans).
+     */
+    public function testQuoteValuesThrowsTypeErrorForBooleans(): void
+    {
+        $input = ['foo', true, 'bar'];
+
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('The array values must be strings.');
+        // @phpstan-ignore argument.type
+        Arrays::quoteValues($input);
+    }
+
+    /**
+     * Test quoteValues throws TypeError for non-string values (null).
+     */
+    public function testQuoteValuesThrowsTypeErrorForNull(): void
+    {
+        $input = ['foo', null, 'bar'];
+
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('The array values must be strings.');
+        // @phpstan-ignore argument.type
+        Arrays::quoteValues($input);
+    }
+
+    /**
+     * Test quoteValues throws TypeError for non-string values (arrays).
+     */
+    public function testQuoteValuesThrowsTypeErrorForArrays(): void
+    {
+        $input = ['foo', ['nested'], 'bar'];
+
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('The array values must be strings.');
+        // @phpstan-ignore argument.type
+        Arrays::quoteValues($input);
+    }
+
+    /**
+     * Test quoteValues throws TypeError for non-string values (objects).
+     */
+    public function testQuoteValuesThrowsTypeErrorForObjects(): void
+    {
+        $input = ['foo', new stdClass(), 'bar'];
+
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('The array values must be strings.');
+        // @phpstan-ignore argument.type
+        Arrays::quoteValues($input);
+    }
+
+    /**
+     * Test quoteValues with unicode strings.
+     */
+    public function testQuoteValuesWithUnicode(): void
+    {
+        $input = ['hello', '世界', 'emoji 😀', 'Ñoño'];
+        $expected = ["'hello'", "'世界'", "'emoji 😀'", "'Ñoño'"];
+        $result = Arrays::quoteValues($input);
+
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * Test quoteValues does not modify original array.
+     */
+    public function testQuoteValuesDoesNotModifyOriginal(): void
+    {
+        $input = ['foo', 'bar', 'baz'];
+        $original = $input;
+        Arrays::quoteValues($input);
+
+        $this->assertEquals($original, $input);
     }
 }

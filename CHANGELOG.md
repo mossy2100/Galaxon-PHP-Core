@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-01-15
+
+### Added
+
+- **Arrays::quoteValues()** - Wrap string array values in quotes for formatting
+  - Supports both single quotes (default) and double quotes
+  - Useful for formatting lists in error messages or output
+  - Throws `TypeError` if array contains non-string values
+  - Preserves array keys
+
+- **Floats::ulp()** - Calculate Unit in Last Place (ULP) for floating-point precision analysis
+  - Returns the spacing between adjacent representable floats at a given magnitude
+  - Useful for understanding floating-point precision limits and calculating error bounds
+  - Moved from `NumberWithError` in Units package to provide general-purpose float utility
+
+- **Floats::isExactInt()** - Check if a float represents an exact integer without rounding error
+  - Validates integers are within IEEE-754 double's exact integer range (±2^53)
+  - Returns `true` for whole numbers that can be exactly represented as floats
+  - Moved from `NumberWithError::isExactFloat()` in Units package with improved naming
+
+### Tests
+
+- Added 19 comprehensive tests for `Arrays::quoteValues()`:
+  - Both single and double quote modes
+  - Empty arrays and strings
+  - Special characters, whitespace, and unicode
+  - Type validation (TypeError for non-string values)
+  - Key preservation and immutability
+
+- Added 18 comprehensive tests for Floats precision methods:
+  - `ulp()` tests: standard values, zero handling, negative values, large/small magnitudes, non-finite values, relationship with `next()`
+  - `isExactInt()` tests: whole numbers, fractional values, boundary cases (±2^53), non-finite values, comparison with `tryConvertToInt()`
+
+### Documentation
+
+- **Arrays.md** - Added documentation for `quoteValues()`
+- **Floats.md** - Added documentation for `ulp()` and `isExactInt()`
+
 ## [0.2.0] - 2025-01-29
 
 ### Breaking Changes

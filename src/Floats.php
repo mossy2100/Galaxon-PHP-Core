@@ -279,6 +279,57 @@ final class Floats
 
     // endregion
 
+    // region Precision methods
+
+    /**
+     * Calculate the Unit in Last Place (ULP) - the spacing between adjacent floats.
+     *
+     * ULP represents the gap between a float and the next representable float at that magnitude.
+     * Larger magnitude numbers have larger ULP values, reflecting reduced precision at larger scales.
+     *
+     * For example:
+     * - ulp(1.0) ≈ 2.22e-16
+     * - ulp(1000.0) ≈ 2.22e-13
+     * - ulp(0.001) ≈ 2.22e-19
+     *
+     * @param float $value The value to calculate ULP for.
+     * @return float The ULP spacing. Returns INF for non-finite values.
+     */
+    public static function ulp(float $value): float
+    {
+        if (!is_finite($value)) {
+            return INF;
+        }
+        $abs = abs($value);
+        if ($abs === 0.0) {
+            return PHP_FLOAT_EPSILON * PHP_FLOAT_MIN;
+        }
+        // For normalized numbers.
+        return $abs * PHP_FLOAT_EPSILON;
+    }
+
+    /**
+     * Check if a float value is exactly representable as an integer (no rounding error).
+     *
+     * Returns true for finite integers within IEEE-754 double's exact integer range (±2^53).
+     * Beyond this range, consecutive integers cannot all be exactly represented as floats.
+     *
+     * For example:
+     * - isExactInt(42.0) → true
+     * - isExactInt(42.5) → false (has fractional part)
+     * - isExactInt(9007199254740992.0) → true (exactly 2^53)
+     * - isExactInt(9007199254740993.0) → false (beyond exact range)
+     *
+     * @param float $value The value to check.
+     * @return bool True if the value represents an exact integer, false otherwise.
+     */
+    public static function isExactInt(float $value): bool
+    {
+        return is_finite($value) && floor($value) === $value && abs($value) <= (1 << 53);
+    }
+
+    // endregion
+
     // region Adjacent float methods
 
     /**

@@ -43,3 +43,75 @@ Arrays::containsRecursion($arr); // false
 ```
 
 **Note:** This method uses `json_encode()` internally to detect recursion, as circular references cannot be JSON-encoded.
+
+### quoteValues()
+
+```php
+public static function quoteValues(array $arr, bool $doubleQuotes = false): array
+```
+
+Wrap each string value in the array with quotes for formatting purposes. Useful for creating quoted lists in error messages, output, or documentation.
+
+**Parameters:**
+- `$arr` (array<string>) - Array of strings to quote
+- `$doubleQuotes` (bool) - Use double quotes instead of single quotes (default: `false`)
+
+**Returns:**
+- `array<string>` - Array with each value wrapped in quotes, preserving array keys
+
+**Throws:**
+- `TypeError` - If any array value is not a string
+
+**Examples:**
+
+Basic usage with single quotes (default):
+```php
+$fruits = ['apple', 'banana', 'cherry'];
+$quoted = Arrays::quoteValues($fruits);
+// ['\'apple\'', '\'banana\'', '\'cherry\'']
+```
+
+Using double quotes:
+```php
+$names = ['Alice', 'Bob', 'Charlie'];
+$quoted = Arrays::quoteValues($names, true);
+// ['"Alice"', '"Bob"', '"Charlie"']
+```
+
+Preserves array keys:
+```php
+$config = ['host' => 'localhost', 'port' => '5432'];
+$quoted = Arrays::quoteValues($config);
+// ['host' => '\'localhost\'', 'port' => '\'5432\'']
+```
+
+Values containing quotes are not escaped:
+```php
+$phrases = ["it's", 'say "hello"'];
+$quoted = Arrays::quoteValues($phrases);
+// ['\'it\'s\'', '\'say "hello"\'']
+```
+
+Type validation:
+```php
+$mixed = ['string', 42, 'another'];
+Arrays::quoteValues($mixed); // throws TypeError
+```
+
+**Use Cases:**
+- Formatting error messages with lists of valid values
+- Creating CSV-like output with quoted strings
+- Generating SQL value lists
+- Displaying configuration options in documentation
+- Building command-line argument strings
+
+**Example in Error Messages:**
+
+```php
+$validUnits = ['kg', 'g', 'mg'];
+$quotedUnits = Arrays::quoteValues($validUnits);
+throw new ValueError('Invalid unit. Valid units: ' . implode(', ', $quotedUnits));
+// "Invalid unit. Valid units: 'kg', 'g', 'mg'"
+```
+
+**Note:** This method does not perform escaping. If the values contain the quote character, they will not be escaped. For proper escaping, use appropriate functions like `addslashes()` or context-specific escaping functions.

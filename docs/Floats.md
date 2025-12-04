@@ -592,6 +592,184 @@ Floats::tryConvertToInt(NAN);  // null
 **Precision Limits:**
 On 64-bit systems, floats can exactly represent integers up to 2^53 (9,007,199,254,740,992). Beyond this, not all integers can be represented exactly as floats. Powers of 2 can be represented exactly up to much larger values.
 
+### ulp()
+
+```php
+public static function ulp(float $value): float
+```
+
+Calculate the Unit in Last Place (ULP) - the spacing between adjacent representable floats at a given magnitude. ULP represents the gap between a float and the next representable float value.
+
+**Parameters:**
+- `$value` (float) - The value to calculate ULP for
+
+**Returns:**
+- `float` - The ULP spacing. Returns `INF` for non-finite values (NaN, ±INF)
+
+**Behavior:**
+- For normalized numbers: returns `abs($value) * PHP_FLOAT_EPSILON`
+- For zero (positive or negative): returns `PHP_FLOAT_EPSILON * PHP_FLOAT_MIN`
+- Larger magnitude numbers have larger ULP values
+- Uses absolute value, so ULP is the same for positive and negative values of the same magnitude
+
+**Examples:**
+
+```php
+// ULP of 1.0 is PHP_FLOAT_EPSILON (~2.22e-16)
+Floats::ulp(1.0);  // 2.220446049250313e-16
+
+// ULP scales with magnitude
+Floats::ulp(1000.0);  // 2.2204460492503131e-13 (1000x larger)
+Floats::ulp(0.001);   // 2.2204460492503131e-19 (1000x smaller)
+
+// Large values have large ULP
+Floats::ulp(1e20);  // ~22204460492503.13
+
+// Zero has special handling
+Floats::ulp(0.0);   // PHP_FLOAT_EPSILON * PHP_FLOAT_MIN (~4.94e-324)
+Floats::ulp(-0.0);  // Same as positive zero
+
+// Negative values use absolute value
+Floats::ulp(-100.0) === Floats::ulp(100.0);  // true
+
+// Non-finite values
+Floats::ulp(INF);   // INF
+Floats::ulp(-INF);  // INF
+Floats::ulp(NAN);   // INF
+```
+
+**Relationship with next():**
+
+The ULP approximately equals the difference between a value and `next($value)`:
+
+```php
+$value = 42.0;
+$ulp = Floats::ulp($value);
+$next = Floats::next($value);
+$diff = $next - $value;  // Approximately equals $ulp
+```
+
+**Understanding ULP:**
+
+ULP reveals why floating-point precision decreases at larger magnitudes:
+
+```php
+// Around 1.0, ULP is ~2.22e-16
+Floats::ulp(1.0);  // 2.220446049250313e-16
+
+// Around 1 trillion, ULP is ~0.00024
+Floats::ulp(1e12);  // 0.000244140625
+
+// This means there's no float between 1e12 and 1e12 + 0.00024
+```
+
+**Use Cases:**
+- Understanding floating-point precision limits
+- Implementing numerical algorithms with appropriate tolerances
+- Calculating rounding error bounds in error analysis
+- Testing floating-point code with appropriate epsilons
+- Debugging precision issues in calculations
+
+**See Also:**
+- `isExactInt()` - Check if a float represents an exact integer
+- `next()` - Get the next representable float
+- `previous()` - Get the previous representable float
+
+### isExactInt()
+
+```php
+public static function isExactInt(float $value): bool
+```
+
+Check if a float value is exactly representable as an integer without rounding error. Returns `true` for finite integers within IEEE-754 double's exact integer range (±2^53).
+
+**Parameters:**
+- `$value` (float) - The value to check
+
+**Returns:**
+- `bool` - Returns `true` if the value represents an exact integer within ±2^53, `false` otherwise
+
+**Behavior:**
+- Checks three conditions: `is_finite($value) && floor($value) === $value && abs($value) <= (1 << 53)`
+- Returns `true` for whole numbers within the exact range
+- Returns `false` for fractional values
+- Returns `false` for values beyond ±2^53
+- Returns `false` for non-finite values (NaN, ±INF)
+- Handles negative zero (-0.0) as an exact integer
+
+**Examples:**
+
+```php
+// Whole numbers within range
+Floats::isExactInt(0.0);      // true
+Floats::isExactInt(1.0);      // true
+Floats::isExactInt(-42.0);    // true
+Floats::isExactInt(1000000.0);  // true
+
+// Fractional values
+Floats::isExactInt(0.5);      // false
+Floats::isExactInt(1.1);      // false
+Floats::isExactInt(-3.14);    // false
+
+// Negative zero is exact
+Floats::isExactInt(-0.0);     // true
+
+// At the boundary (2^53 = 9,007,199,254,740,992)
+Floats::isExactInt((float)(1 << 53));   // true (exactly 2^53)
+Floats::isExactInt((float)(-(1 << 53)));  // true (exactly -2^53)
+
+// Beyond the boundary
+Floats::isExactInt((float)(1 << 54));   // false (2^54 exceeds ±2^53)
+Floats::isExactInt(1e20);               // false (too large)
+
+// Non-finite values
+Floats::isExactInt(INF);      // false
+Floats::isExactInt(-INF);     // false
+Floats::isExactInt(NAN);      // false
+```
+
+**Why ±2^53?**
+
+IEEE-754 doubles use 52 bits for the fraction plus 1 implicit bit, giving 53 bits of precision. This means consecutive integers can be exactly represented up to 2^53. Beyond this, the gaps between representable floats become larger than 1:
+
+```php
+// At 2^53, consecutive integers are exactly representable
+$boundary = (float)(1 << 53);  // 9007199254740992.0
+Floats::isExactInt($boundary);  // true
+
+// Beyond 2^53, gaps are > 1, so not all integers can be represented
+$beyond = (float)(1 << 54);  // 18014398509481984.0
+Floats::isExactInt($beyond);  // false (exceeds our boundary)
+```
+
+**Comparison with tryConvertToInt():**
+
+Both methods check for exact integer representation, but serve different purposes:
+
+| Method | Purpose | Range | Return |
+|--------|---------|-------|--------|
+| `isExactInt()` | Check exact representation | ±2^53 (float's exact range) | `bool` |
+| `tryConvertToInt()` | Lossless conversion | ±2^63-1 (PHP int range) | `?int` |
+
+For small integers, both agree:
+
+```php
+$value = 42.0;
+Floats::isExactInt($value);  // true
+Floats::tryConvertToInt($value);  // 42 (not null)
+```
+
+**Use Cases:**
+- Validating that a float represents a whole number before operations
+- Optimizing arithmetic by detecting when float → int conversion is safe
+- Determining when to use integer math vs float math
+- Error checking in numerical algorithms
+- Calculating error bounds in error tracking systems
+
+**See Also:**
+- `tryConvertToInt()` - Convert float to int losslessly
+- `ulp()` - Calculate the spacing between adjacent floats
+
 ### next()
 
 ```php
