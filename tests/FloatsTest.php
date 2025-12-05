@@ -590,7 +590,7 @@ final class FloatsTest extends TestCase
     // region Precision method tests
 
     /**
-     * Test ulp with standard values.
+     * Test ULP with standard values.
      */
     public function testUlpWithStandardValues(): void
     {
@@ -603,7 +603,7 @@ final class FloatsTest extends TestCase
     }
 
     /**
-     * Test ulp with positive zero.
+     * Test ULP with positive zero.
      */
     public function testUlpWithPositiveZero(): void
     {
@@ -612,7 +612,7 @@ final class FloatsTest extends TestCase
     }
 
     /**
-     * Test ulp with negative zero.
+     * Test ULP with negative zero.
      */
     public function testUlpWithNegativeZero(): void
     {
@@ -621,7 +621,7 @@ final class FloatsTest extends TestCase
     }
 
     /**
-     * Test ulp with negative values uses absolute value.
+     * Test ULP with negative values uses absolute value.
      */
     public function testUlpWithNegativeValues(): void
     {
@@ -631,7 +631,7 @@ final class FloatsTest extends TestCase
     }
 
     /**
-     * Test ulp with large values.
+     * Test ULP with large values.
      */
     public function testUlpWithLargeValues(): void
     {
@@ -647,7 +647,7 @@ final class FloatsTest extends TestCase
     }
 
     /**
-     * Test ulp with small values.
+     * Test ULP with small values.
      */
     public function testUlpWithSmallValues(): void
     {
@@ -658,7 +658,7 @@ final class FloatsTest extends TestCase
     }
 
     /**
-     * Test ulp with infinity returns INF.
+     * Test ULP with infinity returns INF.
      */
     public function testUlpWithInfinity(): void
     {
@@ -667,7 +667,7 @@ final class FloatsTest extends TestCase
     }
 
     /**
-     * Test ulp with NaN returns INF.
+     * Test ULP with NaN returns INF.
      */
     public function testUlpWithNaN(): void
     {
@@ -675,7 +675,7 @@ final class FloatsTest extends TestCase
     }
 
     /**
-     * Test ulp relationship with next().
+     * Test ULP relationship with next().
      */
     public function testUlpRelationshipWithNext(): void
     {

@@ -145,7 +145,7 @@ final class Floats
 
     // endregion
 
-    // region Transformation methods
+    // region Transformation and integer-related methods
 
     /**
      * Normalize negative zero to positive zero. This can be used to avoid surprising results from certain operations.
@@ -156,22 +156,6 @@ final class Floats
     public static function normalizeZero(float $value): float
     {
         return self::isNegativeZero($value) ? 0.0 : $value;
-    }
-
-    /**
-     * Convert a float to a hexadecimal string.
-     *
-     * The advantage of this method is that every possible float value will produce a unique 16-character hex string,
-     * including special values.
-     * Whereas, with a cast to string, or formatting with sprintf() or number_format(), the same string could be
-     * produced for different values.
-     *
-     * @param float $value The float to convert.
-     * @return string The hexadecimal string representation of the float.
-     */
-    public static function toHex(float $value): string
-    {
-        return bin2hex(pack('d', $value));
     }
 
     /**
@@ -195,6 +179,29 @@ final class Floats
 
         // Argument is a float that cannot be losslessly converted to an integer.
         return null;
+    }
+
+    /**
+     * Check if a float value is exactly representable as an integer (no rounding error).
+     *
+     * Returns true for finite integers within IEEE-754 double's exact integer range (±2^53).
+     * Beyond this range, consecutive integers cannot all be exactly represented as floats.
+     *
+     * For example:
+     * - isExactInt(42.0) → true
+     * - isExactInt(42.5) → false (has fractional part)
+     * - isExactInt(9007199254740992.0) → true (exactly 2^53)
+     * - isExactInt(9007199254740993.0) → false (beyond exact range)
+     *
+     * @param float $value The value to check.
+     * @return bool True if the value represents an exact integer, false otherwise.
+     *
+     * @see tryConvertToInt() Attempt lossless conversion to int
+     * @see ulp() Calculate precision at a given magnitude
+     */
+    public static function isExactInt(float $value): bool
+    {
+        return is_finite($value) && floor($value) === $value && abs($value) <= (1 << 53);
     }
 
     // endregion
@@ -279,57 +286,6 @@ final class Floats
 
     // endregion
 
-    // region Precision methods
-
-    /**
-     * Calculate the Unit in Last Place (ULP) - the spacing between adjacent floats.
-     *
-     * ULP represents the gap between a float and the next representable float at that magnitude.
-     * Larger magnitude numbers have larger ULP values, reflecting reduced precision at larger scales.
-     *
-     * For example:
-     * - ulp(1.0) ≈ 2.22e-16
-     * - ulp(1000.0) ≈ 2.22e-13
-     * - ulp(0.001) ≈ 2.22e-19
-     *
-     * @param float $value The value to calculate ULP for.
-     * @return float The ULP spacing. Returns INF for non-finite values.
-     */
-    public static function ulp(float $value): float
-    {
-        if (!is_finite($value)) {
-            return INF;
-        }
-        $abs = abs($value);
-        if ($abs === 0.0) {
-            return PHP_FLOAT_EPSILON * PHP_FLOAT_MIN;
-        }
-        // For normalized numbers.
-        return $abs * PHP_FLOAT_EPSILON;
-    }
-
-    /**
-     * Check if a float value is exactly representable as an integer (no rounding error).
-     *
-     * Returns true for finite integers within IEEE-754 double's exact integer range (±2^53).
-     * Beyond this range, consecutive integers cannot all be exactly represented as floats.
-     *
-     * For example:
-     * - isExactInt(42.0) → true
-     * - isExactInt(42.5) → false (has fractional part)
-     * - isExactInt(9007199254740992.0) → true (exactly 2^53)
-     * - isExactInt(9007199254740993.0) → false (beyond exact range)
-     *
-     * @param float $value The value to check.
-     * @return bool True if the value represents an exact integer, false otherwise.
-     */
-    public static function isExactInt(float $value): bool
-    {
-        return is_finite($value) && floor($value) === $value && abs($value) <= (1 << 53);
-    }
-
-    // endregion
-
     // region Adjacent float methods
 
     /**
@@ -392,9 +348,59 @@ final class Floats
         return self::bitsToFloat($bits);
     }
 
+    /**
+     * Calculate the Unit in Last Place (ULP) - the spacing between adjacent floats.
+     *
+     * ULP represents the gap between a float and the next representable float at that magnitude.
+     * Larger magnitude numbers have larger ULP values, reflecting reduced precision at larger scales.
+     *
+     * For example:
+     * - ulp(1.0) ≈ 2.22e-16
+     * - ulp(1000.0) ≈ 2.22e-13
+     * - ulp(0.001) ≈ 2.22e-19
+     *
+     * @param float $value The value to calculate ULP for.
+     * @return float The ULP spacing. Returns INF for non-finite values.
+     *
+     * @see next() Get the next representable float
+     * @see previous() Get the previous representable float
+     * @see FloatWithError Uses ULP for automatic error estimation
+     */
+    public static function ulp(float $value): float
+    {
+        if (!is_finite($value)) {
+            return INF;
+        }
+
+        $abs = abs($value);
+
+        if ($abs === 0.0) {
+            return PHP_FLOAT_EPSILON * PHP_FLOAT_MIN;
+        }
+
+        // For normalized numbers (ULP = value × machine epsilon).
+        return $abs * PHP_FLOAT_EPSILON;
+    }
+
     // endregion
 
     // region Bit manipulation methods
+
+    /**
+     * Convert a float to a hexadecimal string.
+     *
+     * The advantage of this method is that every possible float value will produce a unique 16-character hex string,
+     * including special values.
+     * Whereas, with a cast to string, or formatting with sprintf() or number_format(), the same string could be
+     * produced for different values.
+     *
+     * @param float $value The float to convert.
+     * @return string The hexadecimal string representation of the float.
+     */
+    public static function toHex(float $value): string
+    {
+        return bin2hex(pack('d', $value));
+    }
 
     /**
      * Check if the current system is a 64-bit system.
@@ -431,23 +437,26 @@ final class Floats
     }
 
     /**
-     * Converts a 64-bit integer to its float representation.
+     * Converts a 64-bit integer to a float by reinterpreting its bit pattern.
      *
-     * @param int $bits The 64-bit integer.
-     * @return float The float representation.
+     * This method directly interprets the bit pattern of an integer as an IEEE 754
+     * double-precision float. This is different from casting an integer to a float,
+     * which preserves the integer's numeric value rather than its bit representation.
+     *
+     * Caveat re NaN:
+     * The IEEE 754 standard supports 2^53 - 2 distinct bit patterns that represent
+     * NaN values. While this method can construct floats from any of these bit patterns,
+     * PHP normalizes all NaN values to a canonical representation (0x7ff8000000000000)
+     * in subsequent operations.
+     *
+     * @param int $bits The 64-bit integer representing the desired bit pattern.
+     * @return float The float with the specified bit pattern.
      */
     private static function bitsToFloat(int $bits): float
     {
-        $bytes = [];
-        for ($i = 1; $i <= 8; $i++) {
-            $bytes[$i] = $bits & 0xFF;
-            $bits >>= 8;
-        }
-
-        $packed = pack('C*', ...$bytes);
+        $packed = pack('Q', $bits);
         /** @var float[] $result */
         $result = unpack('d', $packed);
-
         return $result[1];
     }
 
@@ -515,24 +524,7 @@ final class Floats
     // region Random methods
 
     /**
-     * Generate a random finite float.
-     *
-     * @return float A random float. Excludes NAN, ±INF, -0.0.
-     * @throws RandomException If an appropriate source of randomness is unavailable.
-     */
-    private static function randFloat(): float
-    {
-        do {
-            $bytes = random_bytes(8);
-            /** @var float[] $unpacked */
-            $unpacked = unpack('d', $bytes);
-            $f = $unpacked[1];
-        } while (self::isSpecial($f));
-        return $f;
-    }
-
-    /**
-     * Generate a random float in the specified range by constructing IEEE-754 components.
+     * Generate a random float in the specified range by constructing random IEEE-754 components.
      *
      * This method can return any representable float in the given range, unlike randUniform() which is limited by
      * mt_rand()'s 2^31 distinct values.
@@ -551,6 +543,8 @@ final class Floats
      * @param float $max The maximum value (inclusive).
      * @return float A random float in the range [min, max]. Excludes NAN, ±INF, -0.0.
      * @throws ValueError If min or max are non-finite, or if min > max.
+     *
+     * @see randUniform() For uniformly distributed random floats (faster but limited precision)
      */
     public static function rand(float $min = -PHP_FLOAT_MAX, float $max = PHP_FLOAT_MAX): float
     {
@@ -571,9 +565,20 @@ final class Floats
             return $min;
         }
 
-        // If the default range is specified, use the faster method.
+        // If the default range is specified, use a faster method.
         if ($min === -PHP_FLOAT_MAX && $max === PHP_FLOAT_MAX) {
-            return self::randFloat();
+            do {
+                // Get 64 random bits.
+                $bytes = random_bytes(8);
+
+                // Unpack into a float.
+                /** @var float[] $unpacked */
+                $unpacked = unpack('d', $bytes);
+                $f = $unpacked[1];
+
+                // Continue until we find a non-special value.
+            } while (self::isSpecial($f));
+            return $f;
         }
 
         // Disassemble min and max into their IEEE-754 components.

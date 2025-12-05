@@ -2,7 +2,7 @@
 
 A general purpose library containing core utility classes and methods for use by other Galaxon PHP packages.
 
-**[License](LICENSE)** | **[Changelog](CHANGELOG.md)** | **[Documentation](docs/)** | **[Coverage Report](https://html-preview.github.io/?url=https://github.com/mossy2100/PHP-Core/blob/main/build/coverage/index.html)**
+**[License](LICENSE)** | **[Changelog](CHANGELOG.md)** | **[Documentation](docs/)**
 
 ![PHP 8.4](docs/logo_php8_4.png)
 

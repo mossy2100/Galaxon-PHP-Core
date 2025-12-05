@@ -26,9 +26,11 @@ The IEEE-754 standard defines several special values with unique properties:
 
 Several methods are provided to facilitate working with these values: `isNegativeZero()`, `isPositiveZero()`, `isSpecial()`, and `normalizeZero()`.
 
-### Float-to-Integer Conversion
+### Floats and Integers
 
-Converting floats to integers can lose precision. The `toInt()` method provides safe, lossless conversion when possible, returning `null` if conversion would lose precision.
+Converting floats to integers can lose precision. The `tryConvertToInt()` method provides safe, lossless conversion when possible, returning `null` if conversion would lose precision.
+
+Some floats can represent integers exactly. The `isExactInt()` method returns `true` if the value represents one (and only one) integer exactly.
 
 ### Navigating the Float Space
 
@@ -592,89 +594,6 @@ Floats::tryConvertToInt(NAN);  // null
 **Precision Limits:**
 On 64-bit systems, floats can exactly represent integers up to 2^53 (9,007,199,254,740,992). Beyond this, not all integers can be represented exactly as floats. Powers of 2 can be represented exactly up to much larger values.
 
-### ulp()
-
-```php
-public static function ulp(float $value): float
-```
-
-Calculate the Unit in Last Place (ULP) - the spacing between adjacent representable floats at a given magnitude. ULP represents the gap between a float and the next representable float value.
-
-**Parameters:**
-- `$value` (float) - The value to calculate ULP for
-
-**Returns:**
-- `float` - The ULP spacing. Returns `INF` for non-finite values (NaN, ±INF)
-
-**Behavior:**
-- For normalized numbers: returns `abs($value) * PHP_FLOAT_EPSILON`
-- For zero (positive or negative): returns `PHP_FLOAT_EPSILON * PHP_FLOAT_MIN`
-- Larger magnitude numbers have larger ULP values
-- Uses absolute value, so ULP is the same for positive and negative values of the same magnitude
-
-**Examples:**
-
-```php
-// ULP of 1.0 is PHP_FLOAT_EPSILON (~2.22e-16)
-Floats::ulp(1.0);  // 2.220446049250313e-16
-
-// ULP scales with magnitude
-Floats::ulp(1000.0);  // 2.2204460492503131e-13 (1000x larger)
-Floats::ulp(0.001);   // 2.2204460492503131e-19 (1000x smaller)
-
-// Large values have large ULP
-Floats::ulp(1e20);  // ~22204460492503.13
-
-// Zero has special handling
-Floats::ulp(0.0);   // PHP_FLOAT_EPSILON * PHP_FLOAT_MIN (~4.94e-324)
-Floats::ulp(-0.0);  // Same as positive zero
-
-// Negative values use absolute value
-Floats::ulp(-100.0) === Floats::ulp(100.0);  // true
-
-// Non-finite values
-Floats::ulp(INF);   // INF
-Floats::ulp(-INF);  // INF
-Floats::ulp(NAN);   // INF
-```
-
-**Relationship with next():**
-
-The ULP approximately equals the difference between a value and `next($value)`:
-
-```php
-$value = 42.0;
-$ulp = Floats::ulp($value);
-$next = Floats::next($value);
-$diff = $next - $value;  // Approximately equals $ulp
-```
-
-**Understanding ULP:**
-
-ULP reveals why floating-point precision decreases at larger magnitudes:
-
-```php
-// Around 1.0, ULP is ~2.22e-16
-Floats::ulp(1.0);  // 2.220446049250313e-16
-
-// Around 1 trillion, ULP is ~0.00024
-Floats::ulp(1e12);  // 0.000244140625
-
-// This means there's no float between 1e12 and 1e12 + 0.00024
-```
-
-**Use Cases:**
-- Understanding floating-point precision limits
-- Implementing numerical algorithms with appropriate tolerances
-- Calculating rounding error bounds in error analysis
-- Testing floating-point code with appropriate epsilons
-- Debugging precision issues in calculations
-
-**See Also:**
-- `isExactInt()` - Check if a float represents an exact integer
-- `next()` - Get the next representable float
-- `previous()` - Get the previous representable float
-
 ### isExactInt()
 
 ```php
@@ -769,6 +688,89 @@ Floats::tryConvertToInt($value);  // 42 (not null)
 **See Also:**
 - `tryConvertToInt()` - Convert float to int losslessly
 - `ulp()` - Calculate the spacing between adjacent floats
+
+### ulp()
+
+```php
+public static function ulp(float $value): float
+```
+
+Calculate the Unit in Last Place (ULP) - the spacing between adjacent representable floats at a given magnitude. ULP represents the gap between a float and the next representable float value.
+
+**Parameters:**
+- `$value` (float) - The value to calculate ULP for
+
+**Returns:**
+- `float` - The ULP spacing. Returns `INF` for non-finite values (NaN, ±INF)
+
+**Behavior:**
+- For normalized numbers: returns `abs($value) * PHP_FLOAT_EPSILON`
+- For zero (positive or negative): returns `PHP_FLOAT_EPSILON * PHP_FLOAT_MIN`
+- Larger magnitude numbers have larger ULP values
+- Uses absolute value, so ULP is the same for positive and negative values of the same magnitude
+
+**Examples:**
+
+```php
+// ULP of 1.0 is PHP_FLOAT_EPSILON (~2.22e-16)
+Floats::ulp(1.0);  // 2.220446049250313e-16
+
+// ULP scales with magnitude
+Floats::ulp(1000.0);  // 2.2204460492503131e-13 (1000x larger)
+Floats::ulp(0.001);   // 2.2204460492503131e-19 (1000x smaller)
+
+// Large values have large ULP
+Floats::ulp(1e20);  // ~22204460492503.13
+
+// Zero has special handling
+Floats::ulp(0.0);   // PHP_FLOAT_EPSILON * PHP_FLOAT_MIN (~4.94e-324)
+Floats::ulp(-0.0);  // Same as positive zero
+
+// Negative values use absolute value
+Floats::ulp(-100.0) === Floats::ulp(100.0);  // true
+
+// Non-finite values
+Floats::ulp(INF);   // INF
+Floats::ulp(-INF);  // INF
+Floats::ulp(NAN);   // INF
+```
+
+**Relationship with next():**
+
+The ULP approximately equals the difference between a value and `next($value)`:
+
+```php
+$value = 42.0;
+$ulp = Floats::ulp($value);
+$next = Floats::next($value);
+$diff = $next - $value;  // Approximately equals $ulp
+```
+
+**Understanding ULP:**
+
+ULP reveals why floating-point precision decreases at larger magnitudes:
+
+```php
+// Around 1.0, ULP is ~2.22e-16
+Floats::ulp(1.0);  // 2.220446049250313e-16
+
+// Around 1 trillion, ULP is ~0.00024
+Floats::ulp(1e12);  // 0.000244140625
+
+// This means there's no float between 1e12 and 1e12 + 0.00024
+```
+
+**Use Cases:**
+- Understanding floating-point precision limits
+- Implementing numerical algorithms with appropriate tolerances
+- Calculating rounding error bounds in error analysis
+- Testing floating-point code with appropriate epsilons
+- Debugging precision issues in calculations
+
+**See Also:**
+- `isExactInt()` - Check if a float represents an exact integer
+- `next()` - Get the next representable float
+- `previous()` - Get the previous representable float
 
 ### next()
 
@@ -988,7 +990,7 @@ $original === $reassembled;  // true
 public static function rand(float $min = -PHP_FLOAT_MAX, float $max = PHP_FLOAT_MAX): float
 ```
 
-Generate a random float in the specified range by constructing IEEE-754 components. This method can return any representable float within the given range.
+Generate a random float in the specified range by constructing IEEE-754 components. This method can return any representable float within the given range except -0.0.
 
 **Parameters:**
 - `$min` (float) - The minimum value (inclusive, default: -PHP_FLOAT_MAX)
@@ -1018,7 +1020,8 @@ $f = Floats::rand(5.0, 5.0);  // 5.0
 ```
 
 **Characteristics:**
-- Can return **any representable float** in the given range
+- Can return **any representable float** in the given range.
+- Will not return a special value (NaN, ±INF, or -0.0).
 - Uses IEEE-754 component assembly (sign, exponent, fraction)
 - Distribution is **not uniform** - more values near zero due to IEEE-754 density
 - Handles ranges spanning zero correctly
