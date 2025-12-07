@@ -15,312 +15,43 @@ use ValueError;
 #[CoversClass(Floats::class)]
 final class FloatsTest extends TestCase
 {
-    // region approxEqualAbsolute tests
+    // region approxEqual tests
 
     /**
-     * Test approxEqualAbsolute with identical values.
+     * Test approxEqual uses both relative and absolute tolerance.
      */
-    public function testApproxEqualAbsoluteWithIdenticalValues(): void
+    public function testApproxEqualWithBothTolerances(): void
     {
-        $this->assertTrue(Floats::approxEqualAbsolute(1.0, 1.0));
-        $this->assertTrue(Floats::approxEqualAbsolute(0.0, 0.0));
-        $this->assertTrue(Floats::approxEqualAbsolute(-5.5, -5.5));
-        $this->assertTrue(Floats::approxEqualAbsolute(1e100, 1e100));
-    }
-
-    /**
-     * Test approxEqualAbsolute with values within default epsilon.
-     */
-    public function testApproxEqualAbsoluteWithinDefaultEpsilon(): void
-    {
-        // Default epsilon is 1e-10
-        $this->assertTrue(Floats::approxEqualAbsolute(1.0, 1.0 + 1e-11));
-        $this->assertTrue(Floats::approxEqualAbsolute(1.0, 1.0 - 1e-11));
-        $this->assertTrue(Floats::approxEqualAbsolute(0.0, 1e-11));
-        $this->assertTrue(Floats::approxEqualAbsolute(0.0, -1e-11));
-    }
-
-    /**
-     * Test approxEqualAbsolute with values outside default epsilon.
-     */
-    public function testApproxEqualAbsoluteOutsideDefaultEpsilon(): void
-    {
-        // Default epsilon is 1e-10
-        $this->assertFalse(Floats::approxEqualAbsolute(1.0, 1.0 + 1e-9));
-        $this->assertFalse(Floats::approxEqualAbsolute(1.0, 1.0 - 1e-9));
-        $this->assertFalse(Floats::approxEqualAbsolute(0.0, 1e-9));
-    }
-
-    /**
-     * Test approxEqualAbsolute with custom epsilon.
-     */
-    public function testApproxEqualAbsoluteWithCustomEpsilon(): void
-    {
-        // Use a larger epsilon
-        $this->assertTrue(Floats::approxEqualAbsolute(1.0, 1.1, 0.2));
-        $this->assertTrue(Floats::approxEqualAbsolute(1.0, 0.9, 0.2));
-        $this->assertFalse(Floats::approxEqualAbsolute(1.0, 1.3, 0.2));
-
-        // Use a smaller epsilon
-        $this->assertFalse(Floats::approxEqualAbsolute(1.0, 1.0 + 1e-15, 1e-16));
-        $this->assertTrue(Floats::approxEqualAbsolute(1.0, 1.0 + 1e-17, 1e-16));
-    }
-
-    /**
-     * Test approxEqualAbsolute with zero epsilon (exact equality).
-     */
-    public function testApproxEqualAbsoluteWithZeroEpsilon(): void
-    {
-        $this->assertTrue(Floats::approxEqualAbsolute(1.0, 1.0, 0.0));
-        $this->assertFalse(Floats::approxEqualAbsolute(1.0, 1.0 + PHP_FLOAT_EPSILON, 0.0));
-    }
-
-    /**
-     * Test approxEqualAbsolute with negative epsilon throws ValueError.
-     */
-    public function testApproxEqualAbsoluteWithNegativeEpsilonThrows(): void
-    {
-        $this->expectException(ValueError::class);
-        $this->expectExceptionMessage('Epsilon must be non-negative');
-        Floats::approxEqualAbsolute(1.0, 1.0, -0.1);
-    }
-
-    /**
-     * Test approxEqualAbsolute with negative values.
-     */
-    public function testApproxEqualAbsoluteWithNegativeValues(): void
-    {
-        $this->assertTrue(Floats::approxEqualAbsolute(-1.0, -1.0));
-        $this->assertTrue(Floats::approxEqualAbsolute(-1.0, -1.0 + 1e-11));
-        $this->assertTrue(Floats::approxEqualAbsolute(-1.0, -1.0 - 1e-11));
-        $this->assertFalse(Floats::approxEqualAbsolute(-1.0, -2.0));
-    }
-
-    /**
-     * Test approxEqualAbsolute with values of opposite sign.
-     */
-    public function testApproxEqualAbsoluteWithOppositeSign(): void
-    {
-        $this->assertFalse(Floats::approxEqualAbsolute(1.0, -1.0));
-        $this->assertFalse(Floats::approxEqualAbsolute(-1.0, 1.0));
-        // But close to zero with appropriate epsilon
-        $this->assertTrue(Floats::approxEqualAbsolute(0.05, -0.05, 0.2));
-    }
-
-    /**
-     * Test approxEqualAbsolute with very large values.
-     * Note: absolute epsilon doesn't scale well with large values.
-     */
-    public function testApproxEqualAbsoluteWithLargeValues(): void
-    {
-        $large = 1e15;
-        $this->assertTrue(Floats::approxEqualAbsolute($large, $large));
-        $this->assertTrue(Floats::approxEqualAbsolute($large, $large + 1e-11));
-        // With absolute epsilon, large differences may still be considered equal
-        $this->assertFalse(Floats::approxEqualAbsolute($large, $large + 1.0));
-    }
-
-    /**
-     * Test approxEqualAbsolute with very small values.
-     */
-    public function testApproxEqualAbsoluteWithSmallValues(): void
-    {
-        $small = 1e-15;
-        $this->assertTrue(Floats::approxEqualAbsolute($small, $small));
-        $this->assertTrue(Floats::approxEqualAbsolute($small, $small + 1e-26));
-        $this->assertFalse(Floats::approxEqualAbsolute($small, $small * 2, 1e-16));
-    }
-
-    /**
-     * Test approxEqualAbsolute symmetry (order of arguments shouldn't matter).
-     */
-    public function testApproxEqualAbsoluteSymmetry(): void
-    {
-        $a = 1.0;
-        $b = 1.0 + 1e-11;
-
-        $this->assertSame(
-            Floats::approxEqualAbsolute($a, $b),
-            Floats::approxEqualAbsolute($b, $a)
-        );
-
-        $this->assertSame(
-            Floats::approxEqualAbsolute($a, $b, 1e-12),
-            Floats::approxEqualAbsolute($b, $a, 1e-12)
-        );
-    }
-
-    /**
-     * Test approxEqualAbsolute at boundary of epsilon.
-     * Note: The implementation uses <= not <, so values exactly at epsilon are considered equal.
-     */
-    public function testApproxEqualAbsoluteAtBoundary(): void
-    {
-        $epsilon = 0.1;
-
-        // Due to floating-point representation, abs(1.1 - 1.0) is slightly more than the literal 0.1
-        $this->assertFalse(Floats::approxEqualAbsolute(1.0, 1.1, $epsilon));
-
-        // Just under epsilon - should be true
-        $this->assertTrue(Floats::approxEqualAbsolute(1.0, 1.0999999, $epsilon));
-
-        // Test with a clean boundary using integer math
-        $this->assertTrue(Floats::approxEqualAbsolute(10.0, 10.0 + 1.0, 1.0));
-        $this->assertFalse(Floats::approxEqualAbsolute(10.0, 10.0 + 1.0000001, 1.0));
-    }
-
-    /**
-     * Test approxEqualAbsolute with zero values.
-     */
-    public function testApproxEqualAbsoluteWithZeros(): void
-    {
-        $this->assertTrue(Floats::approxEqualAbsolute(0.0, 0.0));
-        $this->assertTrue(Floats::approxEqualAbsolute(0.0, -0.0));
-        $this->assertTrue(Floats::approxEqualAbsolute(-0.0, 0.0));
-        $this->assertTrue(Floats::approxEqualAbsolute(-0.0, -0.0));
-    }
-
-    // endregion
-
-    // region approxEqualRelative tests
-
-    /**
-     * Test approxEqualRelative with identical values.
-     */
-    public function testApproxEqualRelativeWithIdenticalValues(): void
-    {
-        $this->assertTrue(Floats::approxEqualRelative(1.0, 1.0));
-        $this->assertTrue(Floats::approxEqualRelative(0.0, 0.0));
-        $this->assertTrue(Floats::approxEqualRelative(-5.5, -5.5));
-        $this->assertTrue(Floats::approxEqualRelative(1e100, 1e100));
-    }
-
-    /**
-     * Test approxEqualRelative scales with magnitude.
-     */
-    public function testApproxEqualRelativeScalesWithMagnitude(): void
-    {
-        // For values around 1.0, 1e-10 relative tolerance means 1e-10 absolute difference
-        $this->assertTrue(Floats::approxEqualRelative(1.0, 1.0 + 1e-11));
-        $this->assertFalse(Floats::approxEqualRelative(1.0, 1.0 + 1e-9));
-
-        // For values around 1e10, 1e-10 relative tolerance means 1.0 absolute difference
-        $large = 1e10;
-        $this->assertTrue(Floats::approxEqualRelative($large, $large + 0.5));
-        $this->assertFalse(Floats::approxEqualRelative($large, $large + 2.0));
-    }
-
-    /**
-     * Test approxEqualRelative with very large values.
-     */
-    public function testApproxEqualRelativeWithLargeValues(): void
-    {
-        $large = 1e20;
-        $this->assertTrue(Floats::approxEqualRelative($large, $large));
-        // With 1e-10 relative tolerance, values can differ by up to 1e10
-        $this->assertTrue(Floats::approxEqualRelative($large, $large + 1e9));
-        $this->assertFalse(Floats::approxEqualRelative($large, $large + 1e11));
-    }
-
-    /**
-     * Test approxEqualRelative with very small values.
-     * Note: Very small values (< PHP_FLOAT_EPSILON) use absolute comparison.
-     */
-    public function testApproxEqualRelativeWithSmallValues(): void
-    {
-        // Use values larger than PHP_FLOAT_EPSILON to avoid zero-handling
-        $small = 1e-10;
-        $this->assertTrue(Floats::approxEqualRelative($small, $small));
-        // With 1e-10 relative tolerance, values can differ by up to 1e-20
-        $this->assertTrue(Floats::approxEqualRelative($small, $small + 1e-21));
-        // Doubling changes value by 100%, much more than 1e-10
-        $this->assertFalse(Floats::approxEqualRelative($small, $small * 2, 1e-10));
-        // But with larger tolerance (50%), doubling is within range
-        $this->assertTrue(Floats::approxEqualRelative($small, $small * 2, 0.5));
-    }
-
-    /**
-     * Test approxEqualRelative with zero values uses absolute comparison.
-     */
-    public function testApproxEqualRelativeWithZeros(): void
-    {
-        $this->assertTrue(Floats::approxEqualRelative(0.0, 0.0));
-        $this->assertTrue(Floats::approxEqualRelative(0.0, -0.0));
-        // When comparing with zero, falls back to PHP_FLOAT_EPSILON
-        $this->assertTrue(Floats::approxEqualRelative(0.0, PHP_FLOAT_EPSILON / 2));
-        $this->assertFalse(Floats::approxEqualRelative(0.0, PHP_FLOAT_EPSILON * 2));
-    }
-
-    /**
-     * Test approxEqualRelative with custom epsilon.
-     */
-    public function testApproxEqualRelativeWithCustomEpsilon(): void
-    {
-        // 10% tolerance
-        $this->assertTrue(Floats::approxEqualRelative(100.0, 105.0, 0.1));
-        $this->assertFalse(Floats::approxEqualRelative(100.0, 115.0, 0.1));
-
-        // 1% tolerance
-        $this->assertTrue(Floats::approxEqualRelative(1000.0, 1005.0, 0.01));
-        $this->assertFalse(Floats::approxEqualRelative(1000.0, 1015.0, 0.01));
-    }
-
-    /**
-     * Test approxEqualRelative with negative epsilon throws ValueError.
-     */
-    public function testApproxEqualRelativeWithNegativeEpsilonThrows(): void
-    {
-        $this->expectException(ValueError::class);
-        $this->expectExceptionMessage('Epsilon must be non-negative');
-        Floats::approxEqualRelative(1.0, 1.0, -0.1);
-    }
-
-    /**
-     * Test approxEqualRelative symmetry.
-     */
-    public function testApproxEqualRelativeSymmetry(): void
-    {
-        $a = 100.0;
-        $b = 105.0;
-
-        $this->assertSame(
-            Floats::approxEqualRelative($a, $b, 0.1),
-            Floats::approxEqualRelative($b, $a, 0.1)
-        );
-    }
-
-    // endregion
-
-    // region approxEqual tests (dispatcher)
-
-    /**
-     * Test approxEqual defaults to relative comparison.
-     */
-    public function testApproxEqualDefaultsToRelative(): void
-    {
-        // Large values: relative works, absolute wouldn't
+        // Large values: relative tolerance handles scale
         $large = 1e20;
         $this->assertTrue(Floats::approxEqual($large, $large + 1e9));
-        // Verify it's using relative by checking with explicit absolute
-        $this->assertFalse(Floats::approxEqual($large, $large + 1e9, 1e-10, false));
+
+        // Small values near zero: absolute tolerance handles them
+        $this->assertTrue(Floats::approxEqual(0.0, PHP_FLOAT_EPSILON / 2));
+        $this->assertFalse(Floats::approxEqual(0.0, PHP_FLOAT_EPSILON * 2));
     }
 
     /**
-     * Test approxEqual with relative=true.
+     * Test approxEqual with custom tolerances.
      */
-    public function testApproxEqualWithRelativeTrue(): void
+    public function testApproxEqualWithCustomTolerances(): void
     {
-        $this->assertTrue(Floats::approxEqual(100.0, 105.0, 0.1, true));
-        $this->assertFalse(Floats::approxEqual(100.0, 115.0, 0.1, true));
+        // 10% relative tolerance, 1.0 absolute tolerance
+        $this->assertTrue(Floats::approxEqual(100.0, 105.0, 0.1, 1.0));
+        $this->assertFalse(Floats::approxEqual(100.0, 115.0, 0.1, 1.0));
+
+        // Absolute tolerance catches values near zero
+        $this->assertTrue(Floats::approxEqual(0.0, 0.5, 1e-9, 1.0));
     }
 
     /**
-     * Test approxEqual with relative=false uses absolute comparison.
+     * Test approxEqual with negative tolerances throws ValueError.
      */
-    public function testApproxEqualWithRelativeFalse(): void
+    public function testApproxEqualWithNegativeTolerancesThrows(): void
     {
-        $this->assertTrue(Floats::approxEqual(1.0, 1.05, 0.1, false));
-        $this->assertFalse(Floats::approxEqual(1.0, 1.15, 0.1, false));
+        $this->expectException(ValueError::class);
+        $this->expectExceptionMessage('Tolerances must be non-negative');
+        Floats::approxEqual(1.0, 1.0, -0.1, 0.0);
     }
 
     /**
@@ -334,6 +65,57 @@ final class FloatsTest extends TestCase
         $this->assertTrue(Floats::approxEqual(-0.0, -0.0));
     }
 
+    /**
+     * Test approxEqual with same infinities returns true.
+     */
+    public function testApproxEqualWithSameInfinity(): void
+    {
+        // INF and -INF are only considered close to themselves (matching Python's isclose behavior)
+        $this->assertTrue(Floats::approxEqual(INF, INF));
+        $this->assertTrue(Floats::approxEqual(-INF, -INF));
+    }
+
+    /**
+     * Test approxEqual with infinity and finite value returns false.
+     */
+    public function testApproxEqualWithInfinityAndFinite(): void
+    {
+        // Infinity with finite value returns false
+        $this->assertFalse(Floats::approxEqual(INF, 1.0));
+        $this->assertFalse(Floats::approxEqual(1.0, INF));
+        $this->assertFalse(Floats::approxEqual(-INF, 1.0));
+        $this->assertFalse(Floats::approxEqual(1.0, -INF));
+    }
+
+    /**
+     * Test approxEqual with opposite infinities returns false.
+     */
+    public function testApproxEqualWithOppositeInfinities(): void
+    {
+        // Opposite infinities are not close to each other
+        $this->assertFalse(Floats::approxEqual(INF, -INF));
+        $this->assertFalse(Floats::approxEqual(-INF, INF));
+    }
+
+    /**
+     * Test approxEqual with NAN returns false.
+     */
+    public function testApproxEqualWithNan(): void
+    {
+        // NAN is never equal to anything, including itself
+        $this->assertFalse(Floats::approxEqual(NAN, NAN));
+    }
+
+    /**
+     * Test approxEqual with NAN and finite value returns false.
+     */
+    public function testApproxEqualWithNanAndFinite(): void
+    {
+        // NAN with any finite value returns false
+        $this->assertFalse(Floats::approxEqual(NAN, 0.0));
+        $this->assertFalse(Floats::approxEqual(0.0, NAN));
+    }
+
     // endregion
 
     // region compare tests
@@ -341,69 +123,64 @@ final class FloatsTest extends TestCase
     /**
      * Test compare with equal values.
      */
-    public function testCompareWithEqualValues(): void
+    public function testApproxCompareWithEqualValues(): void
     {
-        $this->assertSame(0, Floats::compare(1.0, 1.0));
-        $this->assertSame(0, Floats::compare(0.0, 0.0));
-        $this->assertSame(0, Floats::compare(-5.5, -5.5));
+        $this->assertSame(0, Floats::approxCompare(1.0, 1.0));
+        $this->assertSame(0, Floats::approxCompare(0.0, 0.0));
+        $this->assertSame(0, Floats::approxCompare(-5.5, -5.5));
     }
 
     /**
-     * Test compare with approximately equal values (relative).
+     * Test compare with approximately equal values.
      */
-    public function testCompareWithApproximatelyEqualRelative(): void
+    public function testApproxCompareWithApproximatelyEqual(): void
     {
-        // Default uses relative comparison
+        // Uses combined relative and absolute tolerance
         $large = 1e20;
-        $this->assertSame(0, Floats::compare($large, $large + 1e9));
+        $this->assertSame(0, Floats::approxCompare($large, $large + 1e9));
+
+        // Absolute tolerance handles values near zero
+        $this->assertSame(0, Floats::approxCompare(0.0, PHP_FLOAT_EPSILON / 2));
     }
 
     /**
      * Test compare with less than.
      */
-    public function testCompareWithLessThan(): void
+    public function testApproxCompareWithLessThan(): void
     {
-        $this->assertSame(-1, Floats::compare(1.0, 2.0));
-        $this->assertSame(-1, Floats::compare(-5.0, -4.0));
-        $this->assertSame(-1, Floats::compare(0.0, 1.0));
+        $this->assertSame(-1, Floats::approxCompare(1.0, 2.0));
+        $this->assertSame(-1, Floats::approxCompare(-5.0, -4.0));
+        $this->assertSame(-1, Floats::approxCompare(0.0, 1.0));
     }
 
     /**
      * Test compare with greater than.
      */
-    public function testCompareWithGreaterThan(): void
+    public function testApproxCompareWithGreaterThan(): void
     {
-        $this->assertSame(1, Floats::compare(2.0, 1.0));
-        $this->assertSame(1, Floats::compare(-4.0, -5.0));
-        $this->assertSame(1, Floats::compare(1.0, 0.0));
+        $this->assertSame(1, Floats::approxCompare(2.0, 1.0));
+        $this->assertSame(1, Floats::approxCompare(-4.0, -5.0));
+        $this->assertSame(1, Floats::approxCompare(1.0, 0.0));
     }
 
     /**
-     * Test compare with custom epsilon.
+     * Test compare with custom tolerances.
      */
-    public function testCompareWithCustomEpsilon(): void
+    public function testApproxCompareWithCustomTolerances(): void
     {
-        $this->assertSame(0, Floats::compare(100.0, 105.0, 0.1, true));
-        $this->assertSame(-1, Floats::compare(100.0, 115.0, 0.1, true));
+        // 10% relative, 1.0 absolute
+        $this->assertSame(0, Floats::approxCompare(100.0, 105.0, 0.1, 1.0));
+        $this->assertSame(-1, Floats::approxCompare(100.0, 115.0, 0.1, 1.0));
     }
 
     /**
-     * Test compare with absolute comparison.
+     * Test compare with negative tolerance throws ValueError.
      */
-    public function testCompareWithAbsolute(): void
-    {
-        $this->assertSame(0, Floats::compare(1.0, 1.05, 0.1, false));
-        $this->assertSame(-1, Floats::compare(1.0, 1.15, 0.1, false));
-    }
-
-    /**
-     * Test compare with negative epsilon throws ValueError.
-     */
-    public function testCompareWithNegativeEpsilonThrows(): void
+    public function testApproxCompareWithNegativeToleranceThrows(): void
     {
         $this->expectException(ValueError::class);
-        $this->expectExceptionMessage('Epsilon must be non-negative');
-        Floats::compare(1.0, 1.0, -0.1);
+        $this->expectExceptionMessage('Tolerances must be non-negative');
+        Floats::approxCompare(1.0, 1.0, -0.1, 0.0);
     }
 
     // endregion
@@ -431,7 +208,7 @@ final class FloatsTest extends TestCase
         $this->assertSame(INF, Floats::normalizeZero(INF));
         $this->assertSame(-INF, Floats::normalizeZero(-INF));
 
-        // Test that NaN is unchanged (NaN !== NaN, so use is_nan).
+        // Test that NAN is unchanged (NAN !== NAN, so use is_nan).
         $this->assertTrue(is_nan(Floats::normalizeZero(NAN)));
     }
 
@@ -667,9 +444,9 @@ final class FloatsTest extends TestCase
     }
 
     /**
-     * Test ULP with NaN returns INF.
+     * Test ULP with NAN returns INF.
      */
-    public function testUlpWithNaN(): void
+    public function testUlpWithNan(): void
     {
         $this->assertSame(INF, Floats::ulp(NAN));
     }
@@ -845,7 +622,7 @@ final class FloatsTest extends TestCase
         $this->assertFalse(Floats::isNegativeZero(INF));
         $this->assertFalse(Floats::isNegativeZero(-INF));
 
-        // Test that NaN is not negative zero.
+        // Test that NAN is not negative zero.
         $this->assertFalse(Floats::isNegativeZero(NAN));
     }
 
@@ -870,7 +647,7 @@ final class FloatsTest extends TestCase
         $this->assertFalse(Floats::isPositiveZero(INF));
         $this->assertFalse(Floats::isPositiveZero(-INF));
 
-        // Test that NaN is not positive zero.
+        // Test that NAN is not positive zero.
         $this->assertFalse(Floats::isPositiveZero(NAN));
     }
 
@@ -900,7 +677,7 @@ final class FloatsTest extends TestCase
         // Test that positive infinity is not negative.
         $this->assertFalse(Floats::isNegative(INF));
 
-        // Test that NaN is not negative.
+        // Test that NAN is not negative.
         $this->assertFalse(Floats::isNegative(NAN));
     }
 
@@ -930,7 +707,7 @@ final class FloatsTest extends TestCase
         // Test that negative infinity is not positive.
         $this->assertFalse(Floats::isPositive(-INF));
 
-        // Test that NaN is not positive.
+        // Test that NAN is not positive.
         $this->assertFalse(Floats::isPositive(NAN));
     }
 
@@ -939,7 +716,7 @@ final class FloatsTest extends TestCase
      */
     public function testIsSpecial(): void
     {
-        // Test that NaN is identified as special.
+        // Test that NAN is identified as special.
         $this->assertTrue(Floats::isSpecial(NAN));
 
         // Test that negative zero is identified as special.
@@ -1012,9 +789,9 @@ final class FloatsTest extends TestCase
     }
 
     /**
-     * Test next with NaN returns NaN.
+     * Test next with NAN returns NAN.
      */
-    public function testNextWithNaN(): void
+    public function testNextWithNan(): void
     {
         $next = Floats::next(NAN);
         $this->assertTrue(is_nan($next));
@@ -1102,9 +879,9 @@ final class FloatsTest extends TestCase
     }
 
     /**
-     * Test previous with NaN returns NaN.
+     * Test previous with NAN returns NAN.
      */
-    public function testPreviousWithNaN(): void
+    public function testPreviousWithNan(): void
     {
         $prev = Floats::previous(NAN);
         $this->assertTrue(is_nan($prev));
@@ -1329,13 +1106,13 @@ final class FloatsTest extends TestCase
     }
 
     /**
-     * Test disassemble with NaN.
+     * Test disassemble with NAN.
      */
-    public function testDisassembleNaN(): void
+    public function testDisassembleNan(): void
     {
         $result = Floats::disassemble(NAN);
 
-        // NaN has exponent all 1s and non-zero fraction
+        // NAN has exponent all 1s and non-zero fraction
         $this->assertSame(2047, $result['exponent']);
         $this->assertGreaterThan(0, $result['fraction']);
     }
@@ -1415,9 +1192,9 @@ final class FloatsTest extends TestCase
     }
 
     /**
-     * Test assemble with NaN (exponent 2047, non-zero fraction).
+     * Test assemble with NAN (exponent 2047, non-zero fraction).
      */
-    public function testAssembleNaN(): void
+    public function testAssembleNan(): void
     {
         $result = Floats::assemble(0, 2047, 1);
         $this->assertTrue(is_nan($result));
@@ -1510,7 +1287,7 @@ final class FloatsTest extends TestCase
         for ($i = 0; $i < 100; $i++) {
             $f = Floats::rand();
             $this->assertTrue(is_finite($f), 'Random float should be finite');
-            $this->assertFalse(is_nan($f), 'Random float should not be NaN');
+            $this->assertFalse(is_nan($f), 'Random float should not be NAN');
             $this->assertFalse(Floats::isSpecial($f), 'Random float should not be special');
         }
     }
@@ -1575,13 +1352,12 @@ final class FloatsTest extends TestCase
     }
 
     /**
-     * Test randUniform with min equal to max.
+     * Test randUniform with min >= max throws ValueError.
      */
     public function testRandUniformWithMinEqualToMax(): void
     {
-        $value = 42.5;
-        $f = Floats::randUniform($value, $value);
-        $this->assertSame($value, $f);
+        $f = Floats::randUniform(42.5, 42.5);
+        $this->assertEquals(42.5, $f);
     }
 
     /**
@@ -1595,7 +1371,7 @@ final class FloatsTest extends TestCase
     }
 
     /**
-     * Test randUniform with NaN min throws ValueError.
+     * Test randUniform with NAN min throws ValueError.
      */
     public function testRandUniformWithNanMinThrows(): void
     {
@@ -1605,7 +1381,7 @@ final class FloatsTest extends TestCase
     }
 
     /**
-     * Test randUniform with NaN max throws ValueError.
+     * Test randUniform with NAN max throws ValueError.
      */
     public function testRandUniformWithNanMaxThrows(): void
     {
@@ -1635,24 +1411,54 @@ final class FloatsTest extends TestCase
     }
 
     /**
-     * Test randUniform with negative zero accepts the value (treats as zero).
+     * Test randUniform with negative zero as min or max normalizes to positive zero.
      */
-    public function testRandUniformWithNegativeZeroMin(): void
+    public function testRandUniformWithNegativeZero(): void
     {
-        // -0.0 is finite and compares equal to 0.0, so it's accepted
+        // -0.0 should be treated as 0.0, so this creates a valid range [0.0, 10.0]
         $f = Floats::randUniform(-0.0, 10.0);
         $this->assertGreaterThanOrEqual(0.0, $f);
         $this->assertLessThanOrEqual(10.0, $f);
     }
 
     /**
-     * Test randUniform with negative zero max accepts the value (treats as zero).
+     * Test randUniform generates no duplicates.
+     * This test creates a range of exactly 10 adjacent floats and samples it many times, to ensure an even distribution
+     * across all possible results from the method.
+     * With optimal step calculation, we should never get duplicates.
      */
-    public function testRandUniformWithNegativeZeroMax(): void
+    public function testRandUniformNoCollisions(): void
     {
-        // -0.0 compares equal to 0.0, so range [0.0, -0.0] is valid but degenerate
-        $f = Floats::randUniform(0.0, -0.0);
-        $this->assertSame(0.0, $f);
+        // Build a range of exactly 10 adjacent floats starting from 1.0
+        $nValues = 10;
+        $min = 1.0;
+        $max = $min;
+        $counts[Floats::toHex($min)] = 0;
+        for ($i = 0; $i < $nValues - 1; $i++) {
+            $f = Floats::next($max);
+            $counts[Floats::toHex($f)] = 0;
+            $max = $f;
+        }
+
+        // Sample the range many times, and count how many times each value appears.
+        $nIters = 100000;
+        for ($i = 0; $i < $nIters; $i++) {
+            $f = Floats::randUniform($min, $max);
+            $counts[Floats::toHex($f)]++;
+        }
+
+//        echo Floats::toHex($min) . ' - ' . Floats::toHex($max) . "\n";
+//        var_dump($counts);
+
+        // Check we got the right number of results.
+        $this->assertEquals($nValues, count($counts));
+
+        // Check we got a reasonably even distribution across the possible values.
+        $avg = $nIters / $nValues;
+        foreach ($counts as $count) {
+            $this->assertGreaterThanOrEqual($avg * 0.9, $count);
+            $this->assertLessThanOrEqual($avg * 1.1, $count);
+        }
     }
 
     /**
@@ -1738,7 +1544,7 @@ final class FloatsTest extends TestCase
     }
 
     /**
-     * Test rand with NaN throws ValueError.
+     * Test rand with NAN throws ValueError.
      */
     public function testRandWithRangeWithNanThrows(): void
     {

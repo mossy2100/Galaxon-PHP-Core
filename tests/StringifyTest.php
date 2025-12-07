@@ -100,14 +100,14 @@ final class StringifyTest extends TestCase
      */
     public function testStringifyFloatSpecial(): void
     {
-        // Test NaN.
-        $this->assertSame('NaN', Stringify::stringifyFloat(NAN));
+        // Test NAN.
+        $this->assertSame('NAN', Stringify::stringifyFloat(NAN));
 
         // Test positive infinity.
-        $this->assertSame('∞', Stringify::stringifyFloat(INF));
+        $this->assertSame('INF', Stringify::stringifyFloat(INF));
 
         // Test negative infinity.
-        $this->assertSame('-∞', Stringify::stringifyFloat(-INF));
+        $this->assertSame('-INF', Stringify::stringifyFloat(-INF));
     }
 
     /**
@@ -367,8 +367,8 @@ final class StringifyTest extends TestCase
         // Test that stringify correctly handles floats.
         $this->assertSame('5.0', Stringify::stringify(5.0));
         $this->assertSame('3.14', Stringify::stringify(3.14));
-        $this->assertSame('NaN', Stringify::stringify(NAN));
-        $this->assertSame('∞', Stringify::stringify(INF));
+        $this->assertSame('NAN', Stringify::stringify(NAN));
+        $this->assertSame('INF', Stringify::stringify(INF));
     }
 
     /**

@@ -19,67 +19,6 @@ use ValueError;
 final class TypesTest extends TestCase
 {
     /**
-     * Test detection of numeric types.
-     */
-    public function testIsNumber(): void
-    {
-        // Test that integers are identified as numbers.
-        $this->assertTrue(Types::isNumber(0));
-        $this->assertTrue(Types::isNumber(42));
-        $this->assertTrue(Types::isNumber(-17));
-
-        // Test that floats are identified as numbers.
-        $this->assertTrue(Types::isNumber(0.0));
-        $this->assertTrue(Types::isNumber(3.14));
-        $this->assertTrue(Types::isNumber(-2.5));
-
-        // Test that special float values are identified as numbers.
-        $this->assertTrue(Types::isNumber(INF));
-        $this->assertTrue(Types::isNumber(-INF));
-        $this->assertTrue(Types::isNumber(NAN));
-
-        // Test that numeric strings are NOT identified as numbers.
-        $this->assertFalse(Types::isNumber('42'));
-        $this->assertFalse(Types::isNumber('3.14'));
-
-        // Test that other types are not identified as numbers.
-        $this->assertFalse(Types::isNumber('hello'));
-        $this->assertFalse(Types::isNumber(true));
-        $this->assertFalse(Types::isNumber(false));
-        $this->assertFalse(Types::isNumber(null));
-        $this->assertFalse(Types::isNumber([]));
-        $this->assertFalse(Types::isNumber(new stdClass()));
-    }
-
-    /**
-     * Test detection of unsigned integers.
-     */
-    public function testIsUint(): void
-    {
-        // Test that zero is identified as unsigned integer.
-        $this->assertTrue(Types::isUint(0));
-
-        // Test that positive integers are identified as unsigned integers.
-        $this->assertTrue(Types::isUint(1));
-        $this->assertTrue(Types::isUint(42));
-        $this->assertTrue(Types::isUint(1000000));
-
-        // Test that negative integers are NOT identified as unsigned integers.
-        $this->assertFalse(Types::isUint(-1));
-        $this->assertFalse(Types::isUint(-42));
-
-        // Test that floats are NOT identified as unsigned integers.
-        $this->assertFalse(Types::isUint(0.0));
-        $this->assertFalse(Types::isUint(3.14));
-        $this->assertFalse(Types::isUint(-2.5));
-
-        // Test that other types are not identified as unsigned integers.
-        $this->assertFalse(Types::isUint('42'));
-        $this->assertFalse(Types::isUint(true));
-        $this->assertFalse(Types::isUint(null));
-    }
-
-    /**
      * Test getBasicType with null.
      */
     public function testGetBasicTypeNull(): void
@@ -369,6 +308,144 @@ final class TypesTest extends TestCase
         // Test with null given.
         $error = Types::createError('value', 'string', null);
         $this->assertStringContainsString('null given', $error->getMessage());
+    }
+
+    /**
+     * Test haveSameType with identical primitive types.
+     */
+    public function testHaveSameTypeWithIdenticalPrimitives(): void
+    {
+        $this->assertTrue(Types::haveSameType(1, 2));
+        $this->assertTrue(Types::haveSameType(1.0, 2.5));
+        $this->assertTrue(Types::haveSameType('hello', 'world'));
+        $this->assertTrue(Types::haveSameType(true, false));
+        $this->assertTrue(Types::haveSameType(null, null));
+    }
+
+    /**
+     * Test haveSameType with different primitive types.
+     */
+    public function testHaveSameTypeWithDifferentPrimitives(): void
+    {
+        $this->assertFalse(Types::haveSameType(1, 1.0));
+        $this->assertFalse(Types::haveSameType(1, '1'));
+        $this->assertFalse(Types::haveSameType(1, true));
+        $this->assertFalse(Types::haveSameType(0, null));
+        $this->assertFalse(Types::haveSameType('', false));
+        $this->assertFalse(Types::haveSameType(1.0, '1.0'));
+    }
+
+    /**
+     * Test haveSameType with arrays.
+     */
+    public function testHaveSameTypeWithArrays(): void
+    {
+        $this->assertTrue(Types::haveSameType([], [1, 2, 3]));
+        $this->assertTrue(Types::haveSameType(['a' => 1], ['b' => 2]));
+        $this->assertFalse(Types::haveSameType([], new stdClass()));
+    }
+
+    /**
+     * Test haveSameType with same object class.
+     */
+    public function testHaveSameTypeWithSameObjectClass(): void
+    {
+        $obj1 = new stdClass();
+        $obj2 = new stdClass();
+        $this->assertTrue(Types::haveSameType($obj1, $obj2));
+
+        $dt1 = new DateTime();
+        $dt2 = new DateTime();
+        $this->assertTrue(Types::haveSameType($dt1, $dt2));
+    }
+
+    /**
+     * Test haveSameType with different object classes.
+     */
+    public function testHaveSameTypeWithDifferentObjectClasses(): void
+    {
+        $obj1 = new stdClass();
+        $obj2 = new DateTime();
+        $this->assertFalse(Types::haveSameType($obj1, $obj2));
+    }
+
+    /**
+     * Test haveSameType with anonymous classes.
+     * Note: get_debug_type() returns 'class@anonymous' for all anonymous classes.
+     */
+    public function testHaveSameTypeWithAnonymousClasses(): void
+    {
+        $obj1 = new class {
+        };
+        $obj2 = new class {
+        };
+        // All anonymous classes have the same type name according to get_debug_type()
+        $this->assertTrue(Types::haveSameType($obj1, $obj2));
+    }
+
+    /**
+     * Test haveSameType with resources.
+     */
+    public function testHaveSameTypeWithResources(): void
+    {
+        $r1 = fopen('php://memory', 'rb');
+        $r2 = fopen('php://memory', 'rb');
+        $this->assertNotFalse($r1);
+        $this->assertNotFalse($r2);
+        $this->assertTrue(Types::haveSameType($r1, $r2));
+        fclose($r1);
+        fclose($r2);
+    }
+
+    /**
+     * Test haveSameType with resource and non-resource.
+     */
+    public function testHaveSameTypeWithResourceAndNonResource(): void
+    {
+        $r = fopen('php://memory', 'rb');
+        $this->assertNotFalse($r);
+        $this->assertFalse(Types::haveSameType($r, 'not a resource'));
+        $this->assertFalse(Types::haveSameType($r, new stdClass()));
+        fclose($r);
+    }
+
+    /**
+     * Test haveSameType with special float values.
+     */
+    public function testHaveSameTypeWithSpecialFloats(): void
+    {
+        $this->assertTrue(Types::haveSameType(INF, -INF));
+        $this->assertTrue(Types::haveSameType(NAN, 1.0));
+        $this->assertTrue(Types::haveSameType(0.0, -0.0));
+        $this->assertFalse(Types::haveSameType(INF, 1));
+    }
+
+    /**
+     * Test haveSameType with parent and child classes.
+     */
+    public function testHaveSameTypeWithInheritance(): void
+    {
+        $parent = new ClassNotUsingTrait();
+        $child = new ChildClassUsingTrait();
+        $this->assertFalse(Types::haveSameType($parent, $child));
+    }
+
+    /**
+     * Test haveSameType is symmetric.
+     */
+    public function testHaveSameTypeSymmetry(): void
+    {
+        $this->assertSame(
+            Types::haveSameType(1, 'hello'),
+            Types::haveSameType('hello', 1)
+        );
+
+        $obj1 = new stdClass();
+        $obj2 = new DateTime();
+        $this->assertSame(
+            Types::haveSameType($obj1, $obj2),
+            Types::haveSameType($obj2, $obj1)
+        );
     }
 
     /**

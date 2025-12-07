@@ -8,102 +8,34 @@ This class provides utilities for working with the signs of numbers (both intege
 
 ## Methods
 
-### sign()
+### isNumber()
 
 ```php
-public static function sign(int|float $value, bool $zeroForZero = true): int
+public static function isNumber(mixed $value): bool
 ```
 
-Get the sign of a number. This method supports two modes of operation depending on how you want zero values to be handled.
+Check if a value is a number (int or float). This differs from PHP's `is_numeric()` function, which also returns `true` for numeric strings.
 
 **Parameters:**
-- `$value` (int|float) - The number to check
-- `$zeroForZero` (bool) - If `true` (default), return 0 for zero; if `false`, return the sign of zero (-1 for -0.0, 1 otherwise)
+- `$value` (mixed) - The value to check
 
 **Returns:**
-- `int` - Returns 1 for positive, -1 for negative, or 0 for zero (if `$zeroForZero` is `true`)
+- `bool` - Returns `true` if the value is an int or float, `false` otherwise
 
 **Examples:**
 
-Default behavior (return 0 for zero):
 ```php
-Numbers::sign(42);      // 1
-Numbers::sign(-42);     // -1
-Numbers::sign(0);       // 0
-Numbers::sign(0.0);     // 0
-Numbers::sign(-0.0);    // 0
-Numbers::sign(INF);     // 1
-Numbers::sign(-INF);    // -1
+Numbers::isNumber(42);         // true
+Numbers::isNumber(3.14);       // true
+Numbers::isNumber(INF);        // true
+Numbers::isNumber(NAN);        // true
+Numbers::isNumber("42");       // false (numeric string)
+Numbers::isNumber("3.14");     // false (numeric string)
+Numbers::isNumber(true);       // false
+Numbers::isNumber(null);       // false
 ```
 
-With `$zeroForZero = false` (distinguish between -0.0 and +0.0):
-```php
-Numbers::sign(42, false);      // 1
-Numbers::sign(-42, false);     // -1
-Numbers::sign(0, false);       // 1 (integer 0 is considered positive)
-Numbers::sign(0.0, false);     // 1
-Numbers::sign(-0.0, false);    // -1
-```
-
-**Use Cases:**
-- Mathematical algorithms requiring signum function
-- Comparisons where sign matters
-- Working with IEEE-754 operations that distinguish -0.0 from +0.0
-
-### copySign()
-
-```php
-public static function copySign(int|float $num, int|float $signSource): int|float
-```
-
-Copy the sign of one number to another. Returns a value with the magnitude of the first parameter and the sign of the second parameter.
-
-**Parameters:**
-- `$num` (int|float) - The number whose magnitude to use
-- `$signSource` (int|float) - The number whose sign to copy
-
-**Returns:**
-- `int|float` - The magnitude of `$num` with the sign of `$signSource`
-
-**Throws:**
-- `ValueError` - If NaN is passed as either parameter (NaN doesn't have a defined sign)
-
-**Examples:**
-
-Basic usage:
-```php
-Numbers::copySign(5, 10);      // 5 (positive magnitude, positive sign)
-Numbers::copySign(5, -10);     // -5 (positive magnitude, negative sign)
-Numbers::copySign(-5, 10);     // 5 (negative magnitude, positive sign)
-Numbers::copySign(-5, -10);    // -5 (negative magnitude, negative sign)
-```
-
-With zero:
-```php
-Numbers::copySign(5, 0.0);     // 5 (sign of +0.0 is positive)
-Numbers::copySign(5, -0.0);    // -5 (sign of -0.0 is negative)
-Numbers::copySign(0.0, -10);   // -0.0 (zero with negative sign)
-```
-
-With infinity:
-```php
-Numbers::copySign(5, INF);     // 5
-Numbers::copySign(5, -INF);    // -5
-Numbers::copySign(INF, -10);   // -INF
-```
-
-Error cases:
-```php
-Numbers::copySign(NAN, 5);     // throws ValueError
-Numbers::copySign(5, NAN);     // throws ValueError
-```
-
-**Use Cases:**
-- Implementing mathematical functions that need to preserve sign relationships
-- Working with algorithms that require specific sign control (e.g., coordinate transformations)
-- Ensuring consistent sign handling across calculations
-
-**Note:** Similar to C's `copysign()` function, but with explicit NaN rejection for clarity.
+**Use Case:** When you need strict type checking that distinguishes actual numbers from numeric strings.
 
 ### equal()
 
@@ -261,3 +193,100 @@ Numbers::approxEqual(1.0, 1.0 + 1e-15, 1e-14);  // true
 - `Floats::approxEqual()` - Float-specific approximate comparison
 - `Floats::approxEqualAbsolute()` - Explicit absolute comparison
 - `Floats::approxEqualRelative()` - Explicit relative comparison
+
+### sign()
+
+```php
+public static function sign(int|float $value, bool $zeroForZero = true): int
+```
+
+Get the sign of a number. This method supports two modes of operation depending on how you want zero values to be handled.
+
+**Parameters:**
+- `$value` (int|float) - The number to check
+- `$zeroForZero` (bool) - If `true` (default), return 0 for zero; if `false`, return the sign of zero (-1 for -0.0, 1 otherwise)
+
+**Returns:**
+- `int` - Returns 1 for positive, -1 for negative, or 0 for zero (if `$zeroForZero` is `true`)
+
+**Examples:**
+
+Default behavior (return 0 for zero):
+```php
+Numbers::sign(42);      // 1
+Numbers::sign(-42);     // -1
+Numbers::sign(0);       // 0
+Numbers::sign(0.0);     // 0
+Numbers::sign(-0.0);    // 0
+Numbers::sign(INF);     // 1
+Numbers::sign(-INF);    // -1
+```
+
+With `$zeroForZero = false` (distinguish between -0.0 and +0.0):
+```php
+Numbers::sign(42, false);      // 1
+Numbers::sign(-42, false);     // -1
+Numbers::sign(0, false);       // 1 (integer 0 is considered positive)
+Numbers::sign(0.0, false);     // 1
+Numbers::sign(-0.0, false);    // -1
+```
+
+**Use Cases:**
+- Mathematical algorithms requiring signum function
+- Comparisons where sign matters
+- Working with IEEE-754 operations that distinguish -0.0 from +0.0
+
+### copySign()
+
+```php
+public static function copySign(int|float $num, int|float $signSource): int|float
+```
+
+Copy the sign of one number to another. Returns a value with the magnitude of the first parameter and the sign of the second parameter.
+
+**Parameters:**
+- `$num` (int|float) - The number whose magnitude to use
+- `$signSource` (int|float) - The number whose sign to copy
+
+**Returns:**
+- `int|float` - The magnitude of `$num` with the sign of `$signSource`
+
+**Throws:**
+- `ValueError` - If NaN is passed as either parameter (NaN doesn't have a defined sign)
+
+**Examples:**
+
+Basic usage:
+```php
+Numbers::copySign(5, 10);      // 5 (positive magnitude, positive sign)
+Numbers::copySign(5, -10);     // -5 (positive magnitude, negative sign)
+Numbers::copySign(-5, 10);     // 5 (negative magnitude, positive sign)
+Numbers::copySign(-5, -10);    // -5 (negative magnitude, negative sign)
+```
+
+With zero:
+```php
+Numbers::copySign(5, 0.0);     // 5 (sign of +0.0 is positive)
+Numbers::copySign(5, -0.0);    // -5 (sign of -0.0 is negative)
+Numbers::copySign(0.0, -10);   // -0.0 (zero with negative sign)
+```
+
+With infinity:
+```php
+Numbers::copySign(5, INF);     // 5
+Numbers::copySign(5, -INF);    // -5
+Numbers::copySign(INF, -10);   // -INF
+```
+
+Error cases:
+```php
+Numbers::copySign(NAN, 5);     // throws ValueError
+Numbers::copySign(5, NAN);     // throws ValueError
+```
+
+**Use Cases:**
+- Implementing mathematical functions that need to preserve sign relationships
+- Working with algorithms that require specific sign control (e.g., coordinate transformations)
+- Ensuring consistent sign handling across calculations
+
+**Note:** Similar to C's `copysign()` function, but with explicit NaN rejection for clarity.

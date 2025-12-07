@@ -7,6 +7,103 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2025-02-08
+
+### Breaking Changes
+
+- **Equatable converted from interface to trait**
+  - Changed from `interface Equatable` to `trait Equatable`
+  - Classes must now use `use Equatable;` instead of `implements Equatable`
+  - Provides better composition with other comparison traits
+  - Namespace unchanged: `Galaxon\Core\Traits\Equatable`
+
+- **Comparable namespace changed and converted to abstract trait**
+  - Moved from `Galaxon\Core\Comparable` to `Galaxon\Core\Traits\Comparable`
+  - No longer provides default `compare()` implementation
+  - Now requires implementing class to provide `compare()` method
+  - Uses Equatable trait via composition
+  - Method `equals()` renamed to `equal()` for consistency
+
+- **Floats::approxEqual() signature changed**
+  - Now mimics Python's `math.isclose()` behavior
+  - Parameters changed from `($f1, $f2, $epsilon, $relative)` to `($a, $b, $relTol, $absTol)`
+  - Default relative tolerance: `1e-9` (new constant `DEFAULT_RELATIVE_TOLERANCE`)
+  - Default absolute tolerance: `PHP_FLOAT_EPSILON` (new constant `DEFAULT_ABSOLUTE_TOLERANCE`)
+  - Removed `$relative` parameter - now uses combined relative and absolute tolerance
+  - IEEE-754 special value handling: `INF === INF`, `-INF === -INF`, `NaN` never equals anything
+  - Removed `approxEqualAbsolute()` and `approxEqualRelative()` methods
+
+- **Comparison method names standardized**
+  - `equals()` → `equal()` across all traits
+  - `isLessThan()` → `lessThan()`
+  - `isGreaterThan()` → `greaterThan()`
+  - `isLessThanOrEqual()` → `lessThanOrEqual()`
+  - `isGreaterThanOrEqual()` → `greaterThanOrEqual()`
+
+### Added
+
+- **ApproxEquatable trait** (`Galaxon\Core\Traits\ApproxEquatable`)
+  - Extends Equatable with tolerance-based comparison
+  - Abstract `approxEqual()` method for floating-point equality within tolerances
+  - For types without natural ordering (e.g., Complex numbers)
+
+- **ApproxComparable trait** (`Galaxon\Core\Traits\ApproxComparable`)
+  - Combines Comparable and ApproxEquatable for complete comparison suite
+  - Provides `approxCompare()` method for approximate ordering comparison
+  - For types with natural ordering that contain floating-point values (e.g., Rational numbers)
+
+- **Floats constants**
+  - `DEFAULT_RELATIVE_TOLERANCE` (1e-9) - Default relative tolerance for `approxEqual()`
+  - `DEFAULT_ABSOLUTE_TOLERANCE` (PHP_FLOAT_EPSILON) - Default absolute tolerance
+  - `MAX_EXACT_INT` (2^53) - Maximum integer exactly representable as float
+
+- **Types::haveSameType()** - Check if two values have the same type using `get_debug_type()`
+
+- **Comparable::checkSameType()** - Public method to verify type compatibility, throws `TypeError` if types don't match
+
+### Changed
+
+- **Floats class reorganized**
+  - Methods grouped by functionality: comparison, conversion, precision, rounding, random
+  - Improved PHPDoc comments throughout
+  - Better separation of concerns
+
+- **Numbers::approxEqual()** - Updated to use new Floats::approxEqual() signature
+
+- **Traits now use composition**
+  - Comparable uses Equatable
+  - ApproxEquatable uses Equatable
+  - ApproxComparable uses both Comparable and ApproxEquatable
+  - PHP automatically resolves diamond inheritance of Equatable
+
+### Documentation
+
+- **New comprehensive trait documentation**:
+  - `docs/Traits/Traits.md` - Complete overview with hierarchy diagram and usage guide
+  - `docs/Traits/Equatable.md` - Rewritten for trait (previously interface)
+  - `docs/Traits/Comparable.md` - Updated for new namespace and behavior
+  - `docs/Traits/ApproxEquatable.md` - New documentation for approximate equality
+  - `docs/Traits/ApproxComparable.md` - New documentation for approximate comparison
+
+- **Updated class documentation**:
+  - `docs/Floats.md` - Completely reorganized to match new class structure
+  - `docs/Numbers.md` - Updated for new comparison method signatures
+  - `docs/Types.md` - Added `haveSameType()` documentation
+
+- **README.md** - Added Traits section with links to all four traits and overview
+
+### Tests
+
+- **FloatsTest** - Comprehensive rewrite for new `approxEqual()` behavior
+  - Tests for relative and absolute tolerance
+  - Tests for IEEE-754 special values (INF, -INF, NaN)
+  - Tests for combined tolerance behavior
+  - Reduced from 478 to ~280 lines (test consolidation)
+
+- **NumbersTest** - Updated for new `approxEqual()` signature
+- **TypesTest** - Added tests for `haveSameType()`
+
+
 ## [0.3.0] - 2025-01-15
 
 ### Added

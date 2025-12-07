@@ -83,15 +83,9 @@ final class Stringify
      */
     public static function stringifyFloat(float $value): string
     {
-        // Handle special values.
-        if (is_nan($value)) {
-            return 'NaN';
-        }
-        if ($value === INF) {
-            return '∞';
-        }
-        if ($value === -INF) {
-            return '-∞';
+        // Handle non-finite values.
+        if (!is_finite($value)) {
+            return (string)$value;
         }
 
         // Convert the float to a string, showing maximum useful precision.

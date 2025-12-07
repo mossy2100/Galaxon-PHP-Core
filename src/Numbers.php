@@ -11,6 +11,8 @@ use ValueError;
  */
 final class Numbers
 {
+    // region Constructor
+
     /**
      * Private constructor to prevent instantiation.
      *
@@ -20,15 +22,37 @@ final class Numbers
     {
     }
 
+    // endregion
+
+    // region Type inspection
+
+    /**
+     * Check if a value is a number, i.e. an integer or a float.
+     * This varies from is_numeric(), which also returns true for numeric strings.
+     *
+     * @param mixed $value The value to check.
+     * @return bool True if the value is a number, false otherwise.
+     */
+    public static function isNumber(mixed $value): bool
+    {
+        return is_int($value) || is_float($value);
+    }
+
+    // endregion
+
+    // region Comparison methods
+
     /**
      * Check if two numbers are equal.
      *
-     * The purpose of this function is to:
-     * - Avoid numeric strings accidentally being converted to numbers and compared as such.
-     * - Avoid IDE warnings about using == vs === or != vs !==.
+     * This method is useful for equality comparison when working with values that can be ints or floats.
      *
-     * The string problem is solved by `declare(strict_types=1);` at the top of this file.
-     * The comparison problem is solved by using === and casting the operands to float when necessary.
+     * It serves several purposes:
+     * 1. Avoids numeric strings being converted to numbers and compared as such.
+     * 2. Silences IDE warnings about using == vs === or != vs !==
+     * 3. Avoids integers being compared as equal that aren't. Because integers have 64 bits of precision and floats
+     * only have 53, a comparison like (float)$a === (float)$b can return true for integers that are different but
+     * convert to the same float.
      *
      * @param int|float $a The first number.
      * @param int|float $b The second number.
@@ -36,7 +60,7 @@ final class Numbers
      */
     public static function equal(int|float $a, int|float $b): bool
     {
-        // If they're both ints, no need to cast.
+        // If they're both ints, don't convert to float.
         if (is_int($a) && is_int($b)) {
             return $a === $b;
         }
@@ -45,35 +69,9 @@ final class Numbers
         return (float)$a === (float)$b;
     }
 
-    /**
-     * Check if two numbers are approximately equal within a given epsilon.
-     *
-     * If both are integers, they are compared as exactly equal.
-     * If one or both is a float, they are compared as within epsilon of each other.
-     *
-     * @param int|float $a The first number.
-     * @param int|float $b The second number.
-     * @param float $epsilon The maximum allowed difference (absolute or relative depending on $relative).
-     * @param bool $relative If true, use relative comparison; if false, use absolute comparison.
-     * @return bool True if the two numbers are approximately equal, false otherwise.
-     * @throws ValueError If epsilon is negative.
-     *
-     * @see Floats::approxEqual()
-     */
-    public static function approxEqual(
-        int|float $a,
-        int|float $b,
-        float $epsilon = Floats::EPSILON,
-        bool $relative = true
-    ): bool {
-        // If they're both ints, check for exact equality.
-        if (is_int($a) && is_int($b)) {
-            return $a === $b;
-        }
+    // endregion
 
-        // Compare as floats.
-        return Floats::approxEqual((float)$a, (float)$b, $epsilon, $relative);
-    }
+    // region Sign methods
 
     /**
      * Copy the sign of one number to another.
@@ -87,7 +85,7 @@ final class Numbers
     {
         // Guard. This method won't work for NaN, which doesn't have a sign.
         if (is_nan($num) || is_nan($signSource)) {
-            throw new ValueError('NaN is not allowed for either parameter.');
+            throw new ValueError('NAN is not allowed for either parameter.');
         }
 
         return abs($num) * self::sign($signSource, false);
@@ -127,4 +125,6 @@ final class Numbers
         // Return the sign of the zero.
         return is_float($value) && Floats::isNegativeZero($value) ? -1 : 1;
     }
+
+    // endregion
 }

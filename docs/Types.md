@@ -8,61 +8,6 @@ This class provides utilities for working with PHP's type system, offering enhan
 
 ## Methods
 
-### isNumber()
-
-```php
-public static function isNumber(mixed $value): bool
-```
-
-Check if a value is a number (int or float). This differs from PHP's `is_numeric()` function, which also returns `true` for numeric strings.
-
-**Parameters:**
-- `$value` (mixed) - The value to check
-
-**Returns:**
-- `bool` - Returns `true` if the value is an int or float, `false` otherwise
-
-**Examples:**
-
-```php
-Types::isNumber(42);         // true
-Types::isNumber(3.14);       // true
-Types::isNumber(INF);        // true
-Types::isNumber(NAN);        // true
-Types::isNumber("42");       // false (numeric string)
-Types::isNumber("3.14");     // false (numeric string)
-Types::isNumber(true);       // false
-Types::isNumber(null);       // false
-```
-
-**Use Case:** When you need strict type checking that distinguishes actual numbers from numeric strings.
-
-### isUint()
-
-```php
-public static function isUint(mixed $value): bool
-```
-
-Check if a value is an unsigned integer (non-negative integer).
-
-**Parameters:**
-- `$value` (mixed) - The value to check
-
-**Returns:**
-- `bool` - Returns `true` if the value is an integer >= 0, `false` otherwise
-
-**Examples:**
-
-```php
-Types::isUint(0);            // true
-Types::isUint(42);           // true
-Types::isUint(-1);           // false
-Types::isUint(3.14);         // false (float, not int)
-Types::isUint("42");         // false (string)
-```
-
-**Use Case:** For validating array indices, database record IDs, counts, or other values that must be non-negative integers.
-
 ### getBasicType()
 
 ```php

@@ -52,13 +52,25 @@ Type checking and inspection utilities with methods for identifying numbers, uns
 
 Advanced value-to-string conversion with pretty printing, supporting all PHP types with improved readability.
 
-### [Equatable](docs/Equatable.md)
+## Traits
 
-Interface for objects that can be compared for equality. Provides a single `equals()` method for type-safe equality checks.
+**See [Traits Overview](docs/Traits/Traits.md) for how these traits work together.**
 
-### [Comparable](docs/Comparable.md)
+### [Equatable](docs/Traits/Equatable.md)
 
-Trait providing a complete set of comparison operations (`equals()`, `isLessThan()`, `isGreaterThan()`, etc.) based on a single `compare()` method.
+Base trait providing exact equality comparison. Defines an abstract `equal()` method for type-safe equality checks.
+
+### [Comparable](docs/Traits/Comparable.md)
+
+Trait extending Equatable with ordering operations. Provides `lessThan()`, `greaterThan()`, etc. based on a single `compare()` method implementation.
+
+### [ApproxEquatable](docs/Traits/ApproxEquatable.md)
+
+Trait extending Equatable with tolerance-based comparison. Adds `approxEqual()` for comparing floating-point values within configurable tolerances.
+
+### [ApproxComparable](docs/Traits/ApproxComparable.md)
+
+Trait combining Comparable and ApproxEquatable for complete comparison support. Adds `approxCompare()` for comparing floating-point values within configurable tolerances. Provides both exact and approximate equality with full ordering operations.
 
 ## Testing
 

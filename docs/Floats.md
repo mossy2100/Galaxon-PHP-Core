@@ -40,7 +40,7 @@ The `next()` and `previous()` methods allow traversal of the IEEE-754 number lin
 
 Two methods provide random floats for different use cases:
 - `rand()` generates random floats within a specified range (or the full float space by default) using IEEE-754 component assembly
-- `randUniform()` generates uniformly distributed values within specific bounds using linear interpolation
+- `randUniform()` generates uniformly distributed values within specific bounds using linear interpolation with automatic ULP-based step calculation
 
 ### IEEE-754 Component Access
 
@@ -49,6 +49,30 @@ Two methods provide direct access to IEEE-754 double-precision components:
 - `assemble()` constructs a float from sign, exponent, and fraction components
 
 ## Constants
+
+### DEFAULT_RELATIVE_TOLERANCE
+
+```php
+public const DEFAULT_RELATIVE_TOLERANCE = 1e-9;
+```
+
+The default relative tolerance used by `approxEqual()` and `compare()`.
+
+### DEFAULT_ABSOLUTE_TOLERANCE
+
+```php
+public const DEFAULT_ABSOLUTE_TOLERANCE = PHP_FLOAT_EPSILON;
+```
+
+The default absolute tolerance used by `approxEqual()` and `compare()`.
+
+### MAX_EXACT_INT
+
+```php
+public const MAX_EXACT_INT = 1 << 53;  // 9007199254740992
+```
+
+Maximum integer that can be exactly represented as a float (2^53). Beyond this value, not all consecutive integers are representable in double-precision floating-point format.
 
 ### TAU
 
@@ -64,30 +88,36 @@ The circle constant τ (tau), equal to 2π ≈ 6.283185307179586, which is the n
 
 ```php
 public static function approxEqual(
-    float $f1,
-    float $f2,
-    float $epsilon = 1e-10,
-    bool $relative = true
+    float $a,
+    float $b,
+    float $relTol = self::DEFAULT_RELATIVE_TOLERANCE,
+    float $absTol = self::DEFAULT_ABSOLUTE_TOLERANCE
 ): bool
 ```
 
-Check if two floats are approximately equal within a given epsilon (tolerance). This is the recommended way to compare floating-point numbers for equality, as direct comparison (`===`) can fail due to precision issues. By default, uses relative comparison which scales with magnitude.
+Check if two floats are approximately equal using combined absolute and relative tolerance. This is the recommended way to compare floating-point numbers for equality, as direct comparison (`===`) can fail due to precision issues.
+
+This method implements an algorithm similar to Python's `math.isclose()`:
+1. First checks if values are exactly equal (handles identical values efficiently)
+2. Checks absolute tolerance (useful for comparisons near zero)
+3. If exceeded, checks relative tolerance (scales with magnitude)
 
 **Parameters:**
-- `$f1` (float) - The first float
-- `$f2` (float) - The second float
-- `$epsilon` (float) - The tolerance for comparison (default: `1e-10`)
-- `$relative` (bool) - If `true` (default), use relative comparison; if `false`, use absolute comparison
+- `$a` (float) - The first float
+- `$b` (float) - The second float
+- `$relTol` (float) - The maximum allowed relative difference (default: `1e-9`)
+- `$absTol` (float) - The maximum allowed absolute difference (default: `PHP_FLOAT_EPSILON`)
 
 **Returns:**
 - `bool` - Returns `true` if the floats are approximately equal, `false` otherwise
 
 **Throws:**
-- `ValueError` - If epsilon is negative
+- `ValueError` - If either tolerance is negative
+- `ValueError` - If either float is non-finite (NaN, ±INF)
 
 **Examples:**
 
-Basic usage (default relative comparison):
+Basic usage with combined tolerance:
 ```php
 // Direct float comparison can fail due to precision issues
 0.1 + 0.2 === 0.3;  // false (!)
@@ -95,45 +125,59 @@ Basic usage (default relative comparison):
 // Use approxEqual instead
 Floats::approxEqual(0.1 + 0.2, 0.3);  // true
 
-// Identical values
+// Identical values (fast path)
 Floats::approxEqual(1.0, 1.0);  // true
 
-// Relative comparison scales with magnitude
-Floats::approxEqual(1000000.0, 1000000.1, 1e-6);  // true (difference 0.1 is within 1e-6 * 1000000)
-Floats::approxEqual(1.0, 1.1, 1e-6);  // false (difference 0.1 exceeds 1e-6 * 1)
+// Near zero - absolute tolerance applies
+Floats::approxEqual(1e-20, 2e-20);  // true (within PHP_FLOAT_EPSILON)
+
+// Larger values - relative tolerance applies
+Floats::approxEqual(1000000.0, 1000000.1, 1e-6);  // true
+Floats::approxEqual(1.0, 1.1, 1e-6);  // false
 ```
 
-With absolute comparison:
+With custom tolerances:
 ```php
-// Absolute comparison uses fixed epsilon
-Floats::approxEqual(1.0, 1.0 + 1e-11, 1e-10, false);  // true
-Floats::approxEqual(1.0, 1.0 + 1e-9, 1e-10, false);   // false
+// Tighter absolute tolerance
+Floats::approxEqual(1e-20, 2e-20, 1e-9, 0.0);  // false
 
-// Custom epsilon for looser comparison
-Floats::approxEqual(1.0, 1.1, 0.2, false);  // true
-Floats::approxEqual(1.0, 1.3, 0.2, false);  // false
+// Looser relative tolerance
+Floats::approxEqual(100.0, 101.0, 0.02);  // true (1% difference, within 2%)
+
+// Custom both
+Floats::approxEqual(0.001, 0.0011, 0.01, 1e-4);  // true
 ```
 
 Special values:
 ```php
 // Handles positive and negative zero
 Floats::approxEqual(0.0, -0.0);  // true
+
+// Non-finite values throw
+Floats::approxEqual(INF, INF);  // throws ValueError
+Floats::approxEqual(NAN, NAN);  // throws ValueError
 ```
 
 **Behavior:**
-- **Relative mode** (default): Uses `approxEqualRelative()`, scales epsilon with magnitude
-- **Absolute mode**: Uses `approxEqualAbsolute()`, fixed epsilon threshold
+- First checks exact equality (`$a === $b`) as a fast path
+- Then checks absolute tolerance: `abs($a - $b) <= $absTol`
+- Finally checks relative tolerance: `abs($a - $b) <= $relTol * max(abs($a), abs($b))`
 - **Symmetric**: `approxEqual($a, $b)` equals `approxEqual($b, $a)`
+- Throws for non-finite values (NaN, ±INF) to prevent misleading results
 
-**Choosing Comparison Mode:**
-- **Relative** (default): Best for comparing values of varying magnitudes (1e-10 to 1e10)
-- **Absolute**: Best for values near zero or when tolerance should be fixed
+**Algorithm:**
+```php
+if ($a === $b) return true;  // Fast path for identical values
+$diff = abs($a - $b);
+if ($diff <= $absTol) return true;  // Absolute tolerance
+return $diff <= $relTol * max(abs($a), abs($b));  // Relative tolerance
+```
 
-**Choosing Epsilon:**
-- `1e-10` (default): Good for most general-purpose comparisons
-- `1e-6` to `1e-9`: Suitable for results of moderate computation
-- `1e-14` to `1e-15`: Near machine precision for doubles
-- Domain-specific: Use tolerances appropriate to your application
+**Choosing Tolerances:**
+- **Default**: Works well for most general-purpose comparisons
+- **Absolute tolerance**: Use `PHP_FLOAT_EPSILON` (default) for values near zero, or custom values for domain-specific precision
+- **Relative tolerance**: Use `1e-9` (default) for tight comparisons, `1e-6` for looser comparisons
+- **Both**: Adjust both for optimal results across different magnitudes
 
 **Use Cases:**
 - Comparing results of floating-point calculations
@@ -142,35 +186,42 @@ Floats::approxEqual(0.0, -0.0);  // true
 - Scientific and engineering calculations
 
 **See Also:**
-- `approxEqualAbsolute()` - Explicit absolute comparison
-- `approxEqualRelative()` - Explicit relative comparison
+- `approxEqualAbsolute()` - Explicit absolute-only comparison
 - `compare()` - Three-way comparison with approximate equality
 
 ### approxEqualAbsolute()
 
 ```php
-public static function approxEqualAbsolute(float $f1, float $f2, float $epsilon = 1e-10): bool
+public static function approxEqualAbsolute(
+    float $a,
+    float $b,
+    float $tol = self::DEFAULT_ABSOLUTE_TOLERANCE
+): bool
 ```
 
-Check if two floats are approximately equal using absolute difference comparison. Returns `true` if the absolute difference between the values is less than or equal to epsilon.
+Check if two floats are approximately equal using absolute difference comparison. Returns `true` if the absolute difference between the values is less than or equal to the tolerance.
 
 **Parameters:**
-- `$f1` (float) - The first float
-- `$f2` (float) - The second float
-- `$epsilon` (float) - The maximum allowed absolute difference (default: `1e-10`)
+- `$a` (float) - The first float
+- `$b` (float) - The second float
+- `$tol` (float) - The maximum allowed absolute difference (default: `PHP_FLOAT_EPSILON`)
 
 **Returns:**
-- `bool` - Returns `true` if `abs($f1 - $f2) <= $epsilon`, `false` otherwise
+- `bool` - Returns `true` if `abs($a - $b) <= $tol`, `false` otherwise
 
 **Throws:**
-- `ValueError` - If epsilon is negative
+- `ValueError` - If tolerance is negative
+- `ValueError` - If either float is non-finite (NaN, ±INF)
 
 **Examples:**
 
 ```php
-// Values within epsilon
-Floats::approxEqualAbsolute(1.0, 1.0 + 1e-11);  // true (diff 1e-11 < 1e-10)
-Floats::approxEqualAbsolute(1.0, 1.0 + 1e-9);   // false (diff 1e-9 > 1e-10)
+// Values within tolerance
+Floats::approxEqualAbsolute(1.0, 1.0 + 1e-16);  // true (within PHP_FLOAT_EPSILON)
+Floats::approxEqualAbsolute(1.0, 1.0 + 1e-15, 1e-14);  // true
+
+// Values exceeding tolerance
+Floats::approxEqualAbsolute(1.0, 1.1, 0.05);  // false (0.1 > 0.05)
 
 // Works well for small values
 Floats::approxEqualAbsolute(1e-15, 2e-15, 1e-14);  // true
@@ -179,118 +230,61 @@ Floats::approxEqualAbsolute(1e-15, 2e-15, 1e-14);  // true
 Floats::approxEqualAbsolute(1e10, 1e10 + 1.0, 1e-10);  // false (1.0 > 1e-10)
 Floats::approxEqualAbsolute(1e10, 1e10 + 1.0, 10.0);   // true (1.0 < 10.0)
 
-// Zero epsilon for exact comparison
+// Zero tolerance for exact comparison
 Floats::approxEqualAbsolute(1.0, 1.0, 0.0);  // true
 Floats::approxEqualAbsolute(1.0, 1.0 + PHP_FLOAT_EPSILON, 0.0);  // false
+
+// Non-finite values throw
+Floats::approxEqualAbsolute(INF, INF, 1e-9);  // throws ValueError
 ```
 
 **Behavior:**
-- Formula: `abs($f1 - $f2) <= $epsilon`
+- First checks exact equality (`$a === $b`) as a fast path
+- Then checks: `abs($a - $b) <= $tol`
 - **Symmetric**: `approxEqualAbsolute($a, $b)` equals `approxEqualAbsolute($b, $a)`
 - Does not scale with magnitude
 - Positive and negative zero are considered equal
+- Throws for non-finite values (NaN, ±INF)
 
 **When to Use:**
 - Comparing values near zero
 - When tolerance should be absolute, not relative
 - When all values are of similar magnitude
 - Color components (0-255 range)
+- Pixel coordinates
 
 **When NOT to Use:**
 - Comparing values of vastly different magnitudes
-- Scientific calculations with wide ranges (use `approxEqualRelative()` instead)
+- Scientific calculations with wide ranges (use `approxEqual()` instead)
 
 **See Also:**
-- `approxEqual()` - Dispatcher with choice of absolute or relative
-- `approxEqualRelative()` - Relative comparison that scales with magnitude
-
-### approxEqualRelative()
-
-```php
-public static function approxEqualRelative(float $f1, float $f2, float $epsilon = 1e-10): bool
-```
-
-Check if two floats are approximately equal using relative difference comparison. The epsilon scales with the magnitude of the values, making this suitable for comparing numbers across different scales.
-
-**Parameters:**
-- `$f1` (float) - The first float
-- `$f2` (float) - The second float
-- `$epsilon` (float) - The relative tolerance (default: `1e-10`)
-
-**Returns:**
-- `bool` - Returns `true` if the relative difference is within epsilon, `false` otherwise
-
-**Throws:**
-- `ValueError` - If epsilon is negative
-
-**Examples:**
-
-```php
-// Scales with magnitude - same relative difference
-Floats::approxEqualRelative(1000000.0, 1000000.1, 1e-6);  // true
-Floats::approxEqualRelative(1.0, 1.0000001, 1e-6);  // true
-
-// Both have ~0.01% relative difference
-Floats::approxEqualRelative(10000.0, 10001.0, 1e-4);  // true (0.01% diff)
-Floats::approxEqualRelative(100.0, 100.01, 1e-4);     // true (0.01% diff)
-
-// Exceeds relative tolerance
-Floats::approxEqualRelative(1.0, 1.1, 1e-10);  // false (10% difference)
-
-// Handles small values near zero
-Floats::approxEqualRelative(1e-20, 2e-20, 1.0);  // true (100% tolerance)
-Floats::approxEqualRelative(1e-20, 2e-20, 0.5);  // false (exceeds 50%)
-```
-
-**Behavior:**
-- Formula: `abs($f1 - $f2) <= $epsilon * max(abs($f1), abs($f2))`
-- For very small values (both < PHP_FLOAT_EPSILON), uses absolute comparison
-- **Symmetric**: `approxEqualRelative($a, $b)` equals `approxEqualRelative($b, $a)`
-- Scales epsilon based on the larger magnitude
-
-**When to Use:**
-- Comparing values of different magnitudes (1e-10 to 1e10)
-- Scientific and engineering calculations
-- Financial calculations with varying amounts
-- Any domain where relative error is more meaningful than absolute error
-
-**When NOT to Use:**
-- Comparing values very close to zero (use `approxEqualAbsolute()` instead)
-- When absolute tolerance is more appropriate
-
-**Epsilon Interpretation:**
-- `1e-6`: 0.0001% relative tolerance (tight)
-- `1e-9`: 0.0000001% relative tolerance (very tight)
-- `1e-10` (default): 0.00000001% relative tolerance (extremely tight)
-
-**See Also:**
-- `approxEqual()` - Dispatcher with choice of absolute or relative
-- `approxEqualAbsolute()` - Absolute comparison without scaling
+- `approxEqual()` - Combined absolute and relative tolerance
 
 ### compare()
 
 ```php
 public static function compare(
-    float $f1,
-    float $f2,
-    float $epsilon = 1e-10,
-    bool $relative = true
+    float $a,
+    float $b,
+    float $relTol = self::DEFAULT_RELATIVE_TOLERANCE,
+    float $absTol = self::DEFAULT_ABSOLUTE_TOLERANCE
 ): int
 ```
 
-Three-way comparison of two floats with approximate equality support. Returns an integer indicating whether the first float is less than, equal to (within epsilon), or greater than the second float.
+Three-way comparison of two floats with approximate equality support. Returns an integer indicating whether the first float is less than, equal to (within tolerance), or greater than the second float.
 
 **Parameters:**
-- `$f1` (float) - The first float
-- `$f2` (float) - The second float
-- `$epsilon` (float) - The tolerance for equality comparison (default: `1e-10`)
-- `$relative` (bool) - If `true` (default), use relative comparison; if `false`, use absolute comparison
+- `$a` (float) - The first float
+- `$b` (float) - The second float
+- `$relTol` (float) - The maximum allowed relative difference (default: `1e-9`)
+- `$absTol` (float) - The maximum allowed absolute difference (default: `PHP_FLOAT_EPSILON`)
 
 **Returns:**
-- `int` - Returns `-1` if `$f1 < $f2`, `0` if approximately equal, `1` if `$f1 > $f2`
+- `int` - Returns exactly `-1` if `$a < $b`, `0` if approximately equal, `1` if `$a > $b`
 
 **Throws:**
-- `ValueError` - If epsilon is negative
+- `ValueError` - If either tolerance is negative
+- `ValueError` - If either float is non-finite (NaN, ±INF)
 
 **Examples:**
 
@@ -300,35 +294,35 @@ Floats::compare(1.0, 2.0);  // -1 (less than)
 Floats::compare(2.0, 1.0);  // 1 (greater than)
 Floats::compare(1.0, 1.0);  // 0 (equal)
 
-// Approximate equality with default epsilon
+// Approximate equality with default tolerances
 Floats::compare(1.0, 1.0 + 1e-11);  // 0 (within tolerance)
 Floats::compare(1.0, 1.1);          // -1 (exceeds tolerance)
 
-// Relative comparison (default) - scales with magnitude
+// Combined absolute and relative tolerance
 Floats::compare(1000000.0, 1000000.1, 1e-6);  // 0 (within relative tolerance)
 Floats::compare(1.0, 1.1, 1e-6);              // -1 (exceeds relative tolerance)
 
-// Absolute comparison
-Floats::compare(1.0, 1.0 + 1e-11, 1e-10, false);  // 0
-Floats::compare(1.0, 1.0 + 1e-9, 1e-10, false);   // 1
+// Custom tolerances
+Floats::compare(1.0, 1.0 + 1e-11, 1e-9, 1e-10);  // 0
+Floats::compare(1.0, 1.0 + 1e-9, 1e-9, 1e-10);   // 1
 
 // Handles precision issues
 Floats::compare(0.1 + 0.2, 0.3);  // 0 (approximately equal)
 
-// With special values
-Floats::compare(INF, 1000.0);   // 1
-Floats::compare(-INF, -1000.0); // -1
+// Special values throw
+Floats::compare(INF, 1000.0);   // throws ValueError
 Floats::compare(0.0, -0.0);     // 0 (equal)
 ```
 
 **Behavior:**
-- First checks approximate equality using `approxEqual()` with the specified mode
+- First checks approximate equality using `approxEqual()` with the specified tolerances
 - If approximately equal, returns `0`
-- Otherwise uses spaceship operator (`<=>`) to determine ordering
-- Inherits epsilon behavior from `approxEqual()` (relative or absolute)
+- Otherwise uses spaceship operator (`<=>`) to determine ordering, normalized to exactly -1 or 1 using `Numbers::sign()`
+- Inherits tolerance behavior from `approxEqual()` (combined absolute and relative)
+- Throws for non-finite values (NaN, ±INF)
 
 **Use Cases:**
-- Implementing `compare()` methods in custom classes
+- Implementing `compare()` methods in custom classes (e.g., `Comparable` trait)
 - Sorting floats with epsilon tolerance
 - Building comparison logic that needs three-way results
 - Switch statements based on comparison results
@@ -342,13 +336,12 @@ usort($values, function($a, $b) {
     return Floats::compare($a, $b, 1e-6);
 });
 
-// Result: All three values may be considered equal with epsilon 1e-6
+// Result: All three values may be considered equal with tolerance 1e-6
 ```
 
 **See Also:**
 - `approxEqual()` - Two-way approximate equality check
-- `approxEqualRelative()` - Relative comparison
-- `approxEqualAbsolute()` - Absolute comparison
+- `approxEqualAbsolute()` - Absolute-only comparison
 
 ### isNegativeZero()
 
@@ -609,7 +602,7 @@ Check if a float value is exactly representable as an integer without rounding e
 - `bool` - Returns `true` if the value represents an exact integer within ±2^53, `false` otherwise
 
 **Behavior:**
-- Checks three conditions: `is_finite($value) && floor($value) === $value && abs($value) <= (1 << 53)`
+- Checks three conditions: `is_finite($value) && floor($value) === $value && abs($value) <= MAX_EXACT_INT`
 - Returns `true` for whole numbers within the exact range
 - Returns `false` for fractional values
 - Returns `false` for values beyond ±2^53
@@ -766,11 +759,13 @@ Floats::ulp(1e12);  // 0.000244140625
 - Calculating rounding error bounds in error analysis
 - Testing floating-point code with appropriate epsilons
 - Debugging precision issues in calculations
+- Used by `randUniform()` to calculate optimal step size
 
 **See Also:**
 - `isExactInt()` - Check if a float represents an exact integer
 - `next()` - Get the next representable float
 - `previous()` - Get the previous representable float
+- `randUniform()` - Uses ULP for collision-free random generation
 
 ### next()
 
@@ -785,6 +780,9 @@ Returns the next representable floating-point number after the given value. This
 
 **Returns:**
 - `float` - The next floating-point number after the given number
+
+**Throws:**
+- `RuntimeException` - If the system is not 64-bit
 
 **Behavior:**
 - For positive numbers: returns the next larger float
@@ -829,6 +827,9 @@ Returns the previous representable floating-point number before the given value.
 
 **Returns:**
 - `float` - The previous floating-point number before the given number
+
+**Throws:**
+- `RuntimeException` - If the system is not 64-bit
 
 **Behavior:**
 - For positive numbers: returns a float closer to zero
@@ -881,7 +882,8 @@ Disassemble a float into its IEEE-754 double-precision components.
 - `$f` (float) - The float to disassemble
 
 **Returns:**
-- `array{sign: int, exponent: int, fraction: int}` - An associative array containing:
+- `array{bits: int, sign: int, exponent: int, fraction: int}` - An associative array containing:
+  - `bits` (int): Complete 64-bit representation
   - `sign` (int): 0 for positive, 1 for negative
   - `exponent` (int): 11-bit biased exponent (0-2047, bias is 1023)
   - `fraction` (int): 52-bit fraction/mantissa
@@ -894,15 +896,15 @@ Disassemble a float into its IEEE-754 double-precision components.
 ```php
 // Disassemble 1.0
 $parts = Floats::disassemble(1.0);
-// $parts = ['sign' => 0, 'exponent' => 1023, 'fraction' => 0]
+// $parts = ['bits' => ..., 'sign' => 0, 'exponent' => 1023, 'fraction' => 0]
 
 // Disassemble -1.0
 $parts = Floats::disassemble(-1.0);
-// $parts = ['sign' => 1, 'exponent' => 1023, 'fraction' => 0]
+// $parts = ['bits' => ..., 'sign' => 1, 'exponent' => 1023, 'fraction' => 0]
 
 // Disassemble 1.5 (binary: 1.1)
 $parts = Floats::disassemble(1.5);
-// $parts = ['sign' => 0, 'exponent' => 1023, 'fraction' => 2251799813685248] (2^51)
+// $parts = ['bits' => ..., 'sign' => 0, 'exponent' => 1023, 'fraction' => 2251799813685248] (2^51)
 
 // Positive and negative zero have different representations
 $pos = Floats::disassemble(0.0);   // sign = 0, exponent = 0, fraction = 0
@@ -1020,8 +1022,8 @@ $f = Floats::rand(5.0, 5.0);  // 5.0
 ```
 
 **Characteristics:**
-- Can return **any representable float** in the given range.
-- Will not return a special value (NaN, ±INF, or -0.0).
+- Can return **any representable float** in the given range
+- Will not return a special value (NaN, ±INF, or -0.0)
 - Uses IEEE-754 component assembly (sign, exponent, fraction)
 - Distribution is **not uniform** - more values near zero due to IEEE-754 density
 - Handles ranges spanning zero correctly
@@ -1038,13 +1040,16 @@ $f = Floats::rand(5.0, 5.0);  // 5.0
 - Testing edge cases in floating-point algorithms
 - Generating test data that exercises the full precision of floats
 
+**See Also:**
+- `randUniform()` - For uniformly distributed random floats
+
 ### randUniform()
 
 ```php
 public static function randUniform(float $min, float $max): float
 ```
 
-Generate a random float with uniform distribution in the specified range using linear interpolation.
+Generate a uniformly distributed random float in the specified range. The step size is automatically calculated using ULP to ensure no duplicate values while maintaining uniform spacing.
 
 **Parameters:**
 - `$min` (float) - The minimum value (inclusive)
@@ -1055,6 +1060,7 @@ Generate a random float with uniform distribution in the specified range using l
 
 **Throws:**
 - `ValueError` - If min or max are non-finite (NaN, ±INF), or if min > max
+- `RandomException` - If an appropriate source of randomness is unavailable
 
 **Examples:**
 
@@ -1071,10 +1077,17 @@ $f = Floats::randUniform(5.0, 5.0);  // 5.0
 
 **Characteristics:**
 - **Uniform distribution** in the numeric range
-- Uses `mt_rand() / mt_getrandmax()` internally
-- Limited to ~2^31 distinct values
-- Faster than `rand()` but less precise
-- Not all representable floats in the range are returnable
+- Uses `random_int()` internally for cryptographic randomness
+- Step size calculated using `ulp()` of the maximum magnitude
+- Avoids duplicate values by using ULP-based step calculation
+- Not all representable floats in the range are returnable, but distribution is uniform
+- Returns exactly min or max when randomly selected
+
+**How it works:**
+1. Calculates ULP at the maximum magnitude
+2. Determines number of steps: `round($range / $ulp)`
+3. Generates random integer from 0 to number of steps
+4. Interpolates: `$min + ($randomStep / $numSteps) * $range`
 
 **Use Cases:**
 - Monte Carlo simulations requiring uniform distribution
@@ -1087,6 +1100,11 @@ $f = Floats::randUniform(5.0, 5.0);  // 5.0
 | Feature | `rand()` | `randUniform()` |
 |---------|----------|-----------------|
 | Distribution | IEEE-754 density (more near zero) | Uniform |
-| Precision | Any representable float | ~2^31 distinct values |
-| Speed | Slower (rejection loop) | Faster (simple interpolation) |
+| Precision | Any representable float | ULP-based steps |
+| Speed | Slower (rejection loop) | Faster (direct calculation) |
 | Use case | Fuzzing, edge cases | Statistics, simulations |
+| Duplicates | Possible | Avoided via ULP calculation |
+
+**See Also:**
+- `rand()` - For non-uniform distribution with full float coverage
+- `ulp()` - Underlying calculation for step size

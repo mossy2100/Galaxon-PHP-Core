@@ -4,35 +4,14 @@ Trait providing comparison operations for objects with natural ordering.
 
 ## Overview
 
-The `Comparable` trait provides a complete set of comparison methods based on a single `compare()` method that you implement. It includes:
-- `equals()` - Check equality (satisfies the `Equatable` interface)
-- `isLessThan()` - Check if less than
-- `isLessThanOrEqual()` - Check if less than or equal to
-- `isGreaterThan()` - Check if greater than
-- `isGreaterThanOrEqual()` - Check if greater than or equal to
+The `Comparable` trait provides a complete set of comparison methods based on a single `compare()` method that you implement. It uses the `Equatable` trait and adds ordering methods:
+- `equal()` - Check equality (from Equatable trait)
+- `lessThan()` - Check if less than
+- `lessThanOrEqual()` - Check if less than or equal to
+- `greaterThan()` - Check if greater than
+- `greaterThanOrEqual()` - Check if greater than or equal to
 
 The trait follows the **Template Method Pattern** - you implement the `compare()` method, and all other methods are automatically provided.
-
-## Trait Definition
-
-```php
-trait Comparable
-{
-    /**
-     * Compare two objects and return an integer indicating ordering.
-     *
-     * @param mixed $other The value to compare with.
-     * @return int Must return exactly -1, 0, or 1.
-     */
-    abstract public function compare(mixed $other): int;
-
-    public function equals(mixed $other): bool;
-    public function isLessThan(mixed $other): bool;
-    public function isLessThanOrEqual(mixed $other): bool;
-    public function isGreaterThan(mixed $other): bool;
-    public function isGreaterThanOrEqual(mixed $other): bool;
-}
-```
 
 ## Methods
 
@@ -60,10 +39,31 @@ abstract public function compare(mixed $other): int
 - Should use epsilon tolerance for floating-point comparisons
 - Must be consistent with your type's equality semantics
 
-### equals()
+### checkSameType()
 
 ```php
-public function equals(mixed $other): bool
+public function checkSameType(mixed $other): void
+```
+
+Verify that another value has the same type as this object, throwing `TypeError` if not. This method is used by the comparison methods to ensure type safety before delegating to `compare()`.
+
+Uses `Types::haveSameType()` for type comparison, which uses `get_debug_type()` for accurate type information.
+
+**Parameters:**
+- `$other` (mixed) - The value to compare with
+
+**Returns:**
+- `void`
+
+**Throws:**
+- `TypeError` - If the types are not the same
+
+**Note:** This is a public method provided by the trait. You typically don't need to call it directly or override it.
+
+### equal()
+
+```php
+public function equal(mixed $other): bool
 ```
 
 Check if this object equals another. Provided by the trait - delegates to `compare()`.
@@ -74,20 +74,15 @@ Check if this object equals another. Provided by the trait - delegates to `compa
 **Returns:**
 - `bool` - `true` if equal, `false` otherwise
 
-**Implementation:**
-```php
-return $this->hasSameType($other) && $this->compare($other) === 0;
-```
-
 **Behavior:**
-- First checks type compatibility using `get_debug_type()` comparison
+- First checks type compatibility using `Types::haveSameType()`
 - Returns `false` gracefully for incompatible types (doesn't throw)
 - Only calls `compare()` if types match
 
-### isLessThan()
+### lessThan()
 
 ```php
-public function isLessThan(mixed $other): bool
+public function lessThan(mixed $other): bool
 ```
 
 Check if this object is less than another.
@@ -101,16 +96,10 @@ Check if this object is less than another.
 **Throws:**
 - `TypeError` - If `$other` is not the same type as this object
 
-**Implementation:**
-```php
-$this->checkSameType($other);
-return $this->compare($other) === -1;
-```
-
-### isLessThanOrEqual()
+### lessThanOrEqual()
 
 ```php
-public function isLessThanOrEqual(mixed $other): bool
+public function lessThanOrEqual(mixed $other): bool
 ```
 
 Check if this object is less than or equal to another.
@@ -124,16 +113,10 @@ Check if this object is less than or equal to another.
 **Throws:**
 - `TypeError` - If `$other` is not the same type as this object
 
-**Implementation:**
-```php
-$this->checkSameType($other);
-return !$this->isGreaterThan($other);
-```
-
-### isGreaterThan()
+### greaterThan()
 
 ```php
-public function isGreaterThan(mixed $other): bool
+public function greaterThan(mixed $other): bool
 ```
 
 Check if this object is greater than another.
@@ -147,16 +130,10 @@ Check if this object is greater than another.
 **Throws:**
 - `TypeError` - If `$other` is not the same type as this object
 
-**Implementation:**
-```php
-$this->checkSameType($other);
-return $this->compare($other) === 1;
-```
-
-### isGreaterThanOrEqual()
+### greaterThanOrEqual()
 
 ```php
-public function isGreaterThanOrEqual(mixed $other): bool
+public function greaterThanOrEqual(mixed $other): bool
 ```
 
 Check if this object is greater than or equal to another.
@@ -170,21 +147,14 @@ Check if this object is greater than or equal to another.
 **Throws:**
 - `TypeError` - If `$other` is not the same type as this object
 
-**Implementation:**
-```php
-$this->checkSameType($other);
-return !$this->isLessThan($other);
-```
-
 ## Examples
 
 ### Basic Implementation for Integers
 
 ```php
-use Galaxon\Core\Comparable;
-use Galaxon\Core\Equatable;
+use Galaxon\Core\Traits\Comparable;
 
-class Score implements Equatable
+class Score
 {
     use Comparable;
 
@@ -213,20 +183,19 @@ $s2 = new Score(200);
 $s3 = new Score(100);
 
 // All comparison methods are available
-var_dump($s1->isLessThan($s2));           // true
-var_dump($s1->equals($s3));               // true
-var_dump($s2->isGreaterThan($s1));        // true
-var_dump($s1->isLessThanOrEqual($s3));    // true
+var_dump($s1->lessThan($s2));           // true
+var_dump($s1->equal($s3));               // true
+var_dump($s2->greaterThan($s1));        // true
+var_dump($s1->lessThanOrEqual($s3));    // true
 ```
 
 ### Using Spaceship Operator with Sign Normalization
 
 ```php
-use Galaxon\Core\Comparable;
-use Galaxon\Core\Equatable;
 use Galaxon\Core\Numbers;
+use Galaxon\Core\Traits\Comparable;
 
-class Version implements Equatable
+class Version
 {
     use Comparable;
 
@@ -260,59 +229,18 @@ $v1 = new Version(1, 2, 3);
 $v2 = new Version(1, 2, 4);
 $v3 = new Version(2, 0, 0);
 
-var_dump($v1->isLessThan($v2));     // true (1.2.3 < 1.2.4)
-var_dump($v1->isLessThan($v3));     // true (1.2.3 < 2.0.0)
-var_dump($v3->isGreaterThan($v1));  // true (2.0.0 > 1.2.3)
-```
-
-### With Epsilon-Based Comparison for Floats
-
-```php
-use Galaxon\Core\Comparable;
-use Galaxon\Core\Equatable;
-
-class Distance implements Equatable
-{
-    use Comparable;
-
-    private const EPSILON = 1e-9;
-
-    public function __construct(
-        private float $meters
-    ) {}
-
-    public function compare(mixed $other): int
-    {
-        if (!$other instanceof self) {
-            throw new TypeError('Can only compare with another Distance');
-        }
-
-        // Use epsilon tolerance for equality
-        $diff = $this->meters - $other->meters;
-        if (abs($diff) < self::EPSILON) {
-            return 0;
-        }
-
-        return $diff < 0 ? -1 : 1;
-    }
-}
-
-$d1 = new Distance(10.0);
-$d2 = new Distance(10.0 + 1e-10); // Within epsilon
-$d3 = new Distance(20.0);
-
-var_dump($d1->equals($d2));         // true (within epsilon)
-var_dump($d1->isLessThan($d3));     // true
+var_dump($v1->lessThan($v2));     // true (1.2.3 < 1.2.4)
+var_dump($v1->lessThan($v3));     // true (1.2.3 < 2.0.0)
+var_dump($v3->greaterThan($v1));  // true (2.0.0 > 1.2.3)
 ```
 
 ### Comparing with Multiple Types
 
 ```php
-use Galaxon\Core\Comparable;
-use Galaxon\Core\Equatable;
 use Galaxon\Core\Numbers;
+use Galaxon\Core\Traits\Comparable;
 
-class Priority implements Equatable
+class Priority
 {
     use Comparable;
 
@@ -337,43 +265,28 @@ class Priority implements Equatable
 
 $p = new Priority(5);
 
-var_dump($p->isGreaterThan(3));              // true
-var_dump($p->isLessThan(new Priority(10)));  // true
-var_dump($p->equals(5));                     // true
+var_dump($p->greaterThan(3));              // true
+var_dump($p->lessThan(new Priority(10)));  // true
+var_dump($p->equal(5));                     // true
 ```
 
-## Relationship with Equatable
+## Relationship with Other Traits
 
-Classes using `Comparable` should typically also implement the `Equatable` interface:
+Comparable extends Equatable and adds ordering operations. It automatically provides `equal()` based on `compare()`.
 
-```php
-class MyClass implements Equatable
-{
-    use Comparable;
+For approximate comparison with ordering, use **ApproxComparable** instead.
 
-    public function compare(mixed $other): int
-    {
-        // Implementation
-    }
-}
-```
-
-The trait provides `equals()` automatically, satisfying the `Equatable` interface contract.
-
-## Classes Using Comparable
-
-- `Galaxon\Units\Measurement` and derived types - Measurements with epsilon-based comparison
-- `Galaxon\Math\Rational` - Rational numbers with exact comparison
+See [Traits.md](Traits.md) for complete hierarchy and usage guide.
 
 ## Best Practices
 
 1. **Return Exactly -1, 0, or 1**: Use `Numbers::sign()` or explicit conditionals to normalize the spaceship operator result
 2. **Type Checking**: Throw `TypeError` in `compare()` for incompatible types (don't try to handle them)
-3. **Epsilon for Floats**: Use epsilon tolerance when comparing floating-point values
+3. **Epsilon for Floats**: Use epsilon tolerance when comparing floating-point values via `Floats::compare()`
 4. **Consistency**: Ensure `compare()` is consistent with your type's equality semantics
 5. **Transitivity**: If A < B and B < C, then A < C must be true
-6. **Implement Equatable**: Classes using this trait should implement the `Equatable` interface
-7. **Don't Override equals()**: Unless you have a very specific reason, let the trait provide `equals()` based on `compare()`
+6. **Don't Override equal()**: Unless you have a very specific reason, let the trait provide `equal()` based on `compare()`
+7. **Use Trait Composition**: The Comparable trait already includes Equatable via trait composition - don't separately use Equatable
 
 ## Common Patterns
 
@@ -384,20 +297,6 @@ public function compare(mixed $other): int
 {
     // ... type checking ...
     return Numbers::sign($this->value <=> $other->value);
-}
-```
-
-### Epsilon-Based Float Comparison
-
-```php
-public function compare(mixed $other): int
-{
-    // ... type checking ...
-    $diff = $this->floatValue - $other->floatValue;
-    if (abs($diff) < self::EPSILON) {
-        return 0;
-    }
-    return $diff < 0 ? -1 : 1;
 }
 ```
 
