@@ -3,3 +3,11 @@ parameters:
         - src
         - tests
     treatPhpDocTypesAsCertain: false
+    ignoreErrors:
+        # Allow testing methods with literal values in tests.
+        -
+            identifier: staticMethod.alreadyNarrowedType
+            path: tests/*
+        -
+            identifier: staticMethod.impossibleType
+            path: tests/*

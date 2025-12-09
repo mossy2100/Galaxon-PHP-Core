@@ -17,34 +17,26 @@ final class Floats
 
     /**
      * The default relative tolerance used by approxEqual().
-     *
-     * @var float
      */
-    public const DEFAULT_RELATIVE_TOLERANCE = 1e-9;
+    public const float DEFAULT_RELATIVE_TOLERANCE = 1e-9;
 
     /**
      * The default absolute tolerance used by approxEqual().
-     *
-     * @var float
      */
-    public const DEFAULT_ABSOLUTE_TOLERANCE = PHP_FLOAT_EPSILON;
+    public const float DEFAULT_ABSOLUTE_TOLERANCE = PHP_FLOAT_EPSILON;
 
     /**
      * Maximum integer that can be exactly represented as a float (2^53).
      *
-     * Beyond this value, not all consecutive integers are representable in
-     * double-precision floating-point format.
-     *
-     * @var int
+     * Beyond this value, not all consecutive integers are representable in double-precision floating-point format.
+     * Equivalently, multiple integer values will convert to the same float value.
      */
-    public const MAX_EXACT_INT = 1 << 53;
+    public const int MAX_EXACT_INT = 1 << 53;
 
     /**
      * The circle constant tau τ (tau) = 2π. One full turn in radians.
-     *
-     * @var float
      */
-    public const TAU = 2 * M_PI;
+    public const float TAU = 2 * M_PI;
 
     // endregion
 
@@ -412,7 +404,7 @@ final class Floats
      * @return void
      * @throws RuntimeException
      */
-    private static function check64bit()
+    private static function check64bit(): void
     {
         // Check if we're on a 32-bit system.
         if (PHP_INT_SIZE === 4) {
@@ -613,11 +605,7 @@ final class Floats
             }
 
             // If the signs and exponents are the same, we can constrain the random fraction range to save time.
-            if ($sameSign && $sameExp) {
-                $fraction = random_int($minFrac, $maxFrac);
-            } else {
-                $fraction = random_int(0, 0xFFFFFFFFFFFFF);
-            }
+            $fraction = $sameSign && $sameExp ? random_int($minFrac, $maxFrac) : random_int(0, 0xFFFFFFFFFFFFF);
 
             // Convert components to float.
             $f = self::assemble($sign, $exp, $fraction);

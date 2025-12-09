@@ -176,7 +176,7 @@ final class Types
     {
         // Get class, interface, or trait name.
         if (is_object($objOrClass)) {
-            $class = get_class($objOrClass);
+            $class = $objOrClass::class;
         } elseif (class_exists($objOrClass) || interface_exists($objOrClass) || trait_exists($objOrClass)) {
             $class = (string)$objOrClass;
         } else {
@@ -215,7 +215,10 @@ final class Types
                 $traitTraits = self::getTraitsRecursive($trait);
                 $traits = array_merge($traits, $traitTraits);
             }
-        } while ($class = get_parent_class($class));
+
+            // Move to parent class.
+            $class = get_parent_class($class);
+        } while ($class !== false);
 
         return array_unique($traits);
     }

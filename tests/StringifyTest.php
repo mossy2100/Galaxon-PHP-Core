@@ -232,6 +232,7 @@ final class StringifyTest extends TestCase
         // Create a simple object with public properties.
         $obj = new class {
             public string $name = 'John';
+
             public int $age = 30;
         };
 
@@ -251,7 +252,9 @@ final class StringifyTest extends TestCase
         // Create object with different visibility levels.
         $obj = new class {
             public string $publicProp = 'public';
+
             protected string $protectedProp = 'protected';
+
             // @phpstan-ignore-next-line
             private string $privateProp = 'private';
         };
@@ -297,13 +300,14 @@ final class StringifyTest extends TestCase
         // Create object with properties.
         $obj = new class {
             public string $name = 'John';
+
             public int $age = 30;
         };
 
         $result = Stringify::stringify($obj, true);
 
         // Test that pretty print options adds newlines as expected.
-        $str = <<<STR
+        $str = <<<'STR'
             <@anonymous
                 +name: "John",
                 +age: 30
@@ -378,7 +382,9 @@ final class StringifyTest extends TestCase
     {
         // Create complex nested structure.
         $obj = new class {
-            public array $items = [1, 2, 3]; // @phpstan-ignore missingType.iterableValue
+            /** @var array<int, int> */
+            public array $items = [1, 2, 3];
+
             public string $name = 'test';
         };
 

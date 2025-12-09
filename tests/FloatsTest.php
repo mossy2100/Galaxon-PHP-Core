@@ -1433,7 +1433,7 @@ final class FloatsTest extends TestCase
         $nValues = 10;
         $min = 1.0;
         $max = $min;
-        $counts[Floats::toHex($min)] = 0;
+        $counts = [Floats::toHex($min) => 0];
         for ($i = 0; $i < $nValues - 1; $i++) {
             $f = Floats::next($max);
             $counts[Floats::toHex($f)] = 0;

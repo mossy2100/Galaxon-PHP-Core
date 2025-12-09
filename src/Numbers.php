@@ -32,6 +32,7 @@ final class Numbers
      *
      * @param mixed $value The value to check.
      * @return bool True if the value is a number, false otherwise.
+     * @phpstan-assert-if-true int|float $value
      */
     public static function isNumber(mixed $value): bool
     {

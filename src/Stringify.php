@@ -193,7 +193,7 @@ final class Stringify
     public static function stringifyObject(object $obj, bool $prettyPrint = false, int $indentLevel = 0): string
     {
         // Get the tag name.
-        $class = get_class($obj);
+        $class = $obj::class;
 
         // Check for anonymous classes. We don't want null bytes in the result.
         if (str_contains($class, '@anonymous')) {
