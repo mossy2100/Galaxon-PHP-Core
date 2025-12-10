@@ -24,7 +24,7 @@ final class Numbers
 
     // endregion
 
-    // region Type inspection
+    // region Inspection methods
 
     /**
      * Check if a value is a number, i.e. an integer or a float.
@@ -61,36 +61,25 @@ final class Numbers
      */
     public static function equal(int|float $a, int|float $b): bool
     {
-        // If they're both ints, don't convert to float.
-        if (is_int($a) && is_int($b)) {
+        // If they have the same type, compare using strict equality.
+        if (Types::same($a, $b)) {
             return $a === $b;
         }
 
-        // Compare as floats.
-        return (float)$a === (float)$b;
+        // If $a is an int and $b is a float, check if $b can be losslessly converted to an equal integer.
+        if (is_int($a)) {
+            $ib = Floats::tryConvertToInt($b);
+            return $a === $ib;
+        }
+
+        // If $a is a float and $b is an int, check if $a can be losslessly converted to an equal integer.
+        $ia = Floats::tryConvertToInt($a);
+        return $b === $ia;
     }
 
     // endregion
 
     // region Sign methods
-
-    /**
-     * Copy the sign of one number to another.
-     *
-     * @param int|float $num The number whose magnitude to use.
-     * @param int|float $signSource The number whose sign to copy.
-     * @return int|float The magnitude of $num with the sign of $signSource.
-     * @throws ValueError If NaN is passed as either parameter.
-     */
-    public static function copySign(int|float $num, int|float $signSource): int|float
-    {
-        // Guard. This method won't work for NaN, which doesn't have a sign.
-        if (is_nan($num) || is_nan($signSource)) {
-            throw new ValueError('NAN is not allowed for either parameter.');
-        }
-
-        return abs($num) * self::sign($signSource, false);
-    }
 
     /**
      * Get the sign of a number.
@@ -125,6 +114,24 @@ final class Numbers
 
         // Return the sign of the zero.
         return is_float($value) && Floats::isNegativeZero($value) ? -1 : 1;
+    }
+
+    /**
+     * Copy the sign of one number to another.
+     *
+     * @param int|float $num The number whose magnitude to use.
+     * @param int|float $signSource The number whose sign to copy.
+     * @return int|float The magnitude of $num with the sign of $signSource.
+     * @throws ValueError If NAN is passed as either parameter.
+     */
+    public static function copySign(int|float $num, int|float $signSource): int|float
+    {
+        // Guard. This method won't work for NAN, which doesn't have a sign.
+        if (is_nan($num) || is_nan($signSource)) {
+            throw new ValueError('NAN is not allowed for either parameter.');
+        }
+
+        return abs($num) * self::sign($signSource, false);
     }
 
     // endregion

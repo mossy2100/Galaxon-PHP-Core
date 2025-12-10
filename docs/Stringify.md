@@ -84,9 +84,9 @@ Encode a float value ensuring it doesn't look like an integer.
 ```php
 Stringify::stringifyFloat(3.14);   // 3.14
 Stringify::stringifyFloat(5.0);    // 5.0 (ensures decimal point)
-Stringify::stringifyFloat(NAN);    // NaN
-Stringify::stringifyFloat(INF);    // ∞
-Stringify::stringifyFloat(-INF);   // -∞
+Stringify::stringifyFloat(NAN);    // NAN
+Stringify::stringifyFloat(INF);    // INF
+Stringify::stringifyFloat(-INF);   // -INF
 ```
 
 **Use Case:** When you need to distinguish floats from integers in output, especially for debugging or logging.

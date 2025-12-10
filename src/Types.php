@@ -59,21 +59,6 @@ final class Types
     }
 
     /**
-     * Check if two values have the same type.
-     *
-     * Uses get_debug_type() for type comparison, which provides more accurate type information than instanceof,
-     * especially for distinguishing between different class instances.
-     *
-     * @param mixed $obj1 The first value to compare.
-     * @param mixed $obj2 The second value to compare.
-     * @return bool True if the types are the same, false otherwise.
-     */
-    public static function haveSameType(mixed $obj1, mixed $obj2): bool
-    {
-        return get_debug_type($obj1) === get_debug_type($obj2);
-    }
-
-    /**
      * Convert any PHP value into a unique string.
      *
      * The intended use case is a key in a collection like Set or Dictionary.
@@ -123,7 +108,22 @@ final class Types
 
     // endregion
 
-    // region Errors
+    // region Type checking
+
+    /**
+     * Check if two values have the same type.
+     *
+     * Uses get_debug_type() for type comparison, which provides more accurate type information than instanceof,
+     * especially for distinguishing between different class instances.
+     *
+     * @param mixed $obj1 The first value to compare.
+     * @param mixed $obj2 The second value to compare.
+     * @return bool True if the types are the same, false otherwise.
+     */
+    public static function same(mixed $obj1, mixed $obj2): bool
+    {
+        return get_debug_type($obj1) === get_debug_type($obj2);
+    }
 
     /**
      * Create a new TypeError using information about the parameter and expected type.

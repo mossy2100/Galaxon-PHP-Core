@@ -39,27 +39,6 @@ abstract public function compare(mixed $other): int
 - Should use epsilon tolerance for floating-point comparisons
 - Must be consistent with your type's equality semantics
 
-### checkSameType()
-
-```php
-public function checkSameType(mixed $other): void
-```
-
-Verify that another value has the same type as this object, throwing `TypeError` if not. This method is used by the comparison methods to ensure type safety before delegating to `compare()`.
-
-Uses `Types::haveSameType()` for type comparison, which uses `get_debug_type()` for accurate type information.
-
-**Parameters:**
-- `$other` (mixed) - The value to compare with
-
-**Returns:**
-- `void`
-
-**Throws:**
-- `TypeError` - If the types are not the same
-
-**Note:** This is a public method provided by the trait. You typically don't need to call it directly or override it.
-
 ### equal()
 
 ```php
@@ -75,9 +54,9 @@ Check if this object equals another. Provided by the trait - delegates to `compa
 - `bool` - `true` if equal, `false` otherwise
 
 **Behavior:**
-- First checks type compatibility using `Types::haveSameType()`
-- Returns `false` gracefully for incompatible types (doesn't throw)
-- Only calls `compare()` if types match
+- Calls `compare()` within a try/catch block
+- Returns `false` gracefully if `compare()` throws `TypeError` for incompatible types
+- Returns `true` only if `compare()` returns `0`
 
 ### lessThan()
 

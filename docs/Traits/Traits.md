@@ -5,11 +5,11 @@ A hierarchical set of traits providing equality and ordering comparison operatio
 ## Trait Hierarchy
 
 ```
-Equatable (base)
-    ├─→ Comparable
-    │       └─→ ApproxComparable
-    └─→ ApproxEquatable
-            └─→ ApproxComparable
+        Equatable
+        ↙     ↘
+Comparable   ApproxEquatable
+        ↘     ↙
+    ApproxComparable
 ```
 
 **Key:**
@@ -18,11 +18,11 @@ Equatable (base)
 
 ## Quick Reference
 
-| Trait | Implements | Must Implement | Provides | Use When |
-|-------|-----------|----------------|----------|----------|
-| **[Equatable](Equatable.md)** | - | `equal()` | - | Need exact equality only |
-| **[Comparable](Comparable.md)** | Equatable | `compare()` | `equal()`, `lessThan()`, `greaterThan()`, etc. | Need exact equality + ordering |
-| **[ApproxEquatable](ApproxEquatable.md)** | Equatable | `equal()`, `approxEqual()` | - | Need exact + approximate equality, no ordering |
+| Trait | Uses                         | Must Implement | Provides | Use When |
+|-------|------------------------------|----------------|----------|----------|
+| **[Equatable](Equatable.md)** | -                            | `equal()` | - | Need exact equality only |
+| **[Comparable](Comparable.md)** | Equatable                    | `compare()` | `equal()`, `lessThan()`, `greaterThan()`, etc. | Need exact equality + ordering |
+| **[ApproxEquatable](ApproxEquatable.md)** | Equatable                    | `equal()`, `approxEqual()` | - | Need exact + approximate equality, no ordering |
 | **[ApproxComparable](ApproxComparable.md)** | Comparable + ApproxEquatable | `compare()`, `approxEqual()` | All comparison methods + `approxCompare()` | Need full comparison suite |
 
 ## How They Work Together
@@ -54,7 +54,7 @@ trait Comparable
 
 **You implement:** `compare()` returning -1, 0, or 1
 
-**You get:** `equal()` (based on `compare()`), `lessThan()`, `greaterThan()`, `lessThanOrEqual()`, `greaterThanOrEqual()`, `checkSameType()`
+**You get:** `equal()` (based on `compare()`), `lessThan()`, `greaterThan()`, `lessThanOrEqual()`, `greaterThanOrEqual()`
 
 **Note:** You don't implement `equal()` - the trait provides it based on `compare()`
 
@@ -67,8 +67,8 @@ trait ApproxEquatable
 
     abstract public function approxEqual(
         mixed $other,
-        float $relTolerance = Floats::DEFAULT_RELATIVE_TOLERANCE,
-        float $absTolerance = PHP_FLOAT_EPSILON
+        float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
+        float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
     ): bool;
 }
 ```
@@ -162,7 +162,7 @@ class Complex
     public function approxEqual(
         mixed $other,
         float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
-        float $absTol = PHP_FLOAT_EPSILON
+        float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
     ): bool {
         if (!$other instanceof self) {
             return false;

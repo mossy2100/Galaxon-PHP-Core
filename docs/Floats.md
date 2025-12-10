@@ -22,7 +22,7 @@ The IEEE-754 standard defines several special values with unique properties:
 
 - **-0.0 and +0.0**: Distinct values that compare as equal (`-0.0 === 0.0` returns `true`), but have different binary representations and can produce different results in certain operations (e.g., `1.0 / -0.0` returns `-INF`)
 - **INF and -INF**: Positive and negative infinity, representing values too large to represent
-- **NaN**: Not a Number, the result of undefined operations (e.g., `0.0 / 0.0`, `sqrt(-1)`)
+- **NAN**: 'Not a Number', the result of undefined operations (e.g., `0.0 / 0.0`, `sqrt(-1)`)
 
 Several methods are provided to facilitate working with these values: `isNegativeZero()`, `isPositiveZero()`, `isSpecial()`, and `normalizeZero()`.
 
@@ -90,8 +90,8 @@ The circle constant τ (tau), equal to 2π ≈ 6.283185307179586, which is the n
 public static function approxEqual(
     float $a,
     float $b,
-    float $relTol = self::DEFAULT_RELATIVE_TOLERANCE,
-    float $absTol = self::DEFAULT_ABSOLUTE_TOLERANCE
+    float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
+    float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
 ): bool
 ```
 
@@ -113,7 +113,6 @@ This method implements an algorithm similar to Python's `math.isclose()`:
 
 **Throws:**
 - `ValueError` - If either tolerance is negative
-- `ValueError` - If either float is non-finite (NaN, ±INF)
 
 **Examples:**
 
@@ -153,17 +152,23 @@ Special values:
 // Handles positive and negative zero
 Floats::approxEqual(0.0, -0.0);  // true
 
-// Non-finite values throw
-Floats::approxEqual(INF, INF);  // throws ValueError
-Floats::approxEqual(NAN, NAN);  // throws ValueError
+// Infinities use exact equality
+Floats::approxEqual(INF, INF);    // true
+Floats::approxEqual(-INF, -INF);  // true
+Floats::approxEqual(INF, -INF);   // false
+
+// NAN is never equal to anything
+Floats::approxEqual(NAN, NAN);    // false
+Floats::approxEqual(NAN, 0.0);    // false
 ```
 
 **Behavior:**
+- Handles NAN by returning `false` (NAN is never equal to anything)
+- Handles infinities using exact equality (`INF === INF`, `-INF === -INF`)
 - First checks exact equality (`$a === $b`) as a fast path
 - Then checks absolute tolerance: `abs($a - $b) <= $absTol`
 - Finally checks relative tolerance: `abs($a - $b) <= $relTol * max(abs($a), abs($b))`
 - **Symmetric**: `approxEqual($a, $b)` equals `approxEqual($b, $a)`
-- Throws for non-finite values (NaN, ±INF) to prevent misleading results
 
 **Algorithm:**
 ```php
@@ -186,88 +191,16 @@ return $diff <= $relTol * max(abs($a), abs($b));  // Relative tolerance
 - Scientific and engineering calculations
 
 **See Also:**
-- `approxEqualAbsolute()` - Explicit absolute-only comparison
-- `compare()` - Three-way comparison with approximate equality
+- `approxCompare()` - Three-way comparison with approximate equality
 
-### approxEqualAbsolute()
+### approxCompare()
 
 ```php
-public static function approxEqualAbsolute(
+public static function approxCompare(
     float $a,
     float $b,
-    float $tol = self::DEFAULT_ABSOLUTE_TOLERANCE
-): bool
-```
-
-Check if two floats are approximately equal using absolute difference comparison. Returns `true` if the absolute difference between the values is less than or equal to the tolerance.
-
-**Parameters:**
-- `$a` (float) - The first float
-- `$b` (float) - The second float
-- `$tol` (float) - The maximum allowed absolute difference (default: `PHP_FLOAT_EPSILON`)
-
-**Returns:**
-- `bool` - Returns `true` if `abs($a - $b) <= $tol`, `false` otherwise
-
-**Throws:**
-- `ValueError` - If tolerance is negative
-- `ValueError` - If either float is non-finite (NaN, ±INF)
-
-**Examples:**
-
-```php
-// Values within tolerance
-Floats::approxEqualAbsolute(1.0, 1.0 + 1e-16);  // true (within PHP_FLOAT_EPSILON)
-Floats::approxEqualAbsolute(1.0, 1.0 + 1e-15, 1e-14);  // true
-
-// Values exceeding tolerance
-Floats::approxEqualAbsolute(1.0, 1.1, 0.05);  // false (0.1 > 0.05)
-
-// Works well for small values
-Floats::approxEqualAbsolute(1e-15, 2e-15, 1e-14);  // true
-
-// But doesn't scale with magnitude
-Floats::approxEqualAbsolute(1e10, 1e10 + 1.0, 1e-10);  // false (1.0 > 1e-10)
-Floats::approxEqualAbsolute(1e10, 1e10 + 1.0, 10.0);   // true (1.0 < 10.0)
-
-// Zero tolerance for exact comparison
-Floats::approxEqualAbsolute(1.0, 1.0, 0.0);  // true
-Floats::approxEqualAbsolute(1.0, 1.0 + PHP_FLOAT_EPSILON, 0.0);  // false
-
-// Non-finite values throw
-Floats::approxEqualAbsolute(INF, INF, 1e-9);  // throws ValueError
-```
-
-**Behavior:**
-- First checks exact equality (`$a === $b`) as a fast path
-- Then checks: `abs($a - $b) <= $tol`
-- **Symmetric**: `approxEqualAbsolute($a, $b)` equals `approxEqualAbsolute($b, $a)`
-- Does not scale with magnitude
-- Positive and negative zero are considered equal
-- Throws for non-finite values (NaN, ±INF)
-
-**When to Use:**
-- Comparing values near zero
-- When tolerance should be absolute, not relative
-- When all values are of similar magnitude
-- Color components (0-255 range)
-- Pixel coordinates
-
-**When NOT to Use:**
-- Comparing values of vastly different magnitudes
-- Scientific calculations with wide ranges (use `approxEqual()` instead)
-
-**See Also:**
-- `approxEqual()` - Combined absolute and relative tolerance
-
-### compare()
-
-```php
-public static function compare(
-    float $a,
-    float $b,
-    float $relTol = self::DEFAULT_RELATIVE_TOLERANCE,
-    float $absTol = self::DEFAULT_ABSOLUTE_TOLERANCE
+    float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
+    float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
 ): int
 ```
 
@@ -283,43 +216,46 @@ Three-way comparison of two floats with approximate equality support. Returns an
 - `int` - Returns exactly `-1` if `$a < $b`, `0` if approximately equal, `1` if `$a > $b`
 
 **Throws:**
-- `ValueError` - If either tolerance is negative
-- `ValueError` - If either float is non-finite (NaN, ±INF)
+- `ValueError` - If either float is NAN, or either tolerance is negative
 
 **Examples:**
 
 ```php
 // Basic three-way comparison
-Floats::compare(1.0, 2.0);  // -1 (less than)
-Floats::compare(2.0, 1.0);  // 1 (greater than)
-Floats::compare(1.0, 1.0);  // 0 (equal)
+Floats::approxCompare(1.0, 2.0);  // -1 (less than)
+Floats::approxCompare(2.0, 1.0);  // 1 (greater than)
+Floats::approxCompare(1.0, 1.0);  // 0 (equal)
 
 // Approximate equality with default tolerances
-Floats::compare(1.0, 1.0 + 1e-11);  // 0 (within tolerance)
-Floats::compare(1.0, 1.1);          // -1 (exceeds tolerance)
+Floats::approxCompare(1.0, 1.0 + 1e-11);  // 0 (within tolerance)
+Floats::approxCompare(1.0, 1.1);          // -1 (exceeds tolerance)
 
 // Combined absolute and relative tolerance
-Floats::compare(1000000.0, 1000000.1, 1e-6);  // 0 (within relative tolerance)
-Floats::compare(1.0, 1.1, 1e-6);              // -1 (exceeds relative tolerance)
+Floats::approxCompare(1000000.0, 1000000.1, 1e-6);  // 0 (within relative tolerance)
+Floats::approxCompare(1.0, 1.1, 1e-6);              // -1 (exceeds relative tolerance)
 
 // Custom tolerances
-Floats::compare(1.0, 1.0 + 1e-11, 1e-9, 1e-10);  // 0
-Floats::compare(1.0, 1.0 + 1e-9, 1e-9, 1e-10);   // 1
+Floats::approxCompare(1.0, 1.0 + 1e-11, 1e-9, 1e-10);  // 0
+Floats::approxCompare(1.0, 1.0 + 1e-9, 1e-9, 1e-10);   // 1
 
 // Handles precision issues
-Floats::compare(0.1 + 0.2, 0.3);  // 0 (approximately equal)
+Floats::approxCompare(0.1 + 0.2, 0.3);  // 0 (approximately equal)
 
-// Special values throw
-Floats::compare(INF, 1000.0);   // throws ValueError
-Floats::compare(0.0, -0.0);     // 0 (equal)
+// Infinities use exact equality via approxEqual()
+Floats::approxCompare(INF, INF);      // 0 (equal)
+Floats::approxCompare(INF, 1000.0);   // 1 (INF > finite)
+Floats::approxCompare(0.0, -0.0);     // 0 (equal)
+
+// NAN throws ValueError
+Floats::approxCompare(NAN, 1.0);      // throws ValueError
 ```
 
 **Behavior:**
+- Throws `ValueError` if either argument is NAN (NAN cannot be meaningfully compared)
 - First checks approximate equality using `approxEqual()` with the specified tolerances
 - If approximately equal, returns `0`
 - Otherwise uses spaceship operator (`<=>`) to determine ordering, normalized to exactly -1 or 1 using `Numbers::sign()`
-- Inherits tolerance behavior from `approxEqual()` (combined absolute and relative)
-- Throws for non-finite values (NaN, ±INF)
+- Infinities are handled by `approxEqual()` using exact equality
 
 **Use Cases:**
 - Implementing `compare()` methods in custom classes (e.g., `Comparable` trait)
@@ -333,7 +269,7 @@ Floats::compare(0.0, -0.0);     // 0 (equal)
 $values = [1.0000001, 1.0, 0.9999999];
 
 usort($values, function($a, $b) {
-    return Floats::compare($a, $b, 1e-6);
+    return Floats::approxCompare($a, $b, 1e-6);
 });
 
 // Result: All three values may be considered equal with tolerance 1e-6
@@ -341,7 +277,6 @@ usort($values, function($a, $b) {
 
 **See Also:**
 - `approxEqual()` - Two-way approximate equality check
-- `approxEqualAbsolute()` - Absolute-only comparison
 
 ### isNegativeZero()
 
@@ -424,7 +359,7 @@ Check if a floating-point number is negative. This method considers -0.0 as nega
 - `$value` (float) - The value to check
 
 **Returns:**
-- `bool` - Returns `true` for -0.0, -INF, and negative values; `false` for +0.0, INF, NaN, and positive values
+- `bool` - Returns `true` for -0.0, -INF, and negative values; `false` for +0.0, INF, NAN, and positive values
 
 **Examples:**
 
@@ -437,7 +372,7 @@ Floats::isNegative(1.0);    // false
 Floats::isNegative(NAN);    // false
 ```
 
-**Note:** NaN is considered neither positive nor negative.
+**Note:** NAN is considered neither positive nor negative.
 
 ### isPositive()
 
@@ -451,7 +386,7 @@ Check if a floating-point number is positive. This method considers +0.0 as posi
 - `$value` (float) - The value to check
 
 **Returns:**
-- `bool` - Returns `true` for +0.0, INF, and positive values; `false` for -0.0, -INF, NaN, and negative values
+- `bool` - Returns `true` for +0.0, INF, and positive values; `false` for -0.0, -INF, NAN, and negative values
 
 **Examples:**
 
@@ -464,7 +399,7 @@ Floats::isPositive(-1.0);   // false
 Floats::isPositive(NAN);    // false
 ```
 
-**Note:** NaN is considered neither positive nor negative.
+**Note:** NAN is considered neither positive nor negative.
 
 ### isSpecial()
 
@@ -472,13 +407,13 @@ Floats::isPositive(NAN);    // false
 public static function isSpecial(float $value): bool
 ```
 
-Check if a float is one of the special IEEE-754 values: NaN, -0.0, +INF, or -INF. Note that +0.0 is not considered a special value.
+Check if a float is one of the special IEEE-754 values: NAN, -0.0, +INF, or -INF. Note that +0.0 is not considered a special value.
 
 **Parameters:**
 - `$value` (float) - The value to check
 
 **Returns:**
-- `bool` - Returns `true` if the value is NaN, -0.0, +INF, or -INF; `false` otherwise
+- `bool` - Returns `true` if the value is NAN, -0.0, +INF, or -INF; `false` otherwise
 
 **Examples:**
 
@@ -546,7 +481,7 @@ Try to convert a float to an integer losslessly. Returns the equivalent integer 
 **Behavior:**
 - Returns the integer value if the float equals a whole number (e.g., 5.0 → 5, -10.0 → -10, 0.0 → 0)
 - Returns `null` if the float has a fractional part (e.g., 5.5, 0.1)
-- Returns `null` for non-finite values (NaN, ±INF)
+- Returns `null` for non-finite values (NAN, ±INF)
 - Handles negative zero (-0.0) by converting it to integer 0
 - Works for any float value (without fractional part) within PHP's integer range (PHP_INT_MIN to PHP_INT_MAX)
 
@@ -606,7 +541,7 @@ Check if a float value is exactly representable as an integer without rounding e
 - Returns `true` for whole numbers within the exact range
 - Returns `false` for fractional values
 - Returns `false` for values beyond ±2^53
-- Returns `false` for non-finite values (NaN, ±INF)
+- Returns `false` for non-finite values (NAN, ±INF)
 - Handles negative zero (-0.0) as an exact integer
 
 **Examples:**
@@ -694,7 +629,7 @@ Calculate the Unit in Last Place (ULP) - the spacing between adjacent representa
 - `$value` (float) - The value to calculate ULP for
 
 **Returns:**
-- `float` - The ULP spacing. Returns `INF` for non-finite values (NaN, ±INF)
+- `float` - The ULP spacing. Returns `INF` for non-finite values (NAN, ±INF)
 
 **Behavior:**
 - For normalized numbers: returns `abs($value) * PHP_FLOAT_EPSILON`
@@ -913,7 +848,7 @@ $neg = Floats::disassemble(-0.0);  // sign = 1, exponent = 0, fraction = 0
 // Infinity has exponent 2047 and fraction 0
 $inf = Floats::disassemble(INF);   // sign = 0, exponent = 2047, fraction = 0
 
-// NaN has exponent 2047 and non-zero fraction
+// NAN has exponent 2047 and non-zero fraction
 $nan = Floats::disassemble(NAN);   // sign = ?, exponent = 2047, fraction > 0
 ```
 
@@ -967,7 +902,7 @@ $negZero = Floats::assemble(1, 0, 0);  // -0.0
 // Assemble infinity
 $inf = Floats::assemble(0, 2047, 0);  // INF
 
-// Assemble NaN (exponent 2047 with non-zero fraction)
+// Assemble NAN (exponent 2047 with non-zero fraction)
 $nan = Floats::assemble(0, 2047, 1);  // NAN
 ```
 
@@ -1003,7 +938,7 @@ Generate a random float in the specified range by constructing IEEE-754 componen
 
 **Throws:**
 - `RuntimeException` - If the system is not 64-bit
-- `ValueError` - If min or max are non-finite (NaN, ±INF), or if min > max
+- `ValueError` - If min or max are non-finite (NAN, ±INF), or if min > max
 
 **Examples:**
 
@@ -1023,7 +958,7 @@ $f = Floats::rand(5.0, 5.0);  // 5.0
 
 **Characteristics:**
 - Can return **any representable float** in the given range
-- Will not return a special value (NaN, ±INF, or -0.0)
+- Will not return a special value (NAN, ±INF, or -0.0)
 - Uses IEEE-754 component assembly (sign, exponent, fraction)
 - Distribution is **not uniform** - more values near zero due to IEEE-754 density
 - Handles ranges spanning zero correctly
@@ -1049,7 +984,7 @@ $f = Floats::rand(5.0, 5.0);  // 5.0
 public static function randUniform(float $min, float $max): float
 ```
 
-Generate a uniformly distributed random float in the specified range. The step size is automatically calculated using ULP to ensure no duplicate values while maintaining uniform spacing.
+Generate a uniformly distributed random float in the specified range. The step size is automatically calculated using ULP to ensure that the number of values the function can return for a given range is maximized, and the probability of each being returned is equal.
 
 **Parameters:**
 - `$min` (float) - The minimum value (inclusive)
@@ -1059,7 +994,7 @@ Generate a uniformly distributed random float in the specified range. The step s
 - `float` - A random float in the range [min, max]
 
 **Throws:**
-- `ValueError` - If min or max are non-finite (NaN, ±INF), or if min > max
+- `ValueError` - If min or max are non-finite (NAN, ±INF), or if min > max
 - `RandomException` - If an appropriate source of randomness is unavailable
 
 **Examples:**

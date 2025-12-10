@@ -34,7 +34,7 @@ General number-related utility methods including sign operations.
 
 ### [Floats](docs/Floats.md)
 
-Float-specific utilities for handling IEEE-754 special values (-0.0, ±INF, NaN), approximate comparison, float space navigation (next/previous), random generation, and IEEE-754 component assembly/disassembly.
+Float-specific utilities for handling IEEE-754 special values (-0.0, ±INF, NAN), approximate comparison, float space navigation (next/previous), random generation, and IEEE-754 component assembly/disassembly.
 
 ### [Integers](docs/Integers.md)
 
@@ -81,7 +81,7 @@ The library includes comprehensive test coverage:
 vendor/bin/phpunit
 
 # Run specific test class
-vendor/bin/phpunit tests/Floats.php
+vendor/bin/phpunit tests/NumbersTest.php
 
 # Run with coverage (generates HTML report and clover.xml)
 composer test
@@ -101,7 +101,7 @@ Contributions are welcome! Please:
 4. Ensure all tests pass
 5. Submit a pull request
 
-For questions or suggestions, please  [open an issue](https://github.com/mossy2100/PHP-Core/issues).
+For questions or suggestions, please [open an issue](https://github.com/mossy2100/PHP-Core/issues).
 
 ## Support
 

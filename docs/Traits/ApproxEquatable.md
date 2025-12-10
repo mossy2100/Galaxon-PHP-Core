@@ -17,8 +17,8 @@ The trait provides:
 ```php
 abstract public function approxEqual(
     mixed $other,
-    float $relTolerance = Floats::DEFAULT_RELATIVE_TOLERANCE,
-    float $absTolerance = PHP_FLOAT_EPSILON
+    float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
+    float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
 ): bool
 ```
 
@@ -26,15 +26,15 @@ abstract public function approxEqual(
 
 **Parameters:**
 - `$other` (mixed) - The value to compare with
-- `$relTolerance` (float) - Relative tolerance (default: 1e-9)
-- `$absTolerance` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON ≈ 2.22e-16)
+- `$relTol` (float) - Relative tolerance (default: 1e-9)
+- `$absTol` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON ≈ 2.22e-16)
 
 **Returns:**
 - `bool` - `true` if approximately equal within tolerances, `false` otherwise
 
 **Implementation Guidelines:**
 - Should return `false` for incompatible types (not throw exceptions)
-- Use combined relative and absolute tolerance: `|a - b| ≤ max(relTolerance * max(|a|, |b|), absTolerance)`
+- Use combined relative and absolute tolerance: `|a - b| ≤ max(relTol * max(|a|, |b|), absTol)`
 - Relative tolerance matters for large values
 - Absolute tolerance matters for values near zero
 - Consider using `Floats::approxEqual()` for float comparisons
@@ -68,16 +68,16 @@ class Complex
 
     public function approxEqual(
         mixed $other,
-        float $relTolerance = Floats::DEFAULT_RELATIVE_TOLERANCE,
-        float $absTolerance = PHP_FLOAT_EPSILON
+        float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
+        float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
     ): bool {
         if (!$other instanceof self) {
             return false;
         }
 
         // Both components must be within tolerance
-        return Floats::approxEqual($this->real, $other->real, $relTolerance, $absTolerance)
-            && Floats::approxEqual($this->imaginary, $other->imaginary, $relTolerance, $absTolerance);
+        return Floats::approxEqual($this->real, $other->real, $relTol, $absTol)
+            && Floats::approxEqual($this->imaginary, $other->imaginary, $relTol, $absTol);
     }
 }
 
@@ -119,8 +119,8 @@ class Measurement
 
     public function approxEqual(
         mixed $other,
-        float $relTolerance = self::DEFAULT_TOLERANCE,
-        float $absTolerance = PHP_FLOAT_EPSILON
+        float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
+        float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
     ): bool {
         if (!$other instanceof self) {
             return false;
@@ -131,7 +131,7 @@ class Measurement
             return false;
         }
 
-        return Floats::approxEqual($this->value, $other->value, $relTolerance, $absTolerance);
+        return Floats::approxEqual($this->value, $other->value, $relTol, $absTol);
     }
 }
 
@@ -159,7 +159,7 @@ See [Traits.md](Traits.md) for complete hierarchy and usage guide.
 2. **No Exceptions**: `approxEqual()` should never throw exceptions - return `false` for incompatible types
 3. **Use Floats::approxEqual()**: Leverage the tested tolerance logic in `Floats::approxEqual()` for component comparisons
 4. **Combined Tolerance**: Use both relative and absolute tolerance for robust comparison across different scales
-5. **Default Tolerances**: Provide sensible defaults (typically `Floats::DEFAULT_RELATIVE_TOLERANCE` and `PHP_FLOAT_EPSILON`)
+5. **Default Tolerances**: Provide sensible defaults (typically `Floats::DEFAULT_RELATIVE_TOLERANCE` and `Floats::DEFAULT_ABSOLUTE_TOLERANCE`)
 6. **Consistency**: Ensure approximate equality is reflexive, symmetric, and as transitive as floating-point allows
 7. **Document Precision**: If your type uses custom default tolerances, document why
 8. **Component-Wise**: For composite types, check each component separately with the same tolerances
@@ -198,7 +198,7 @@ Floats::approxEqual($a, $b, 0.0, 1e-10);  // true
 
 ### Combined Approach
 
-The standard formula uses both: `|a - b| ≤ max(relTolerance * max(|a|, |b|), absTolerance)`
+The standard formula uses both: `|a - b| ≤ max(relTol * max(|a|, |b|), absTol)`
 
 This ensures robust comparison across all value ranges.
 

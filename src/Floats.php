@@ -85,7 +85,7 @@ final class Floats
             throw new ValueError('Tolerances must be non-negative.');
         }
 
-        // Handle NaN. NaN != anything, even itself.
+        // Handle NAN. NAN != anything, even itself.
         if (is_nan($a) || is_nan($b)) {
             return false;
         }
@@ -122,7 +122,7 @@ final class Floats
      * @param float $relTol The maximum allowed relative difference.
      * @param float $absTol The maximum allowed absolute difference.
      * @return int -1 if $a < $b, 0 if $a == $b (within tolerance), 1 if $a > $b.
-     * @throws ValueError If either tolerance is negative, or either float is non-finite.
+     * @throws ValueError If either tolerance is negative, or either float is NAN.
      */
     public static function approxCompare(
         float $a,
@@ -130,13 +130,13 @@ final class Floats
         float $relTol = self::DEFAULT_RELATIVE_TOLERANCE,
         float $absTol = self::DEFAULT_ABSOLUTE_TOLERANCE
     ): int {
-        // Check if the floats are approximately equal.
-        if (self::approxEqual($a, $b, $relTol, $absTol)) {
-            return 0;
+        // NAN doesn't compare as equal, less than, or greater than anything, including itself.
+        if (is_nan($a) || is_nan($b)) {
+            throw new ValueError('Cannot compare NAN with any other value, even itself.');
         }
 
-        // Use default comparison for less/greater than.
-        return Numbers::sign($a <=> $b);
+        // If they are approximately equal, return 0, otherwise use the spaceship operator to get -1 or 1.
+        return self::approxEqual($a, $b, $relTol, $absTol) ? 0 : Numbers::sign($a <=> $b);
     }
 
     // endregion
@@ -243,7 +243,7 @@ final class Floats
      *
      * This method returns:
      * - true for -0.0, -INF, and negative values
-     * - false for +0.0, INF, NaN, and positive values
+     * - false for +0.0, INF, NAN, and positive values
      *
      * @param float $value The value to check.
      * @return bool True if the value is negative, false otherwise.
@@ -258,7 +258,7 @@ final class Floats
      *
      * This method returns:
      * - true for +0.0, INF, and positive values
-     * - false for -0.0, -INF, NaN, and negative values
+     * - false for -0.0, -INF, NAN, and negative values
      *
      * @param float $value The value to check.
      * @return bool True if the value is positive, false otherwise.
@@ -269,7 +269,7 @@ final class Floats
     }
 
     /**
-     * Check if a float is one of the special values: NaN, -0.0, +INF, -INF.
+     * Check if a float is one of the special values: NAN, -0.0, +INF, -INF.
      * +0.0 is not considered a special value.
      *
      * @param float $value The value to check.
@@ -360,7 +360,6 @@ final class Floats
      *
      * @see next() Get the next representable float
      * @see previous() Get the previous representable float
-     * @see FloatWithError Uses ULP for automatic error estimation
      */
     public static function ulp(float $value): float
     {
@@ -439,10 +438,10 @@ final class Floats
      * double-precision float. This is different from casting an integer to a float,
      * which attempts to preserve the integer's numeric value rather than its bit representation.
      *
-     * Caveat re NaN:
+     * Caveat re NAN:
      * The IEEE 754 standard supports 2^53 - 2 distinct bit patterns that represent
-     * NaN values. While this method can construct floats from any of these bit patterns,
-     * PHP normalizes all NaN values to a canonical representation (0x7ff8000000000000)
+     * NAN values. While this method can construct floats from any of these bit patterns,
+     * PHP normalizes all NAN values to a canonical representation (0x7ff8000000000000)
      * in subsequent operations.
      *
      * @param int $bits The 64-bit integer representing the desired bit pattern.

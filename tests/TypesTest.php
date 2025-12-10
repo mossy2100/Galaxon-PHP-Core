@@ -311,140 +311,140 @@ final class TypesTest extends TestCase
     }
 
     /**
-     * Test haveSameType with identical primitive types.
+     * Test same with identical primitive types.
      */
-    public function testHaveSameTypeWithIdenticalPrimitives(): void
+    public function testSameWithIdenticalPrimitives(): void
     {
-        $this->assertTrue(Types::haveSameType(1, 2));
-        $this->assertTrue(Types::haveSameType(1.0, 2.5));
-        $this->assertTrue(Types::haveSameType('hello', 'world'));
-        $this->assertTrue(Types::haveSameType(true, false));
-        $this->assertTrue(Types::haveSameType(null, null));
+        $this->assertTrue(Types::same(1, 2));
+        $this->assertTrue(Types::same(1.0, 2.5));
+        $this->assertTrue(Types::same('hello', 'world'));
+        $this->assertTrue(Types::same(true, false));
+        $this->assertTrue(Types::same(null, null));
     }
 
     /**
-     * Test haveSameType with different primitive types.
+     * Test same with different primitive types.
      */
-    public function testHaveSameTypeWithDifferentPrimitives(): void
+    public function testSameWithDifferentPrimitives(): void
     {
-        $this->assertFalse(Types::haveSameType(1, 1.0));
-        $this->assertFalse(Types::haveSameType(1, '1'));
-        $this->assertFalse(Types::haveSameType(1, true));
-        $this->assertFalse(Types::haveSameType(0, null));
-        $this->assertFalse(Types::haveSameType('', false));
-        $this->assertFalse(Types::haveSameType(1.0, '1.0'));
+        $this->assertFalse(Types::same(1, 1.0));
+        $this->assertFalse(Types::same(1, '1'));
+        $this->assertFalse(Types::same(1, true));
+        $this->assertFalse(Types::same(0, null));
+        $this->assertFalse(Types::same('', false));
+        $this->assertFalse(Types::same(1.0, '1.0'));
     }
 
     /**
-     * Test haveSameType with arrays.
+     * Test same with arrays.
      */
-    public function testHaveSameTypeWithArrays(): void
+    public function testSameWithArrays(): void
     {
-        $this->assertTrue(Types::haveSameType([], [1, 2, 3]));
-        $this->assertTrue(Types::haveSameType(['a' => 1], ['b' => 2]));
-        $this->assertFalse(Types::haveSameType([], new stdClass()));
+        $this->assertTrue(Types::same([], [1, 2, 3]));
+        $this->assertTrue(Types::same(['a' => 1], ['b' => 2]));
+        $this->assertFalse(Types::same([], new stdClass()));
     }
 
     /**
-     * Test haveSameType with same object class.
+     * Test same with same object class.
      */
-    public function testHaveSameTypeWithSameObjectClass(): void
+    public function testSameWithSameObjectClass(): void
     {
         $obj1 = new stdClass();
         $obj2 = new stdClass();
-        $this->assertTrue(Types::haveSameType($obj1, $obj2));
+        $this->assertTrue(Types::same($obj1, $obj2));
 
         $dt1 = new DateTime();
         $dt2 = new DateTime();
-        $this->assertTrue(Types::haveSameType($dt1, $dt2));
+        $this->assertTrue(Types::same($dt1, $dt2));
     }
 
     /**
-     * Test haveSameType with different object classes.
+     * Test same with different object classes.
      */
-    public function testHaveSameTypeWithDifferentObjectClasses(): void
+    public function testSameWithDifferentObjectClasses(): void
     {
         $obj1 = new stdClass();
         $obj2 = new DateTime();
-        $this->assertFalse(Types::haveSameType($obj1, $obj2));
+        $this->assertFalse(Types::same($obj1, $obj2));
     }
 
     /**
-     * Test haveSameType with anonymous classes.
+     * Test same with anonymous classes.
      * Note: get_debug_type() returns 'class@anonymous' for all anonymous classes.
      */
-    public function testHaveSameTypeWithAnonymousClasses(): void
+    public function testSameWithAnonymousClasses(): void
     {
         $obj1 = new class {
         };
         $obj2 = new class {
         };
         // All anonymous classes have the same type name according to get_debug_type()
-        $this->assertTrue(Types::haveSameType($obj1, $obj2));
+        $this->assertTrue(Types::same($obj1, $obj2));
     }
 
     /**
-     * Test haveSameType with resources.
+     * Test same with resources.
      */
-    public function testHaveSameTypeWithResources(): void
+    public function testSameWithResources(): void
     {
         $r1 = fopen('php://memory', 'rb');
         $r2 = fopen('php://memory', 'rb');
         $this->assertNotFalse($r1);
         $this->assertNotFalse($r2);
-        $this->assertTrue(Types::haveSameType($r1, $r2));
+        $this->assertTrue(Types::same($r1, $r2));
         fclose($r1);
         fclose($r2);
     }
 
     /**
-     * Test haveSameType with resource and non-resource.
+     * Test same with resource and non-resource.
      */
-    public function testHaveSameTypeWithResourceAndNonResource(): void
+    public function testSameWithResourceAndNonResource(): void
     {
         $r = fopen('php://memory', 'rb');
         $this->assertNotFalse($r);
-        $this->assertFalse(Types::haveSameType($r, 'not a resource'));
-        $this->assertFalse(Types::haveSameType($r, new stdClass()));
+        $this->assertFalse(Types::same($r, 'not a resource'));
+        $this->assertFalse(Types::same($r, new stdClass()));
         fclose($r);
     }
 
     /**
-     * Test haveSameType with special float values.
+     * Test same with special float values.
      */
-    public function testHaveSameTypeWithSpecialFloats(): void
+    public function testSameWithSpecialFloats(): void
     {
-        $this->assertTrue(Types::haveSameType(INF, -INF));
-        $this->assertTrue(Types::haveSameType(NAN, 1.0));
-        $this->assertTrue(Types::haveSameType(0.0, -0.0));
-        $this->assertFalse(Types::haveSameType(INF, 1));
+        $this->assertTrue(Types::same(INF, -INF));
+        $this->assertTrue(Types::same(NAN, 1.0));
+        $this->assertTrue(Types::same(0.0, -0.0));
+        $this->assertFalse(Types::same(INF, 1));
     }
 
     /**
-     * Test haveSameType with parent and child classes.
+     * Test same with parent and child classes.
      */
-    public function testHaveSameTypeWithInheritance(): void
+    public function testSameWithInheritance(): void
     {
         $parent = new ClassNotUsingTrait();
         $child = new ChildClassUsingTrait();
-        $this->assertFalse(Types::haveSameType($parent, $child));
+        $this->assertFalse(Types::same($parent, $child));
     }
 
     /**
-     * Test haveSameType is symmetric.
+     * Test same is symmetric.
      */
-    public function testHaveSameTypeSymmetry(): void
+    public function testSameSymmetry(): void
     {
         $this->assertSame(
-            Types::haveSameType(1, 'hello'),
-            Types::haveSameType('hello', 1)
+            Types::same(1, 'hello'),
+            Types::same('hello', 1)
         );
 
         $obj1 = new stdClass();
         $obj2 = new DateTime();
         $this->assertSame(
-            Types::haveSameType($obj1, $obj2),
-            Types::haveSameType($obj2, $obj1)
+            Types::same($obj1, $obj2),
+            Types::same($obj2, $obj1)
         );
     }
 

@@ -116,6 +116,33 @@ throw $error;
 
 **Use Case:** Creating consistent, informative error messages for type validation failures.
 
+### same()
+
+```php
+public static function same(mixed $obj1, mixed $obj2): bool
+```
+
+Check if two values have the same type using `get_debug_type()` for comparison.
+
+**Parameters:**
+- `$obj1` (mixed) - The first value to compare
+- `$obj2` (mixed) - The second value to compare
+
+**Returns:**
+- `bool` - True if the types are the same, false otherwise
+
+**Examples:**
+
+```php
+Types::same(1, 2);                    // true (both int)
+Types::same(1, 1.0);                  // false (int vs float)
+Types::same('hello', 'world');        // true (both string)
+Types::same(new Foo(), new Foo());    // true (same class)
+Types::same(new Foo(), new Bar());    // false (different classes)
+```
+
+**Use Case:** Type comparison for equality checks or conditional logic based on type matching.
+
 ### usesTrait()
 
 ```php

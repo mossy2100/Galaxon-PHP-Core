@@ -18,8 +18,8 @@ use TypeError;
  * The trait uses Equatable via composition, providing an equal() method that returns false gracefully for incompatible
  * types (rather than throwing TypeError like the ordering methods do).
  *
- * Type safety is enforced through the checkSameType() method, which uses Types::haveSameType() to verify that both
- * objects being compared have the same type (using get_debug_type()).
+ * Type safety should be enforced within the compare() implementation. Use Types::same() or `instanceof` to verify
+ * type compatibility, and throw TypeError if the types don't match.
  *
  * Example usage:
  * <code>
@@ -32,7 +32,9 @@ use TypeError;
  *     #[Override]
  *     public function compare(mixed $other): int
  *     {
- *         $this->checkSameType($other);
+ *         if (!Types::same($this, $other)) {
+ *             throw new TypeError('Cannot compare different types.');
+ *         }
  *         return Numbers::sign($this->value <=> $other->value);
  *     }
  * }
@@ -77,17 +79,18 @@ trait Comparable
      * in this trait (lessThan, greaterThan, etc.), equal() returns false gracefully for incompatible types instead
      * of throwing TypeError.
      *
-     * The method first checks type compatibility using Types::haveSameType(), and only calls compare() if the types
-     * match.
-     *
      * @param mixed $other The value to compare with.
      * @return bool True if the values are equal, false otherwise (including for incompatible types).
      */
     #[Override]
     public function equal(mixed $other): bool
     {
-        // Check if the types are the same, and if so, compare the values.
-        return Types::haveSameType($this, $other) && $this->compare($other) === 0;
+        try {
+            // This will throw TypeError on invalid type.
+            return $this->compare($other) === 0;
+        } catch (TypeError) {
+            return false;
+        }
     }
 
     /**
@@ -101,7 +104,6 @@ trait Comparable
      */
     public function lessThan(mixed $other): bool
     {
-        $this->checkSameType($other);
         return $this->compare($other) === -1;
     }
 
@@ -116,8 +118,7 @@ trait Comparable
      */
     public function lessThanOrEqual(mixed $other): bool
     {
-        $this->checkSameType($other);
-        return !$this->greaterThan($other);
+        return $this->compare($other) !== 1;
     }
 
     /**
@@ -131,7 +132,6 @@ trait Comparable
      */
     public function greaterThan(mixed $other): bool
     {
-        $this->checkSameType($other);
         return $this->compare($other) === 1;
     }
 
@@ -146,24 +146,6 @@ trait Comparable
      */
     public function greaterThanOrEqual(mixed $other): bool
     {
-        $this->checkSameType($other);
-        return !$this->lessThan($other);
-    }
-
-    /**
-     * Verify that another value has the same type as this object, throwing TypeError if not.
-     *
-     * This method is used by the comparison methods (lessThan, greaterThan, etc.) to ensure type safety before
-     * delegating to the compare() method.
-     *
-     * @param mixed $other The value to compare with.
-     * @return void
-     * @throws TypeError If the types are not the same.
-     */
-    public function checkSameType(mixed $other): void
-    {
-        if (!Types::haveSameType($this, $other)) {
-            throw new TypeError('Cannot compare values of different types.');
-        }
+        return $this->compare($other) !== -1;
     }
 }

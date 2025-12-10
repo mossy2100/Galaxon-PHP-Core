@@ -34,8 +34,9 @@ use TypeError;
  *     #[Override]
  *     public function compare(mixed $other): int
  *     {
- *         $this->checkSameType($other);
- *         // Exact comparison logic...
+ *         if (!Types::same($this, $other)) {
+ *             throw new TypeError('Cannot compare different types.');
+ *         }
  *         return Numbers::sign($this->toFloat() <=> $other->toFloat());
  *     }
  *
@@ -90,7 +91,6 @@ trait ApproxComparable
         float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
         float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
     ): int {
-        $this->checkSameType($other);
         return $this->approxEqual($other, $relTol, $absTol) ? 0 : $this->compare($other);
     }
 }

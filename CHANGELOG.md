@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2025-12-10
+
+### Breaking Changes
+
+- **`Types::haveSameType()` renamed to `Types::same()`**
+  - Shorter, cleaner name for checking if two values have the same type
+  - Update any code using `Types::haveSameType($a, $b)` to `Types::same($a, $b)`
+
+- **`Comparable::checkSameType()` removed**
+  - Type checking is now the responsibility of the `compare()` implementation
+  - Classes using this trait should handle type checking within their `compare()` method
+
+### Changed
+
+- **`Numbers::equal()`** - Improved int/float comparison logic
+  - Now uses `Types::same()` for same-type comparison
+  - Uses `Floats::tryConvertToInt()` for lossless cross-type comparison
+  - More accurate than previous float casting approach
+
+- **`Floats::compare()`** - Simplified implementation to single expression
+
+- **Comparable trait** - Streamlined comparison methods
+  - `greaterThan()` and `greaterThanOrEqual()` now rely on `compare()` for type checking
+  - Reduces redundant type checks
+
+- **ApproxComparable trait** - Removed redundant type check from `approxCompare()`
+
+### Documentation
+
+- Updated trait documentation to reflect new type checking approach
+- README.md minor fixes
+
 ## [0.4.0] - 2025-02-08
 
 ### Breaking Changes
@@ -30,7 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Default relative tolerance: `1e-9` (new constant `DEFAULT_RELATIVE_TOLERANCE`)
   - Default absolute tolerance: `PHP_FLOAT_EPSILON` (new constant `DEFAULT_ABSOLUTE_TOLERANCE`)
   - Removed `$relative` parameter - now uses combined relative and absolute tolerance
-  - IEEE-754 special value handling: `INF === INF`, `-INF === -INF`, `NaN` never equals anything
+  - IEEE-754 special value handling: `INF === INF`, `-INF === -INF`, `NAN` never equals anything
   - Removed `approxEqualAbsolute()` and `approxEqualRelative()` methods
 
 - **Comparison method names standardized**
@@ -57,9 +89,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `DEFAULT_ABSOLUTE_TOLERANCE` (PHP_FLOAT_EPSILON) - Default absolute tolerance
   - `MAX_EXACT_INT` (2^53) - Maximum integer exactly representable as float
 
-- **Types::haveSameType()** - Check if two values have the same type using `get_debug_type()`
+- **Types::same()** - Check if two values have the same type using `get_debug_type()`
 
-- **Comparable::checkSameType()** - Public method to verify type compatibility, throws `TypeError` if types don't match
+- **Comparable::checkSame()** - Public method to verify type compatibility, throws `TypeError` if types don't match
 
 ### Changed
 
@@ -88,7 +120,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Updated class documentation**:
   - `docs/Floats.md` - Completely reorganized to match new class structure
   - `docs/Numbers.md` - Updated for new comparison method signatures
-  - `docs/Types.md` - Added `haveSameType()` documentation
+  - `docs/Types.md` - Added `same()` documentation
 
 - **README.md** - Added Traits section with links to all four traits and overview
 
@@ -96,12 +128,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **FloatsTest** - Comprehensive rewrite for new `approxEqual()` behavior
   - Tests for relative and absolute tolerance
-  - Tests for IEEE-754 special values (INF, -INF, NaN)
+  - Tests for IEEE-754 special values (INF, -INF, NAN)
   - Tests for combined tolerance behavior
   - Reduced from 478 to ~280 lines (test consolidation)
 
 - **NumbersTest** - Updated for new `approxEqual()` signature
-- **TypesTest** - Added tests for `haveSameType()`
+- **TypesTest** - Added tests for `same()`
 
 
 ## [0.3.0] - 2025-01-15
