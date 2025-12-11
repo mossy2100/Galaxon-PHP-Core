@@ -4,16 +4,19 @@ Trait providing comparison operations for objects with natural ordering.
 
 ## Overview
 
-The `Comparable` trait provides a complete set of comparison methods based on a single `compare()` method that you implement. It uses the `Equatable` trait and adds ordering methods:
-- `equal()` - Check equality (from Equatable trait)
-- `lessThan()` - Check if less than
-- `lessThanOrEqual()` - Check if less than or equal to
-- `greaterThan()` - Check if greater than
-- `greaterThanOrEqual()` - Check if greater than or equal to
+The `Comparable` trait provides a complete set of comparison methods based on a single `compare()` method that you implement. It uses the `Equatable` trait and adds ordering methods.
 
 The trait follows the **Template Method Pattern** - you implement the `compare()` method, and all other methods are automatically provided.
 
-## Methods
+The trait provides:
+- `compare()` - Abstract method for ordering comparison (you implement this)
+- `equal()` - Check equality (provided, delegates to `compare()`)
+- `lessThan()` - Check if less than (provided)
+- `lessThanOrEqual()` - Check if less than or equal to (provided)
+- `greaterThan()` - Check if greater than (provided)
+- `greaterThanOrEqual()` - Check if greater than or equal to (provided)
+
+## Abstract Methods
 
 ### compare()
 
@@ -26,8 +29,6 @@ abstract public function compare(mixed $other): int
 - `0` if this object equals `$other`
 - `1` if this object is greater than `$other`
 
-**Important:** Must return **exactly** -1, 0, or 1 (not just negative/zero/positive). The convenience methods use strict equality checks.
-
 **Parameters:**
 - `$other` (mixed) - The value to compare with
 
@@ -35,9 +36,10 @@ abstract public function compare(mixed $other): int
 - `int` - Exactly `-1`, `0`, or `1`
 
 **Implementation Guidelines:**
-- May throw `TypeError` for incompatible types (this is expected behavior)
-- Should use epsilon tolerance for floating-point comparisons
-- Must be consistent with your type's equality semantics
+- Must return **exactly** -1, 0, or 1 (not just negative/zero/positive). The convenience methods use strict equality checks.
+- May throw `TypeError` for incompatible types (this is expected behavior).
+
+## Concrete Methods
 
 ### equal()
 
@@ -256,6 +258,10 @@ Comparable extends Equatable and adds ordering operations. It automatically prov
 For approximate comparison with ordering, use **ApproxComparable** instead.
 
 See [Traits.md](Traits.md) for complete hierarchy and usage guide.
+
+## Classes Using Comparable
+
+- `Galaxon\Units\Measurement` - Physical measurements with unit-aware ordering.
 
 ## Best Practices
 

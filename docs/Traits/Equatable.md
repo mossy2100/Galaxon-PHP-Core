@@ -8,15 +8,18 @@ The `Equatable` trait provides a foundation for objects that support equality co
 
 This trait is designed to be composed with other traits in a hierarchy. It's separate from the `Comparable` trait to follow the Interface Segregation Principle - some types can check equality but don't have a natural ordering (e.g., Complex numbers can be equal but don't have a meaningful less-than/greater-than relationship).
 
-## Method
+The trait provides:
+- `equal()` - Abstract method for exact equality comparison
+
+## Abstract Methods
 
 ### equal()
 
 ```php
-public function equal(mixed $other): bool
+abstract public function equal(mixed $other): bool
 ```
 
-Compare this object with another value and determine if they are equal.
+**You must implement this method.** Compare this object with another value and determine if they are equal.
 
 **Parameters:**
 - `$other` (mixed) - The value to compare with (can be any type)
@@ -66,73 +69,6 @@ var_dump($p1->equal($p3)); // false
 var_dump($p1->equal("string")); // false (gracefully handles wrong type)
 ```
 
-### Epsilon-Based Equality for Floating-Point Types
-
-```php
-use Galaxon\Core\Traits\Equatable;
-
-class Temperature
-{
-    use Equatable;
-
-    private const EPSILON = 0.01; // 0.01° tolerance
-
-    public function __construct(
-        private float $celsius
-    ) {}
-
-    public function equal(mixed $other): bool
-    {
-        if (!$other instanceof self) {
-            return false;
-        }
-
-        return abs($this->celsius - $other->celsius) <= self::EPSILON;
-    }
-}
-
-$t1 = new Temperature(20.00);
-$t2 = new Temperature(20.005); // Within tolerance
-$t3 = new Temperature(20.02);  // Outside tolerance
-
-var_dump($t1->equal($t2)); // true (within epsilon)
-var_dump($t1->equal($t3)); // false (outside epsilon)
-```
-
-### Complex Equality with Custom Logic
-
-```php
-use Galaxon\Core\Traits\Equatable;
-
-class Money
-{
-    use Equatable;
-
-    public function __construct(
-        private float $amount,
-        private string $currency
-    ) {}
-
-    public function equal(mixed $other): bool
-    {
-        if (!$other instanceof self) {
-            return false;
-        }
-
-        // Must have same currency AND same amount
-        return $this->currency === $other->currency
-            && abs($this->amount - $other->amount) < 0.01;
-    }
-}
-
-$usd1 = new Money(100.00, 'USD');
-$usd2 = new Money(100.00, 'USD');
-$eur = new Money(100.00, 'EUR');
-
-var_dump($usd1->equal($usd2)); // true (same currency and amount)
-var_dump($usd1->equal($eur));  // false (different currency)
-```
-
 ## Relationship with Other Traits
 
 Equatable is the base trait in the comparison hierarchy. Other traits extend it:
@@ -144,11 +80,8 @@ See [Traits.md](Traits.md) for complete hierarchy and usage guide.
 
 ## Classes Using Equatable
 
-- `Galaxon\Math\Complex` - Uses `ApproxEquatable` (equality with approximate comparison, no ordering)
-- `Galaxon\Math\Rational` - Uses `ApproxComparable` (full ordering with exact and approximate comparison)
-- `Galaxon\Units\Measurement` - Uses `Comparable` (full ordering with exact comparison)
-- `Galaxon\Collections\Collection` and derived types - Use `Equatable` directly (structural equality, no ordering)
-- `Galaxon\Color\Color` - Uses `Equatable` directly (exact comparison, no ordering)
+- `Galaxon\Collections\Collection` - Base class for type-safe collections.
+- `Galaxon\Color\Color` - Encapsulates a CSS color.
 
 ## Best Practices
 

@@ -198,7 +198,7 @@ class Rational
     public function approxEqual(
         mixed $other,
         float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
-        float $absTol = PHP_FLOAT_EPSILON
+        float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
     ): bool {
         if (!$other instanceof self) {
             return false;

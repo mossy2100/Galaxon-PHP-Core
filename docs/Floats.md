@@ -56,7 +56,7 @@ Two methods provide direct access to IEEE-754 double-precision components:
 public const DEFAULT_RELATIVE_TOLERANCE = 1e-9;
 ```
 
-The default relative tolerance used by `approxEqual()` and `compare()`.
+The default relative tolerance used by `approxEqual()` and `approxCompare()`.
 
 ### DEFAULT_ABSOLUTE_TOLERANCE
 
@@ -64,7 +64,7 @@ The default relative tolerance used by `approxEqual()` and `compare()`.
 public const DEFAULT_ABSOLUTE_TOLERANCE = PHP_FLOAT_EPSILON;
 ```
 
-The default absolute tolerance used by `approxEqual()` and `compare()`.
+The default absolute tolerance used by `approxEqual()` and `approxCompare()`.
 
 ### MAX_EXACT_INT
 

@@ -10,7 +10,7 @@ The trait provides:
 - `equal()` - Exact equality (from Equatable trait)
 - `approxEqual()` - Approximate equality with configurable tolerances
 
-## Methods
+## Abstract Methods
 
 ### approxEqual()
 
@@ -151,7 +151,7 @@ See [Traits.md](Traits.md) for complete hierarchy and usage guide.
 
 ## Classes Using ApproxEquatable
 
-- `Galaxon\Math\Complex` - Complex numbers (no natural ordering, needs approximate equality)
+- `Galaxon\Math\Complex` - Complex numbers (no natural ordering, needs approximate equality).
 
 ## Best Practices
 

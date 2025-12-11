@@ -7,21 +7,46 @@ Trait providing complete comparison operations with both exact and approximate e
 The `ApproxComparable` trait combines `Comparable` and `ApproxEquatable` to provide a complete set of comparison operations including approximate equality. This is ideal for types with natural ordering that contain floating-point values (e.g., Rational numbers).
 
 The trait provides:
-- `equal()` - Exact equality (from Equatable via Comparable)
-- `approxEqual()` - Approximate equality with configurable tolerances (from ApproxEquatable)
-- `compare()` - Exact ordering comparison (from Comparable)
-- `approxCompare()` - Approximate ordering comparison with tolerance
-- `lessThan()`, `greaterThan()`, etc. - Ordering methods (from Comparable)
+- `compare()` - Abstract method for exact ordering comparison (you implement this)
+- `approxEqual()` - Abstract method for approximate equality (you implement this)
+- `approxCompare()` - Approximate ordering comparison with tolerance (provided)
+- `equal()` - Exact equality (provided via Comparable)
+- `lessThan()` - Check if less than (provided by Comparable)
+- `lessThanOrEqual()` - Check if less than or equal to (provided by Comparable)
+- `greaterThan()` - Check if greater than (provided by Comparable)
+- `greaterThanOrEqual()` - Check if greater than or equal to (provided by Comparable)
 
-## Methods
+## Abstract Methods
 
-#### approxCompare()
+### compare()
+
+```php
+abstract public function compare(mixed $other): int
+```
+
+**You must implement this method.** See [Comparable.md](Comparable.md) for full documentation.
+
+### approxEqual()
+
+```php
+abstract public function approxEqual(
+    mixed $other,
+    float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
+    float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
+): bool
+```
+
+**You must implement this method.** See [ApproxEquatable.md](ApproxEquatable.md) for full documentation.
+
+## Concrete Methods
+
+### approxCompare()
 
 ```php
 public function approxCompare(
     mixed $other,
     float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
-    float $absTol = PHP_FLOAT_EPSILON
+    float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
 ): int
 ```
 
@@ -45,71 +70,6 @@ Compare with approximate equality awareness. Returns 0 if values are approximate
 - Range queries with tolerance
 
 ## Examples
-
-### Using ApproxComparable for Rational Numbers
-
-```php
-use Galaxon\Core\Floats;
-use Galaxon\Core\Numbers;
-use Galaxon\Core\Traits\ApproxComparable;
-
-class Rational
-{
-    use ApproxComparable;
-
-    public function __construct(
-        private int $numerator,
-        private int $denominator
-    ) {}
-
-    public function toFloat(): float
-    {
-        return $this->numerator / $this->denominator;
-    }
-
-    public function compare(mixed $other): int
-    {
-        if (!$other instanceof self) {
-            throw new TypeError('Can only compare with another Rational');
-        }
-
-        // Use cross-multiplication for exact comparison
-        $left = $this->numerator * $other->denominator;
-        $right = $other->numerator * $this->denominator;
-
-        return Numbers::sign($left <=> $right);
-    }
-
-    public function approxEqual(
-        mixed $other,
-        float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
-        float $absTol = PHP_FLOAT_EPSILON
-    ): bool {
-        if (!$other instanceof self) {
-            return false;
-        }
-
-        // Convert to floats and use tolerance-based comparison
-        return Floats::approxEqual(
-            $this->toFloat(),
-            $other->toFloat(),
-            $relTol,
-            $absTol
-        );
-    }
-}
-
-$r1 = new Rational(1, 3);
-$r2 = new Rational(333333, 1000000);
-
-// Exact comparison
-var_dump($r1->equal($r2));                // false (not exactly equal)
-var_dump($r1->compare($r2));              // 1 (1/3 > 333333/1000000)
-
-// Approximate comparison
-var_dump($r1->approxEqual($r2, 1e-5, 1e-5)); // true (close enough)
-var_dump($r1->approxCompare($r2, 1e-5, 1e-5)); // 0 (approximately equal)
-```
 
 ### Sorting with Approximate Equality
 
@@ -201,7 +161,7 @@ class Vector2D
     public function approxEqual(
         mixed $other,
         float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
-        float $absTol = PHP_FLOAT_EPSILON
+        float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
     ): bool {
         if (!$other instanceof self) {
             return false;
@@ -231,7 +191,7 @@ See [Traits.md](Traits.md) for complete hierarchy and usage guide.
 
 ## Classes Using ApproxComparable
 
-- `Galaxon\Math\Rational` - Rational numbers with exact and approximate comparison
+- `Galaxon\Math\Rational` - Rational numbers, require approximate equality and less/greater than comparisons.
 
 ## Best Practices
 
@@ -291,7 +251,7 @@ public function compare(mixed $other): int
 public function approxEqual(
     mixed $other,
     float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
-    float $absTol = PHP_FLOAT_EPSILON
+    float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
 ): bool {
     if (!$other instanceof self) {
         return false;
@@ -312,7 +272,7 @@ public function approxEqual(
 public function approxEqual(
     mixed $other,
     float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
-    float $absTol = PHP_FLOAT_EPSILON
+    float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
 ): bool {
     if (!$other instanceof self) {
         return false;
