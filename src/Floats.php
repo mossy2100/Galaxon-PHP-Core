@@ -621,34 +621,36 @@ final class Floats
     /**
      * Calculate the Unit in Last Place (ULP) - the spacing between adjacent floats.
      *
-     * ULP represents the gap between a float and the next representable float at that magnitude.
+     * ULP represents the gap between a float and the next largest representable float at that magnitude.
      * Larger magnitude numbers have larger ULP values, reflecting reduced precision at larger scales.
      *
-     * For example:
-     * - ulp(1.0) ≈ 2.22e-16
-     * - ulp(1000.0) ≈ 2.22e-13
-     * - ulp(0.001) ≈ 2.22e-19
+     * Special cases:
+     * - ulp(NAN) returns NAN
+     * - ulp(±INF) returns INF
+     * - ulp(±0.0) returns the smallest positive subnormal (≈ 4.9e-324)
+     * - ulp(-x) == ulp(x) for all non-NAN values
      *
      * @param float $value The value to calculate ULP for.
-     * @return float The ULP spacing. Returns INF for non-finite values.
+     * @return float The ULP spacing.
      *
      * @see next() Get the next representable float
      * @see previous() Get the previous representable float
      */
     public static function ulp(float $value): float
     {
+        // Handle NAN.
+        if (is_nan($value)) {
+            return NAN;
+        }
+
+        // Handle ±INF.
         if (!is_finite($value)) {
             return INF;
         }
 
+        // Handle ordinary values.
         $abs = abs($value);
-
-        if ($abs === 0.0) {
-            return PHP_FLOAT_EPSILON * PHP_FLOAT_MIN;
-        }
-
-        // ULP = |value| × machine epsilon (works for normalized and many subnormal numbers).
-        return $abs * PHP_FLOAT_EPSILON;
+        return self::next($abs) - $abs;
     }
 
     // endregion

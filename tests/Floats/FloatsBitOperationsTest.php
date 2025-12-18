@@ -13,7 +13,7 @@ use ValueError;
  * Test class for Floats utility class - adjacent floats (next/previous) and bit-manipulation methods.
  */
 #[CoversClass(Floats::class)]
-final class FloatsAdjacentTest extends TestCase
+final class FloatsBitOperationsTest extends TestCase
 {
     // region Adjacent floats method tests
 
@@ -545,6 +545,113 @@ final class FloatsAdjacentTest extends TestCase
         $this->expectException(ValueError::class);
         $this->expectExceptionMessage('Fraction must be in the range');
         Floats::assemble(0, 1023, -1);
+    }
+
+    // endregion
+
+    // region ULP tests
+
+    /**
+     * Test ULP with standard values.
+     */
+    public function testUlpWithStandardValues(): void
+    {
+        // ULP of 1.0 should be PHP_FLOAT_EPSILON (1.0 is a power of 2).
+        $this->assertSame(PHP_FLOAT_EPSILON, Floats::ulp(1.0));
+
+        // ULP is defined as the gap to the next representable float.
+        // For non-powers-of-2, the formula `value * PHP_FLOAT_EPSILON` is only approximate.
+        $this->assertSame(Floats::next(1000.0) - 1000.0, Floats::ulp(1000.0));
+        $this->assertSame(Floats::next(0.001) - 0.001, Floats::ulp(0.001));
+    }
+
+    /**
+     * Test ULP with positive zero.
+     */
+    public function testUlpWithPositiveZero(): void
+    {
+        $expected = PHP_FLOAT_EPSILON * PHP_FLOAT_MIN;
+        $this->assertSame($expected, Floats::ulp(0.0));
+    }
+
+    /**
+     * Test ULP with negative zero.
+     */
+    public function testUlpWithNegativeZero(): void
+    {
+        $expected = PHP_FLOAT_EPSILON * PHP_FLOAT_MIN;
+        $this->assertSame($expected, Floats::ulp(-0.0));
+    }
+
+    /**
+     * Test ULP with negative values uses absolute value.
+     */
+    public function testUlpWithNegativeValues(): void
+    {
+        // ULP is the same for positive and negative values
+        $this->assertSame(Floats::ulp(100.0), Floats::ulp(-100.0));
+        $this->assertSame(Floats::ulp(1.0), Floats::ulp(-1.0));
+    }
+
+    /**
+     * Test ULP with large values.
+     */
+    public function testUlpWithLargeValues(): void
+    {
+        $large = 1e20;
+        $ulp = Floats::ulp($large);
+
+        // ULP is defined as the gap to the next representable float.
+        $this->assertSame(Floats::next($large) - $large, $ulp);
+
+        // Verify it's actually the spacing.
+        $next = $large + $ulp;
+        $this->assertGreaterThan($large, $next);
+    }
+
+    /**
+     * Test ULP with small values.
+     */
+    public function testUlpWithSmallValues(): void
+    {
+        $small = 1e-100;
+        $ulp = Floats::ulp($small);
+
+        // ULP is defined as the gap to the next representable float.
+        $this->assertSame(Floats::next($small) - $small, $ulp);
+    }
+
+    /**
+     * Test ULP with infinity returns INF.
+     */
+    public function testUlpWithInfinity(): void
+    {
+        $this->assertSame(INF, Floats::ulp(INF));
+        $this->assertSame(INF, Floats::ulp(-INF));
+    }
+
+    /**
+     * Test ULP with NAN returns NAN.
+     */
+    public function testUlpWithNan(): void
+    {
+        $this->assertNan(Floats::ulp(NAN));
+    }
+
+    /**
+     * Test ULP relationship with next().
+     */
+    public function testUlpRelationshipWithNext(): void
+    {
+        $value = 42.0;
+        $ulp = Floats::ulp($value);
+        $next = Floats::next($value);
+
+        // The difference should approximately equal the ULP
+        // (may have rounding in floating-point subtraction)
+        $diff = $next - $value;
+        $this->assertGreaterThan(0, $diff);
+        $this->assertLessThanOrEqual($ulp * 2, $diff);
     }
 
     // endregion

@@ -1066,17 +1066,16 @@ Floats::previous(Floats::next($f)) === $f;  // true
 public static function ulp(float $value): float
 ```
 
-Calculate the Unit in Last Place (ULP) - the spacing between adjacent representable floats at a given magnitude. ULP represents the gap between a float and the next representable float value.
+Calculate the Unit in Last Place (ULP) - the spacing between adjacent representable floats at a given magnitude. ULP represents the gap between a float and the next largest representable float value.
 
 **Parameters:**
 - `$value` (float) - The value to calculate ULP for
 
 **Returns:**
-- `float` - The ULP spacing. Returns `INF` for non-finite values (NAN, ±INF)
+- `float` - The ULP spacing. Returns `NAN` for NAN, `INF` for ±INF
 
 **Behavior:**
-- For normalized numbers: returns `abs($value) * PHP_FLOAT_EPSILON`
-- For zero (positive or negative): returns `PHP_FLOAT_EPSILON * PHP_FLOAT_MIN`
+- For finite values: returns `next(abs($value)) - abs($value)`
 - Larger magnitude numbers have larger ULP values
 - Uses absolute value, so ULP is the same for positive and negative values of the same magnitude
 
@@ -1086,15 +1085,15 @@ Calculate the Unit in Last Place (ULP) - the spacing between adjacent representa
 // ULP of 1.0 is PHP_FLOAT_EPSILON (~2.22e-16)
 Floats::ulp(1.0);  // 2.220446049250313e-16
 
-// ULP scales with magnitude
-Floats::ulp(1000.0);  // 2.2204460492503131e-13 (1000x larger)
-Floats::ulp(0.001);   // 2.2204460492503131e-19 (1000x smaller)
+// ULP scales with magnitude (larger values have larger gaps)
+Floats::ulp(1000.0);  // ~1.14e-13
+Floats::ulp(0.001);   // ~2.17e-19
 
 // Large values have large ULP
-Floats::ulp(1e20);  // ~22204460492503.13
+Floats::ulp(1e20);  // ~16384.0
 
-// Zero has special handling
-Floats::ulp(0.0);   // PHP_FLOAT_EPSILON * PHP_FLOAT_MIN (~4.94e-324)
+// Zero returns the smallest positive subnormal
+Floats::ulp(0.0);   // ~4.94e-324
 Floats::ulp(-0.0);  // Same as positive zero
 
 // Negative values use absolute value
@@ -1103,18 +1102,18 @@ Floats::ulp(-100.0) === Floats::ulp(100.0);  // true
 // Non-finite values
 Floats::ulp(INF);   // INF
 Floats::ulp(-INF);  // INF
-Floats::ulp(NAN);   // INF
+Floats::ulp(NAN);   // NAN
 ```
 
 **Relationship with next():**
 
-The ULP approximately equals the difference between a value and `next($value)`:
+The ULP is computed by taking the absolute value, then finding the gap to the next float:
 
 ```php
-$value = 42.0;
-$ulp = Floats::ulp($value);
-$next = Floats::next($value);
-$diff = $next - $value;  // Approximately equals $ulp
+$value = -42.0;
+$abs = abs($value);                // 42.0
+$ulp = Floats::next($abs) - $abs;  // Gap from 42.0 to next float
+Floats::ulp($value) === $ulp;      // true
 ```
 
 **Understanding ULP:**
@@ -1125,10 +1124,10 @@ ULP reveals why floating-point precision decreases at larger magnitudes:
 // Around 1.0, ULP is ~2.22e-16
 Floats::ulp(1.0);  // 2.220446049250313e-16
 
-// Around 1 trillion, ULP is ~0.00024
-Floats::ulp(1e12);  // 0.000244140625
+// Around 1 trillion, ULP is ~0.000122
+Floats::ulp(1e12);  // 0.0001220703125
 
-// This means there's no float between 1e12 and 1e12 + 0.00024
+// This means there's no float between 1e12 and 1e12 + 0.000122
 ```
 
 **Use Cases:**
@@ -1140,10 +1139,10 @@ Floats::ulp(1e12);  // 0.000244140625
 - Used by `randUniform()` to calculate optimal step size
 
 **See Also:**
-- `isExactInt()` - Check if a float represents an exact integer
 - `next()` - Get the next representable float
 - `previous()` - Get the previous representable float
 - `randUniform()` - Uses ULP for collision-free random generation
+- [FloatWithError](https://github.com/mossy2100/Galaxon-PHP-Units/blob/main/docs/FloatWithError.md) - Uses ULP for the estimated increase in error resulting from arithmetic operations with floats
 
 ## See Also
 
