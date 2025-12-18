@@ -207,7 +207,7 @@ final class StringifyTest extends TestCase
 
         // Test that resource is stringified as expected.
         $result = Stringify::stringify($resource);
-        $this->assertMatchesRegularExpression('/\(resource type: "stream", id: \d+\)/', $result);
+        $this->assertMatchesRegularExpression('/\(resource type: stream, id: \d+\)/', $result);
 
         // Clean up.
         fclose($resource);

@@ -190,6 +190,10 @@ final class Types
         return self::getTraitsRecursive($class);
     }
 
+    // endregion
+
+    // region Helper methods
+
     /**
      * Get all traits used by a class, interface, or trait, including parent classes and trait inheritance.
      *

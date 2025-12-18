@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Galaxon\Core;
 
+use JsonException;
 use TypeError;
 use ValueError;
 
@@ -12,9 +13,10 @@ use ValueError;
  * options of var_dump(), var_export(), print_r(), json_encode(), and serialize().
  *
  * - Floats never look like integers.
- * - Arrays that are lists will not show keys (like JSON arrays).
- * - Objects will be rendered in a style similar to an HTML tag, with UML-style visibility modifiers.
- * - Resources are also encoded in a style similar to HTML tags.
+ * - Arrays that are lists will not show keys and use square brackets, like JSON arrays (e.g. [1, 2, ...])
+ * - Associative arrays show keys and use curly braces, like JSON objects (e.g. {"name": "Shaun", "age": 54, ...})
+ * - Objects are rendered in a style similar to an HTML tag, with UML-style visibility modifiers.
+ * - Resources are encoded like (resource id: <id>, type: <type>)
  *
  * The purpose of the class is to offer a somewhat more concise, readable, and informative alternative to the usual
  * options. It can be useful for exception, log, and debug messages.
@@ -54,8 +56,15 @@ final class Stringify
             case 'bool':
             case 'int':
             case 'string':
-                // This function call will never error for these types.
-                return json_encode($value); // @phpstan-ignore return.type
+                // This function call should never error for these types, but we'll wrap it in a try-catch block anyway,
+                // for compliance with coding standards.
+                // @codeCoverageIgnoreStart
+                try {
+                    return json_encode($value, JSON_THROW_ON_ERROR);
+                } catch (JsonException) {
+                    throw new ValueError('Error occurred stringifying value.');
+                }
+                // @codeCoverageIgnoreEnd
 
             case 'float':
                 /** @var float $value */
@@ -177,7 +186,7 @@ final class Stringify
             throw new TypeError('Value is not a resource.');
         }
 
-        return '(resource type: "' . get_resource_type($value) . '", id: ' . get_resource_id($value) . ')';
+        return '(resource type: ' . get_resource_type($value) . ', id: ' . get_resource_id($value) . ')';
     }
 
     /**
@@ -196,7 +205,6 @@ final class Stringify
      * @param bool $prettyPrint Whether to use pretty printing (default false).
      * @param int $indentLevel The level of indentation for this structure (default 0).
      * @return string The string representation of the object.
-     * @throws TypeError If the object's class is anonymous.
      */
     public static function stringifyObject(object $obj, bool $prettyPrint = false, int $indentLevel = 0): string
     {
@@ -251,7 +259,7 @@ final class Stringify
      * @param mixed $value The value to get the string representation for.
      * @param int $maxLen The maximum length of the result.
      * @return string The short string representation.
-     * @throws ValueError If the maximum length is less than 10.
+     * @throws ValueError If the maximum length is less than 10, or the value cannot be stringified.
      * @throws TypeError If the value has an unknown type.
      * @see stringify()
      */

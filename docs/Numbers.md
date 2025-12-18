@@ -1,12 +1,18 @@
 # Numbers
 
-General number-related utility methods for working with signs and magnitudes.
+Static utility class for general number-related operations.
 
-## Background
+## Overview
 
-This class provides utilities for working with the signs of numbers (both integers and floats), including support for IEEE-754 signed zeros (-0.0 vs +0.0). These methods are useful for mathematical operations, comparisons, and algorithms that need precise control over signs.
+The `Numbers` class provides utilities for working with numbers (both integers and floats), including type checking, equality comparison, and sign operations. This is a static utility class and cannot be instantiated.
 
-## Methods
+### Key Features
+
+- Type checking that distinguishes actual numbers from numeric strings
+- Equality comparison that correctly handles mixed int/float types
+- Sign operations with support for IEEE-754 signed zeros (-0.0 vs +0.0)
+
+## Inspection Methods
 
 ### isNumber()
 
@@ -37,20 +43,30 @@ Numbers::isNumber(null);       // false
 
 **Use Case:** When you need strict type checking that distinguishes actual numbers from numeric strings.
 
+## Comparison Methods
+
 ### equal()
 
 ```php
 public static function equal(int|float $a, int|float $b): bool
 ```
 
-Check if two numbers (integers or floats) are exactly equal. For float comparisons, this uses strict equality (`===`). For approximate float comparison, use `approxEqual()` instead.
+Check if two numbers (integers or floats) are equal. This method is useful for equality comparison when working with values that can be ints or floats.
+
+This method prioritises comparing the two values as ints. The usual, naive way of comparing two numbers using strict equality (i.e. `===`) by first converting both to floats can result in false positives because different large integers may convert to the same float. This happens because 64-bit integers have more precision than the 53 bits available in a float's mantissa.
+
+The method avoids the use of loose equality (i.e. `==`). Also, by requiring int or float parameters only, it eliminates unexpected bugs caused by PHP's behavior of silently converting numeric strings to numbers and comparing them as such.
 
 **Parameters:**
 - `$a` (int|float) - The first number
 - `$b` (int|float) - The second number
 
 **Returns:**
-- `bool` - Returns `true` if the numbers are exactly equal, `false` otherwise
+- `bool` - Returns `true` if the numbers are equal, `false` otherwise
+
+**Behavior:**
+- If both values have the same type, compares using strict equality (`===`)
+- For mixed int/float comparisons, check if the float can be losslessly converted to an equal integer
 
 **Examples:**
 
@@ -72,8 +88,8 @@ Numbers::equal(0.1 + 0.2, 0.3);  // false (!)
 
 Mixed type comparisons:
 ```php
-Numbers::equal(5, 5.0);    // true
-Numbers::equal(5, 5.1);    // false
+Numbers::equal(5, 5.0);    // true (5.0 converts losslessly to int 5)
+Numbers::equal(5, 5.5);    // false (5.5 cannot convert to int)
 ```
 
 Special float values:
@@ -84,18 +100,14 @@ Numbers::equal(NAN, NAN);    // false (NAN is never equal to itself)
 Numbers::equal(0.0, -0.0);   // true
 ```
 
-**Behavior:**
-- Uses strict equality (`===`) for comparison
-- Handles mixed int/float types correctly
-- NAN is never equal to anything, including itself
-- Positive and negative zero (0.0 and -0.0) are considered equal
-
 **Use Cases:**
-- Exact integer comparisons
-- Cases where strict float equality is required
+- Comparing values that may be either int or float
+- Exact integer comparisons without IDE warnings about `==` vs `===`
 - Checking for specific values like zero or infinity
 
-**Note:** For float comparisons where precision issues may occur, use `approxEqual()` instead.
+**Note:** For float comparisons where precision issues may occur, use `Floats::approxEqual()` instead.
+
+## Sign Methods
 
 ### sign()
 
@@ -107,10 +119,10 @@ Get the sign of a number. This method supports two modes of operation depending 
 
 **Parameters:**
 - `$value` (int|float) - The number to check
-- `$zeroForZero` (bool) - If `true` (default), return 0 for zero; if `false`, return the sign of zero (-1 for -0.0, 1 otherwise)
+- `$zeroForZero` (bool) - If `true` (default), return 0 for zero; if `false`, return the sign of the zero (-1 for -0.0, 1 otherwise)
 
 **Returns:**
-- `int` - Returns 1 for positive, -1 for negative, or 0 for zero (if `$zeroForZero` is `true`)
+- `int` - Returns 1 for positive, -1 for negative, or 0 for zero when `$zeroForZero` is `true`
 
 **Examples:**
 
@@ -155,7 +167,7 @@ Copy the sign of one number to another. Returns a value with the magnitude of th
 - `int|float` - The magnitude of `$num` with the sign of `$signSource`
 
 **Throws:**
-- `ValueError` - If NAN is passed as either parameter (NAN doesn't have a defined sign)
+- `ValueError` - If NAN is passed as either parameter (NAN has no defined sign)
 
 **Examples:**
 
@@ -193,3 +205,9 @@ Numbers::copySign(5, NAN);     // throws ValueError
 - Ensuring consistent sign handling across calculations
 
 **Note:** Similar to C's `copysign()` function, but with explicit NAN rejection for clarity.
+
+## See Also
+
+- **[Floats](Floats.md)** - Float-specific utility methods including `approxEqual()` for approximate comparisons
+- **[Integers](Integers.md)** - Integer-specific utility methods
+- **[Types](Types.md)** - Type checking and comparison utilities
