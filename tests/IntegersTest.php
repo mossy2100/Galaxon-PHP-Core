@@ -10,7 +10,7 @@ use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use RangeException;
-use ValueError;
+use UnderflowException;
 
 /**
  * Test class for Integers utility class.
@@ -183,14 +183,14 @@ final class IntegersTest extends TestCase
     }
 
     /**
-     * Test exponentiation with negative exponent.
+     * Test exponentiation with negative exponent causing underflow.
      */
-    public function testPowNegativeExponent(): void
+    public function testPowNegativeExponentUnderflow(): void
     {
-        // Test that negative exponents throw ValueError.
-        $this->expectException(ValueError::class);
-        $this->expectExceptionMessage('Negative exponents are not supported.');
-        Integers::pow(2, -3);
+        // Test that negative exponents throw UnderflowException.
+        $this->expectException(UnderflowException::class);
+        $this->expectExceptionMessage('Underflow in exponentiation.');
+        Integers::pow(2, -1);
     }
 
     /**
@@ -329,5 +329,43 @@ final class IntegersTest extends TestCase
         $this->expectException(RangeException::class);
         $this->expectExceptionMessage('Arguments must be greater than PHP_INT_MIN');
         Integers::gcd(PHP_INT_MIN);
+    }
+
+    /**
+     * Test toSubscript with positive integer.
+     */
+    public function testToSubscriptPositive(): void
+    {
+        $this->assertSame('₁₂₃', Integers::toSubscript(123));
+        $this->assertSame('₀', Integers::toSubscript(0));
+        $this->assertSame('₉₈₇₆₅₄₃₂₁₀', Integers::toSubscript(9876543210));
+    }
+
+    /**
+     * Test toSubscript with negative integer.
+     */
+    public function testToSubscriptNegative(): void
+    {
+        $this->assertSame('₋₁₂₃', Integers::toSubscript(-123));
+        $this->assertSame('₋₁', Integers::toSubscript(-1));
+    }
+
+    /**
+     * Test toSuperscript with positive integer.
+     */
+    public function testToSuperscriptPositive(): void
+    {
+        $this->assertSame('¹²³', Integers::toSuperscript(123));
+        $this->assertSame('⁰', Integers::toSuperscript(0));
+        $this->assertSame('⁹⁸⁷⁶⁵⁴³²¹⁰', Integers::toSuperscript(9876543210));
+    }
+
+    /**
+     * Test toSuperscript with negative integer.
+     */
+    public function testToSuperscriptNegative(): void
+    {
+        $this->assertSame('⁻¹²³', Integers::toSuperscript(-123));
+        $this->assertSame('⁻¹', Integers::toSuperscript(-1));
     }
 }

@@ -53,6 +53,109 @@ final class Floats
 
     // endregion
 
+    // region Inspection methods
+
+    /**
+     * Determines if a floating-point number is negative zero (-0.0).
+     *
+     * In IEEE-754 floating-point arithmetic, negative zero is a distinct value from positive zero, though they compare
+     * as equal. This method provides a way to distinguish between them.
+     *
+     * The method works by dividing 1.0 by the value. For negative zero, this division results in -INF.
+     *
+     * @param float $value The floating-point number to check.
+     * @return bool True if the value is negative zero (-0.0), false otherwise.
+     */
+    public static function isNegativeZero(float $value): bool
+    {
+        // Using fdiv() to avoid a division by zero error.
+        return $value === 0.0 && fdiv(1.0, $value) === -INF;
+    }
+
+    /**
+     * Determines if a floating-point number is positive zero (+0.0).
+     *
+     * In IEEE-754 floating-point arithmetic, positive zero is a distinct value from negative zero, though they compare
+     * as equal. This method provides a way to distinguish between them.
+     *
+     * The method works by dividing 1.0 by the value. For positive zero, this division results in INF.
+     *
+     * @param float $value The floating-point number to check.
+     * @return bool True if the value is positive zero (+0.0), false otherwise.
+     */
+    public static function isPositiveZero(float $value): bool
+    {
+        // Using fdiv() to avoid a division by zero error.
+        return $value === 0.0 && fdiv(1.0, $value) === INF;
+    }
+
+    /**
+     * Check if a number is negative.
+     *
+     * This method returns:
+     * - true for -0.0, -INF, and negative values
+     * - false for +0.0, INF, NAN, and positive values
+     *
+     * @param float $value The value to check.
+     * @return bool True if the value is negative, false otherwise.
+     */
+    public static function isNegative(float $value): bool
+    {
+        return !is_nan($value) && ($value < 0 || self::isNegativeZero($value));
+    }
+
+    /**
+     * Check if a number is positive.
+     *
+     * This method returns:
+     * - true for +0.0, INF, and positive values
+     * - false for -0.0, -INF, NAN, and negative values
+     *
+     * @param float $value The value to check.
+     * @return bool True if the value is positive, false otherwise.
+     */
+    public static function isPositive(float $value): bool
+    {
+        return !is_nan($value) && ($value > 0 || self::isPositiveZero($value));
+    }
+
+    /**
+     * Check if a float is one of the special values: NAN, -0.0, +INF, -INF.
+     * +0.0 is not considered a special value.
+     *
+     * @param float $value The value to check.
+     * @return bool True if the value is a special value, false otherwise.
+     */
+    public static function isSpecial(float $value): bool
+    {
+        return !is_finite($value) || self::isNegativeZero($value);
+    }
+
+    /**
+     * Check if a float value is exactly representable as an integer (no rounding error).
+     *
+     * Returns true for finite integers within IEEE-754 double's exact integer range (±2^53).
+     * Beyond this range, consecutive integers cannot all be exactly represented as floats.
+     *
+     * For example:
+     * - isExactInt(42.0) → true
+     * - isExactInt(42.5) → false (has fractional part)
+     * - isExactInt(9007199254740992.0) → true (exactly 2^53)
+     * - isExactInt(9007199254740993.0) → false (beyond exact range)
+     *
+     * @param float $value The value to check.
+     * @return bool True if the value represents an exact integer, false otherwise.
+     *
+     * @see tryConvertToInt() Attempt lossless conversion to int
+     * @see ulp() Calculate precision at a given magnitude
+     */
+    public static function isExactInt(float $value): bool
+    {
+        return is_finite($value) && floor($value) === $value && abs($value) <= self::MAX_EXACT_INT;
+    }
+
+    // endregion
+
     // region Comparison methods
 
     /**
@@ -141,7 +244,7 @@ final class Floats
 
     // endregion
 
-    // region Transformation and integer-related methods
+    // region Transformation methods
 
     /**
      * Normalize negative zero to positive zero. This can be used to avoid surprising results from certain operations.
@@ -153,6 +256,10 @@ final class Floats
     {
         return self::isNegativeZero($value) ? 0.0 : $value;
     }
+
+    // endregion
+
+    // region Conversion methods
 
     /**
      * Try to convert a float to an integer losslessly.
@@ -178,210 +285,6 @@ final class Floats
     }
 
     /**
-     * Check if a float value is exactly representable as an integer (no rounding error).
-     *
-     * Returns true for finite integers within IEEE-754 double's exact integer range (±2^53).
-     * Beyond this range, consecutive integers cannot all be exactly represented as floats.
-     *
-     * For example:
-     * - isExactInt(42.0) → true
-     * - isExactInt(42.5) → false (has fractional part)
-     * - isExactInt(9007199254740992.0) → true (exactly 2^53)
-     * - isExactInt(9007199254740993.0) → false (beyond exact range)
-     *
-     * @param float $value The value to check.
-     * @return bool True if the value represents an exact integer, false otherwise.
-     *
-     * @see tryConvertToInt() Attempt lossless conversion to int
-     * @see ulp() Calculate precision at a given magnitude
-     */
-    public static function isExactInt(float $value): bool
-    {
-        return is_finite($value) && floor($value) === $value && abs($value) <= self::MAX_EXACT_INT;
-    }
-
-    // endregion
-
-    // region Inspection methods
-
-    /**
-     * Determines if a floating-point number is negative zero (-0.0).
-     *
-     * In IEEE-754 floating-point arithmetic, negative zero is a distinct value from positive zero, though they compare
-     * as equal. This method provides a way to distinguish between them.
-     *
-     * The method works by dividing 1.0 by the value. For negative zero, this division results in -INF.
-     *
-     * @param float $value The floating-point number to check.
-     * @return bool True if the value is negative zero (-0.0), false otherwise.
-     */
-    public static function isNegativeZero(float $value): bool
-    {
-        // Using fdiv() to avoid a division by zero error.
-        return $value === 0.0 && fdiv(1.0, $value) === -INF;
-    }
-
-    /**
-     * Determines if a floating-point number is positive zero (+0.0).
-     *
-     * In IEEE-754 floating-point arithmetic, positive zero is a distinct value from negative zero, though they compare
-     * as equal. This method provides a way to distinguish between them.
-     *
-     * The method works by dividing 1.0 by the value. For positive zero, this division results in INF.
-     *
-     * @param float $value The floating-point number to check.
-     * @return bool True if the value is positive zero (+0.0), false otherwise.
-     */
-    public static function isPositiveZero(float $value): bool
-    {
-        // Using fdiv() to avoid a division by zero error.
-        return $value === 0.0 && fdiv(1.0, $value) === INF;
-    }
-
-    /**
-     * Check if a number is negative.
-     *
-     * This method returns:
-     * - true for -0.0, -INF, and negative values
-     * - false for +0.0, INF, NAN, and positive values
-     *
-     * @param float $value The value to check.
-     * @return bool True if the value is negative, false otherwise.
-     */
-    public static function isNegative(float $value): bool
-    {
-        return !is_nan($value) && ($value < 0 || self::isNegativeZero($value));
-    }
-
-    /**
-     * Check if a number is positive.
-     *
-     * This method returns:
-     * - true for +0.0, INF, and positive values
-     * - false for -0.0, -INF, NAN, and negative values
-     *
-     * @param float $value The value to check.
-     * @return bool True if the value is positive, false otherwise.
-     */
-    public static function isPositive(float $value): bool
-    {
-        return !is_nan($value) && ($value > 0 || self::isPositiveZero($value));
-    }
-
-    /**
-     * Check if a float is one of the special values: NAN, -0.0, +INF, -INF.
-     * +0.0 is not considered a special value.
-     *
-     * @param float $value The value to check.
-     * @return bool True if the value is a special value, false otherwise.
-     */
-    public static function isSpecial(float $value): bool
-    {
-        return !is_finite($value) || self::isNegativeZero($value);
-    }
-
-    // endregion
-
-    // region Adjacent float methods
-
-    /**
-     * Returns the next floating-point number after the given one.
-     *
-     * @param float $f The given number.
-     * @return float The next floating-point number after the given number.
-     * @throws RuntimeException If the system is not a 64-bit system.
-     */
-    public static function next(float $f): float
-    {
-        self::check64bit();
-
-        // Handle special cases.
-        if (is_nan($f)) {
-            return NAN;
-        }
-        if ($f === PHP_FLOAT_MAX || $f === INF) {
-            return INF;
-        }
-        if ($f === -INF) {
-            return -PHP_FLOAT_MAX;
-        }
-        if (self::isNegativeZero($f)) {
-            return 0.0;
-        }
-
-        $bits = self::floatToBits($f);
-        $bits += $bits >= 0 ? 1 : -1;
-        return self::bitsToFloat($bits);
-    }
-
-    /**
-     * Returns the previous floating-point number before the given one.
-     *
-     * @param float $f The given number.
-     * @return float The previous floating-point number before the given number.
-     * @throws RuntimeException If the system is not a 64-bit system.
-     */
-    public static function previous(float $f): float
-    {
-        self::check64bit();
-
-        // Handle special cases.
-        if (is_nan($f)) {
-            return NAN;
-        }
-        if ($f === -PHP_FLOAT_MAX || $f === -INF) {
-            return -INF;
-        }
-        if ($f === INF) {
-            return PHP_FLOAT_MAX;
-        }
-        if (self::isPositiveZero($f)) {
-            return -0.0;
-        }
-
-        $bits = self::floatToBits($f);
-        $bits += $bits >= 0 ? -1 : 1;
-        return self::bitsToFloat($bits);
-    }
-
-    /**
-     * Calculate the Unit in Last Place (ULP) - the spacing between adjacent floats.
-     *
-     * ULP represents the gap between a float and the next representable float at that magnitude.
-     * Larger magnitude numbers have larger ULP values, reflecting reduced precision at larger scales.
-     *
-     * For example:
-     * - ulp(1.0) ≈ 2.22e-16
-     * - ulp(1000.0) ≈ 2.22e-13
-     * - ulp(0.001) ≈ 2.22e-19
-     *
-     * @param float $value The value to calculate ULP for.
-     * @return float The ULP spacing. Returns INF for non-finite values.
-     *
-     * @see next() Get the next representable float
-     * @see previous() Get the previous representable float
-     */
-    public static function ulp(float $value): float
-    {
-        if (!is_finite($value)) {
-            return INF;
-        }
-
-        $abs = abs($value);
-
-        if ($abs === 0.0) {
-            return PHP_FLOAT_EPSILON * PHP_FLOAT_MIN;
-        }
-
-        // ULP = |value| × machine epsilon (works for normalized and many subnormal numbers).
-        return $abs * PHP_FLOAT_EPSILON;
-    }
-
-    // endregion
-
-    // region Bit manipulation methods
-
-    /**
      * Convert a float to a hexadecimal string.
      *
      * The advantage of this method is that every possible float value will produce a unique 16-character hex string,
@@ -389,130 +292,17 @@ final class Floats
      * Whereas, with a cast to string, or formatting with sprintf() or number_format(), the same string could be
      * produced for different values.
      *
+     * NB: The method works for NAN, but technically NAN doesn't have a unique hex representation.
+     * The method will return the hex representation of the canonical representation for NAN (0x7ff8000000000000)
+     * used by PHP.
+     *
      * @param float $value The float to convert.
      * @return string The hexadecimal string representation of the float.
      */
     public static function toHex(float $value): string
     {
-        return bin2hex(pack('d', $value));
-    }
-
-    /**
-     * Check if the current system is a 64-bit system.
-     *
-     * @return void
-     * @throws RuntimeException
-     */
-    private static function check64bit(): void
-    {
-        // Check if we're on a 32-bit system.
-        if (PHP_INT_SIZE === 4) {
-            throw new RuntimeException('This method is designed for 64-bit systems.'); // @codeCoverageIgnore
-        }
-    }
-
-    /**
-     * Converts a float to its 64-bit integer representation.
-     *
-     * @param float $f The float to convert.
-     * @return int The 64-bit integer representation.
-     */
-    private static function floatToBits(float $f): int
-    {
-        $packed = pack('d', $f);
-        /** @var int[] $bytes */
-        $bytes = unpack('C*', $packed);
-
-        $bits = 0;
-        for ($i = 8; $i >= 1; $i--) {
-            $bits = ($bits << 8) | $bytes[$i];
-        }
-
-        return $bits;
-    }
-
-    /**
-     * Converts a 64-bit integer to a float by reinterpreting its bit pattern.
-     *
-     * This method directly interprets the bit pattern of an integer as an IEEE 754
-     * double-precision float. This is different from casting an integer to a float,
-     * which attempts to preserve the integer's numeric value rather than its bit representation.
-     *
-     * Caveat re NAN:
-     * The IEEE 754 standard supports 2^53 - 2 distinct bit patterns that represent
-     * NAN values. While this method can construct floats from any of these bit patterns,
-     * PHP normalizes all NAN values to a canonical representation (0x7ff8000000000000)
-     * in subsequent operations.
-     *
-     * @param int $bits The 64-bit integer representing the desired bit pattern.
-     * @return float The float with the specified bit pattern.
-     */
-    private static function bitsToFloat(int $bits): float
-    {
-        $packed = pack('Q', $bits);
-        /** @var float[] $result */
-        $result = unpack('d', $packed);
-        return $result[1];
-    }
-
-    /**
-     * Disassemble a float into its IEEE-754 components.
-     *
-     * IEEE-754 double-precision format:
-     * - Sign: 1 bit (0 = positive, 1 = negative)
-     * - Exponent: 11 bits (biased by 1023)
-     * - Fraction: 52 bits (implicit leading 1 for normalized numbers)
-     *
-     * @param float $f The float to disassemble.
-     * @return array{bits: int, sign: int, exponent: int, fraction: int} The IEEE-754 components.
-     * @throws RuntimeException If the system is not a 64-bit system.
-     */
-    public static function disassemble(float $f): array
-    {
-        self::check64bit();
-
-        // Convert float to bits.
-        $bits = self::floatToBits($f);
-
-        // Extract components.
-        return [
-            'bits'     => $bits,
-            'sign'     => ($bits >> 63) & 0x1,
-            'exponent' => ($bits >> 52) & 0x7FF,
-            'fraction' => $bits & 0xFFFFFFFFFFFFF,
-        ];
-    }
-
-    /**
-     * Assemble a float from its IEEE-754 components.
-     *
-     * @param int $sign The sign bit (0 = positive, 1 = negative).
-     * @param int $exponent The 11-bit biased exponent (0-2047).
-     * @param int $fraction The 52-bit fraction/mantissa.
-     * @return float The assembled float.
-     * @throws RuntimeException If the system is not a 64-bit system.
-     * @throws ValueError If any component is out of range.
-     */
-    public static function assemble(int $sign, int $exponent, int $fraction): float
-    {
-        self::check64bit();
-
-        // Validate components.
-        if ($sign < 0 || $sign > 1) {
-            throw new ValueError('Sign must be 0 or 1.');
-        }
-        if ($exponent < 0 || $exponent > 2047) {
-            throw new ValueError('Exponent must be in the range [0, 2047].');
-        }
-        if ($fraction < 0 || $fraction > 0xFFFFFFFFFFFFF) {
-            throw new ValueError('Fraction must be in the range [0, 2^52 - 1].');
-        }
-
-        // Assemble the float: sign (1 bit) | exponent (11 bits) | fraction (52 bits)
-        $bits = ($sign << 63) | ($exponent << 52) | $fraction;
-
-        // Convert bits to float.
-        return self::bitsToFloat($bits);
+        // Convert to bits and then to hex.
+        return sprintf('%016x', self::floatToBits($value));
     }
 
     // endregion
@@ -652,6 +442,213 @@ final class Floats
         // Generate uniform random value.
         $r = random_int(0, $nValues) / $nValues;
         return $min + $r * $range;
+    }
+
+    // endregion
+
+    // region Bit operations
+
+    /**
+     * Converts a float to its 64-bit integer representation.
+     *
+     * @param float $f The float to convert.
+     * @return int The 64-bit integer representation.
+     * @throws RuntimeException If the system is not a 64-bit system.
+     */
+    public static function floatToBits(float $f): int
+    {
+        Environment::require64Bit();
+
+        $packed = pack('d', $f);
+        /** @var list<int> $bytes */
+        $bytes = unpack('C*', $packed);
+
+        $bits = 0;
+        for ($i = 8; $i >= 1; $i--) {
+            $bits = ($bits << 8) | $bytes[$i];
+        }
+
+        return $bits;
+    }
+
+    /**
+     * Converts a 64-bit integer to a float by reinterpreting its bit pattern.
+     *
+     * This method directly interprets the bit pattern of an integer as an IEEE 754
+     * double-precision float. This is different from casting an integer to a float,
+     * which attempts to preserve the integer's numeric value rather than its bit representation.
+     *
+     * Caveat re NAN:
+     * The IEEE 754 standard supports 2^53 - 2 distinct bit patterns that represent
+     * NAN values. While this method can construct floats from any of these bit patterns,
+     * PHP normalizes all NAN values to a canonical representation (0x7ff8000000000000)
+     * in subsequent operations.
+     *
+     * @param int $bits The 64-bit integer representing the desired bit pattern.
+     * @return float The float with the specified bit pattern.
+     * @throws RuntimeException If the system is not a 64-bit system.
+     */
+    public static function bitsToFloat(int $bits): float
+    {
+        Environment::require64Bit();
+
+        $packed = pack('Q', $bits);
+        /** @var float[] $result */
+        $result = unpack('d', $packed);
+        return $result[1];
+    }
+
+    /**
+     * Disassemble a float into its IEEE-754 components.
+     *
+     * IEEE-754 double-precision format:
+     * - Sign: 1 bit (0 = positive, 1 = negative)
+     * - Exponent: 11 bits (biased by 1023)
+     * - Fraction: 52 bits (implicit leading 1 for normalized numbers)
+     *
+     * @param float $f The float to disassemble.
+     * @return array{bits: int, sign: int, exponent: int, fraction: int} The IEEE-754 components.
+     * @throws RuntimeException If the system is not a 64-bit system.
+     */
+    public static function disassemble(float $f): array
+    {
+        Environment::require64Bit();
+
+        // Convert float to bits.
+        $bits = self::floatToBits($f);
+
+        // Extract components.
+        return [
+            'bits'     => $bits,
+            'sign'     => ($bits >> 63) & 0x1,
+            'exponent' => ($bits >> 52) & 0x7FF,
+            'fraction' => $bits & 0xFFFFFFFFFFFFF,
+        ];
+    }
+
+    /**
+     * Assemble a float from its IEEE-754 components.
+     *
+     * @param int $sign The sign bit (0 = positive, 1 = negative).
+     * @param int $exponent The 11-bit biased exponent (0-2047).
+     * @param int $fraction The 52-bit fraction/mantissa.
+     * @return float The assembled float.
+     * @throws RuntimeException If the system is not a 64-bit system.
+     * @throws ValueError If any component is out of range.
+     */
+    public static function assemble(int $sign, int $exponent, int $fraction): float
+    {
+        Environment::require64Bit();
+
+        // Validate components.
+        if ($sign < 0 || $sign > 1) {
+            throw new ValueError('Sign must be 0 or 1.');
+        }
+        if ($exponent < 0 || $exponent > 2047) {
+            throw new ValueError('Exponent must be in the range [0, 2047].');
+        }
+        if ($fraction < 0 || $fraction > 0xFFFFFFFFFFFFF) {
+            throw new ValueError('Fraction must be in the range [0, 2^52 - 1].');
+        }
+
+        // Assemble the float: sign (1 bit) | exponent (11 bits) | fraction (52 bits)
+        $bits = ($sign << 63) | ($exponent << 52) | $fraction;
+
+        // Convert bits to float.
+        return self::bitsToFloat($bits);
+    }
+
+    /**
+     * Returns the next floating-point number after the given one.
+     *
+     * @param float $f The given number.
+     * @return float The next floating-point number after the given number.
+     * @throws RuntimeException If the system is not a 64-bit system.
+     */
+    public static function next(float $f): float
+    {
+        Environment::require64Bit();
+
+        // Handle special cases.
+        if (is_nan($f)) {
+            return NAN;
+        }
+        if ($f === PHP_FLOAT_MAX || $f === INF) {
+            return INF;
+        }
+        if ($f === -INF) {
+            return -PHP_FLOAT_MAX;
+        }
+        if (self::isNegativeZero($f)) {
+            return 0.0;
+        }
+
+        $bits = self::floatToBits($f);
+        $bits += $bits >= 0 ? 1 : -1;
+        return self::bitsToFloat($bits);
+    }
+
+    /**
+     * Returns the previous floating-point number before the given one.
+     *
+     * @param float $f The given number.
+     * @return float The previous floating-point number before the given number.
+     * @throws RuntimeException If the system is not a 64-bit system.
+     */
+    public static function previous(float $f): float
+    {
+        Environment::require64Bit();
+
+        // Handle special cases.
+        if (is_nan($f)) {
+            return NAN;
+        }
+        if ($f === -PHP_FLOAT_MAX || $f === -INF) {
+            return -INF;
+        }
+        if ($f === INF) {
+            return PHP_FLOAT_MAX;
+        }
+        if (self::isPositiveZero($f)) {
+            return -0.0;
+        }
+
+        $bits = self::floatToBits($f);
+        $bits += $bits >= 0 ? -1 : 1;
+        return self::bitsToFloat($bits);
+    }
+
+    /**
+     * Calculate the Unit in Last Place (ULP) - the spacing between adjacent floats.
+     *
+     * ULP represents the gap between a float and the next representable float at that magnitude.
+     * Larger magnitude numbers have larger ULP values, reflecting reduced precision at larger scales.
+     *
+     * For example:
+     * - ulp(1.0) ≈ 2.22e-16
+     * - ulp(1000.0) ≈ 2.22e-13
+     * - ulp(0.001) ≈ 2.22e-19
+     *
+     * @param float $value The value to calculate ULP for.
+     * @return float The ULP spacing. Returns INF for non-finite values.
+     *
+     * @see next() Get the next representable float
+     * @see previous() Get the previous representable float
+     */
+    public static function ulp(float $value): float
+    {
+        if (!is_finite($value)) {
+            return INF;
+        }
+
+        $abs = abs($value);
+
+        if ($abs === 0.0) {
+            return PHP_FLOAT_EPSILON * PHP_FLOAT_MIN;
+        }
+
+        // ULP = |value| × machine epsilon (works for normalized and many subnormal numbers).
+        return $abs * PHP_FLOAT_EPSILON;
     }
 
     // endregion

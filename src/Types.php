@@ -25,7 +25,7 @@ final class Types
 
     // endregion
 
-    // region Miscellaneous
+    // region Inspection methods
 
     /**
      * Get the basic type of a value.
@@ -57,6 +57,10 @@ final class Types
         $type = gettype($value);
         return explode(' ', $type)[0];
     }
+
+    // endregion
+
+    // region Formatting methods
 
     /**
      * Convert any PHP value into a unique string.
@@ -108,7 +112,7 @@ final class Types
 
     // endregion
 
-    // region Type checking
+    // region Type checking methods
 
     /**
      * Check if two values have the same type.
@@ -148,7 +152,7 @@ final class Types
 
     // endregion
 
-    // region Traits
+    // region Trait-related methods
 
     /**
      * Check if an object or class uses a given trait.

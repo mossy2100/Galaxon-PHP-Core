@@ -1,8 +1,16 @@
 # Arrays
 
-Container for useful array-related methods.
+Static utility class containing useful array-related methods.
 
-## Methods
+## Overview
+
+The `Arrays` class provides helper methods for working with PHP arrays. This is a static utility class and cannot be instantiated.
+
+Methods are organized into:
+- **Inspection methods** - Analyze array properties (e.g., detect circular references)
+- **Transformation methods** - Transform array values (e.g., quote strings)
+
+## Inspection Methods
 
 ### containsRecursion()
 
@@ -44,6 +52,8 @@ Arrays::containsRecursion($arr); // false
 
 **Note:** This method uses `json_encode()` internally to detect recursion, as circular references cannot be JSON-encoded.
 
+## Transformation Methods
+
 ### quoteValues()
 
 ```php
@@ -68,7 +78,7 @@ Basic usage with single quotes (default):
 ```php
 $fruits = ['apple', 'banana', 'cherry'];
 $quoted = Arrays::quoteValues($fruits);
-// ['\'apple\'', '\'banana\'', '\'cherry\'']
+// ["'apple'", "'banana'", "'cherry'"]
 ```
 
 Using double quotes:
@@ -82,14 +92,14 @@ Preserves array keys:
 ```php
 $config = ['host' => 'localhost', 'port' => '5432'];
 $quoted = Arrays::quoteValues($config);
-// ['host' => '\'localhost\'', 'port' => '\'5432\'']
+// ['host' => "'localhost'", 'port' => "'5432'"]
 ```
 
 Values containing quotes are not escaped:
 ```php
 $phrases = ["it's", 'say "hello"'];
 $quoted = Arrays::quoteValues($phrases);
-// ['\'it\'s\'', '\'say "hello"\'']
+// ["'it's'", "'say \"hello\"'"]
 ```
 
 Type validation:
@@ -115,3 +125,8 @@ throw new ValueError('Invalid unit. Valid units: ' . implode(', ', $quotedUnits)
 ```
 
 **Note:** This method does not perform escaping. If the values contain the quote character, they will not be escaped. For proper escaping, use appropriate functions like `addslashes()` or context-specific escaping functions.
+
+## See Also
+
+- **[Strings](Strings.md)** - String utility methods
+- **[Types](Types.md)** - Type checking and conversion utilities

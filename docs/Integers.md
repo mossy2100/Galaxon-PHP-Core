@@ -1,14 +1,40 @@
 # Integers
 
-Integer arithmetic operations with overflow checking and greatest common divisor calculation.
+Static utility class for integer arithmetic with overflow detection and number formatting.
 
-## Background
+## Overview
+
+The `Integers` class provides integer arithmetic methods with overflow detection and utility functions for number theory and Unicode formatting. This is a static utility class and cannot be instantiated.
+
+### Overflow Detection
 
 In PHP, when integer arithmetic operations exceed `PHP_INT_MAX` or fall below `PHP_INT_MIN`, the result is silently converted to a float. This can lead to unexpected behavior in calculations that should produce integers.
 
-This class provides integer arithmetic methods that detect overflow and throw exceptions instead of silently converting to float. This is useful when you need to ensure results remain within the integer range or handle overflow explicitly.
+```php
+PHP_INT_MAX + 1;  // Returns a float, not an integer
+```
 
-## Methods
+The arithmetic methods in this class detect overflow and throw `OverflowException` instead of silently converting to float. This is useful when you need to ensure results remain within the integer range or handle overflow explicitly.
+
+## Constants
+
+### SUBSCRIPT_CHARACTERS
+
+```php
+public const array SUBSCRIPT_CHARACTERS
+```
+
+Unicode subscript characters for digits 0-9 and minus sign. Maps ASCII characters to their Unicode subscript equivalents.
+
+### SUPERSCRIPT_CHARACTERS
+
+```php
+public const array SUPERSCRIPT_CHARACTERS
+```
+
+Unicode superscript characters for digits 0-9 and minus sign. Maps ASCII characters to their Unicode superscript equivalents.
+
+## Arithmetic Methods
 
 ### add()
 
@@ -26,7 +52,7 @@ Add two integers with overflow detection.
 - `int` - The sum of the two integers
 
 **Throws:**
-- `OverflowException` - If the addition results in overflow
+- `OverflowException` - If the addition results in a value too large to be represented as an integer.
 
 **Examples:**
 
@@ -52,7 +78,7 @@ Subtract one integer from another with overflow detection.
 - `int` - The difference (a - b)
 
 **Throws:**
-- `OverflowException` - If the subtraction results in overflow
+- `OverflowException` - If the subtraction results in a value too large to be represented as an integer.
 
 **Examples:**
 
@@ -78,7 +104,7 @@ Multiply two integers with overflow detection.
 - `int` - The product
 
 **Throws:**
-- `OverflowException` - If the multiplication results in overflow
+- `OverflowException` - If the multiplication results in a value too large to be represented as an integer.
 
 **Examples:**
 
@@ -94,30 +120,34 @@ Integers::mul(PHP_INT_MAX, 2);  // throws OverflowException
 public static function pow(int $a, int $b): int
 ```
 
-Raise one integer to the power of another with overflow detection. Only non-negative exponents are supported.
+Raise one integer to the power of another, returning an integer result or throwing an exception.
 
 **Parameters:**
 - `$a` (int) - The base
-- `$b` (int) - The exponent (must be non-negative)
+- `$b` (int) - The exponent
 
 **Returns:**
 - `int` - The result of raising a to the power of b
 
 **Throws:**
-- `ValueError` - If the exponent is negative
-- `OverflowException` - If the exponentiation results in overflow
+- `UnderflowException` - If the result is a fractional value (absolute value less than or equal to 1).
+- `OverflowException` - If the result is too large to represent as an integer.
 
 **Examples:**
 
 ```php
-Integers::pow(2, 10);            // 1024
-Integers::pow(5, 0);             // 1
-Integers::pow(-2, 3);            // -8
-Integers::pow(2, -1);            // throws ValueError
-Integers::pow(10, 100);          // throws OverflowException
+Integers::pow(2, 10);   // 1024
+Integers::pow(5, 0);    // 1
+Integers::pow(-2, 3);   // -8
+Integers::pow(1, -1);   // 1 (1⁻¹ = 1)
+Integers::pow(-1, -1);  // -1 ((-1)⁻¹ = -1)
+Integers::pow(2, -1);   // throws UnderflowException (2⁻¹ = 0.5)
+Integers::pow(10, 100); // throws OverflowException
 ```
 
-**Note:** Negative exponents are not supported because they would produce non-integer results (e.g., 2^-1 = 0.5).
+**Note:** Negative exponents produce fractional results for most bases (e.g., 2⁻¹ = 0.5), which throws `UnderflowException`. The only exceptions are 1⁻¹ = 1 and (-1)⁻¹ = -1, which are valid integer results.
+
+## Number Theory Methods
 
 ### gcd()
 
@@ -128,23 +158,86 @@ public static function gcd(int ...$nums): int
 Calculate the greatest common divisor (GCD) of two or more integers using Euclid's algorithm. The GCD is the largest positive integer that divides all the given numbers without remainder.
 
 **Parameters:**
-- `...$nums` (int) - Two or more integers
+- `...$nums` (int) - One or more integers
 
 **Returns:**
 - `int` - The greatest common divisor (always non-negative)
 
 **Throws:**
 - `ArgumentCountError` - If no arguments are provided
+- `RangeException` - If any argument equals `PHP_INT_MIN`
 
 **Examples:**
 
 ```php
-Integers::gcd(12, 18);          // 6
-Integers::gcd(17, 19);          // 1 (coprime)
-Integers::gcd(12, 18, 24);      // 6
-Integers::gcd(-12, 18);         // 6 (uses absolute values)
-Integers::gcd(0, 5);            // 5
-Integers::gcd(0, 0);            // 0
+Integers::gcd(12, 18);      // 6
+Integers::gcd(17, 19);      // 1 (coprime)
+Integers::gcd(12, 18, 24);  // 6
+Integers::gcd(-12, 18);     // 6 (uses absolute values)
+Integers::gcd(0, 5);        // 5
+Integers::gcd(0, 0);        // 0
 ```
 
-**Note:** The GCD is always computed using absolute values, so negative inputs are treated as positive. The GCD of 0 and any number n is |n|. The GCD of 0 and 0 is 0.
+**Behavior:**
+- The GCD is always computed using absolute values, so negative inputs are treated as positive
+- The GCD of 0 and any number n is |n|
+- The GCD of 0 and 0 is 0
+- `PHP_INT_MIN` is not allowed because `abs(PHP_INT_MIN)` overflows
+
+## Conversion Methods
+
+### toSubscript()
+
+```php
+public static function toSubscript(int $n): string
+```
+
+Convert an integer to Unicode subscript characters.
+
+**Parameters:**
+- `$n` (int) - The integer to convert
+
+**Returns:**
+- `string` - The integer as subscript characters
+
+**Examples:**
+
+```php
+Integers::toSubscript(123);   // '₁₂₃'
+Integers::toSubscript(0);     // '₀'
+Integers::toSubscript(-42);   // '₋₄₂'
+```
+
+**Use cases:**
+- Chemical formulas, e.g. `H₂SO₄`
+- Variable subscripts, e.g. `x₁ = 123`
+
+### toSuperscript()
+
+```php
+public static function toSuperscript(int $n): string
+```
+
+Convert an integer to Unicode superscript characters.
+
+**Parameters:**
+- `$n` (int) - The integer to convert
+
+**Returns:**
+- `string` - The integer as superscript characters
+
+**Examples:**
+
+```php
+Integers::toSuperscript(123);   // '¹²³'
+Integers::toSuperscript(0);     // '⁰'
+Integers::toSuperscript(-42);   // '⁻⁴²'
+```
+
+**Use cases:**
+- Exponents, e.g. `x²`, `6.02×10²³`.
+
+## See Also
+
+- **[Floats](Floats.md)** - Float utility methods
+- **[Numbers](Numbers.md)** - General number utilities

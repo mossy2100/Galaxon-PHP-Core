@@ -1,10 +1,10 @@
 # Floats
 
-A comprehensive utility class for working with floating-point numbers in PHP, providing tools for comparison, conversion, navigation, random generation, and handling of IEEE-754 special values.
+Static utility class for working with floating-point numbers in PHP.
 
-## Background
+## Overview
 
-Floating-point arithmetic presents several challenges that this class helps address:
+The `Floats` class provides tools for comparison, conversion, navigation, random generation, and handling of IEEE-754 special values. This is a static utility class and cannot be instantiated.
 
 ### Comparison Issues
 
@@ -53,7 +53,7 @@ Two methods provide direct access to IEEE-754 double-precision components:
 ### DEFAULT_RELATIVE_TOLERANCE
 
 ```php
-public const DEFAULT_RELATIVE_TOLERANCE = 1e-9;
+public const float DEFAULT_RELATIVE_TOLERANCE = 1e-9;
 ```
 
 The default relative tolerance used by `approxEqual()` and `approxCompare()`.
@@ -61,7 +61,7 @@ The default relative tolerance used by `approxEqual()` and `approxCompare()`.
 ### DEFAULT_ABSOLUTE_TOLERANCE
 
 ```php
-public const DEFAULT_ABSOLUTE_TOLERANCE = PHP_FLOAT_EPSILON;
+public const float DEFAULT_ABSOLUTE_TOLERANCE = PHP_FLOAT_EPSILON;
 ```
 
 The default absolute tolerance used by `approxEqual()` and `approxCompare()`.
@@ -69,214 +69,20 @@ The default absolute tolerance used by `approxEqual()` and `approxCompare()`.
 ### MAX_EXACT_INT
 
 ```php
-public const MAX_EXACT_INT = 1 << 53;  // 9007199254740992
+public const int MAX_EXACT_INT = 1 << 53;  // 9007199254740992
 ```
 
-Maximum integer that can be exactly represented as a float (2^53). Beyond this value, not all consecutive integers are representable in double-precision floating-point format.
+Maximum integer that can be exactly represented as a float (2<sup>53</sup>). Beyond this value, not all consecutive integers are representable in double-precision floating-point format.
 
 ### TAU
 
 ```php
-public const TAU = 2 * M_PI;
+public const float TAU = 2 * M_PI;
 ```
 
 The circle constant τ (tau), equal to 2π ≈ 6.283185307179586, which is the number of radians in one turn. Apart from circles and angles, TAU appears throughout mathematics in areas such as complex analysis, Fourier transforms, the normal distribution, and many integral formulas.
 
-## Methods
-
-### approxEqual()
-
-```php
-public static function approxEqual(
-    float $a,
-    float $b,
-    float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
-    float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
-): bool
-```
-
-Check if two floats are approximately equal using combined absolute and relative tolerance. This is the recommended way to compare floating-point numbers for equality, as direct comparison (`===`) can fail due to precision issues.
-
-This method implements an algorithm similar to Python's `math.isclose()`:
-1. First checks if values are exactly equal (handles identical values efficiently)
-2. Checks absolute tolerance (useful for comparisons near zero)
-3. If exceeded, checks relative tolerance (scales with magnitude)
-
-**Parameters:**
-- `$a` (float) - The first float
-- `$b` (float) - The second float
-- `$relTol` (float) - The maximum allowed relative difference (default: `1e-9`)
-- `$absTol` (float) - The maximum allowed absolute difference (default: `PHP_FLOAT_EPSILON`)
-
-**Returns:**
-- `bool` - Returns `true` if the floats are approximately equal, `false` otherwise
-
-**Throws:**
-- `ValueError` - If either tolerance is negative
-
-**Examples:**
-
-Basic usage with combined tolerance:
-```php
-// Direct float comparison can fail due to precision issues
-0.1 + 0.2 === 0.3;  // false (!)
-
-// Use approxEqual instead
-Floats::approxEqual(0.1 + 0.2, 0.3);  // true
-
-// Identical values (fast path)
-Floats::approxEqual(1.0, 1.0);  // true
-
-// Near zero - absolute tolerance applies
-Floats::approxEqual(1e-20, 2e-20);  // true (within PHP_FLOAT_EPSILON)
-
-// Larger values - relative tolerance applies
-Floats::approxEqual(1000000.0, 1000000.1, 1e-6);  // true
-Floats::approxEqual(1.0, 1.1, 1e-6);  // false
-```
-
-With custom tolerances:
-```php
-// Tighter absolute tolerance
-Floats::approxEqual(1e-20, 2e-20, 1e-9, 0.0);  // false
-
-// Looser relative tolerance
-Floats::approxEqual(100.0, 101.0, 0.02);  // true (1% difference, within 2%)
-
-// Custom both
-Floats::approxEqual(0.001, 0.0011, 0.01, 1e-4);  // true
-```
-
-Special values:
-```php
-// Handles positive and negative zero
-Floats::approxEqual(0.0, -0.0);  // true
-
-// Infinities use exact equality
-Floats::approxEqual(INF, INF);    // true
-Floats::approxEqual(-INF, -INF);  // true
-Floats::approxEqual(INF, -INF);   // false
-
-// NAN is never equal to anything
-Floats::approxEqual(NAN, NAN);    // false
-Floats::approxEqual(NAN, 0.0);    // false
-```
-
-**Behavior:**
-- Handles NAN by returning `false` (NAN is never equal to anything)
-- Handles infinities using exact equality (`INF === INF`, `-INF === -INF`)
-- First checks exact equality (`$a === $b`) as a fast path
-- Then checks absolute tolerance: `abs($a - $b) <= $absTol`
-- Finally checks relative tolerance: `abs($a - $b) <= $relTol * max(abs($a), abs($b))`
-- **Symmetric**: `approxEqual($a, $b)` equals `approxEqual($b, $a)`
-
-**Algorithm:**
-```php
-if ($a === $b) return true;  // Fast path for identical values
-$diff = abs($a - $b);
-if ($diff <= $absTol) return true;  // Absolute tolerance
-return $diff <= $relTol * max(abs($a), abs($b));  // Relative tolerance
-```
-
-**Choosing Tolerances:**
-- **Default**: Works well for most general-purpose comparisons
-- **Absolute tolerance**: Use `PHP_FLOAT_EPSILON` (default) for values near zero, or custom values for domain-specific precision
-- **Relative tolerance**: Use `1e-9` (default) for tight comparisons, `1e-6` for looser comparisons
-- **Both**: Adjust both for optimal results across different magnitudes
-
-**Use Cases:**
-- Comparing results of floating-point calculations
-- Unit testing numerical code
-- Checking convergence in iterative algorithms
-- Scientific and engineering calculations
-
-**See Also:**
-- `approxCompare()` - Three-way comparison with approximate equality
-
-### approxCompare()
-
-```php
-public static function approxCompare(
-    float $a,
-    float $b,
-    float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
-    float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
-): int
-```
-
-Three-way comparison of two floats with approximate equality support. Returns an integer indicating whether the first float is less than, equal to (within tolerance), or greater than the second float.
-
-**Parameters:**
-- `$a` (float) - The first float
-- `$b` (float) - The second float
-- `$relTol` (float) - The maximum allowed relative difference (default: `1e-9`)
-- `$absTol` (float) - The maximum allowed absolute difference (default: `PHP_FLOAT_EPSILON`)
-
-**Returns:**
-- `int` - Returns exactly `-1` if `$a < $b`, `0` if approximately equal, `1` if `$a > $b`
-
-**Throws:**
-- `ValueError` - If either float is NAN, or either tolerance is negative
-
-**Examples:**
-
-```php
-// Basic three-way comparison
-Floats::approxCompare(1.0, 2.0);  // -1 (less than)
-Floats::approxCompare(2.0, 1.0);  // 1 (greater than)
-Floats::approxCompare(1.0, 1.0);  // 0 (equal)
-
-// Approximate equality with default tolerances
-Floats::approxCompare(1.0, 1.0 + 1e-11);  // 0 (within tolerance)
-Floats::approxCompare(1.0, 1.1);          // -1 (exceeds tolerance)
-
-// Combined absolute and relative tolerance
-Floats::approxCompare(1000000.0, 1000000.1, 1e-6);  // 0 (within relative tolerance)
-Floats::approxCompare(1.0, 1.1, 1e-6);              // -1 (exceeds relative tolerance)
-
-// Custom tolerances
-Floats::approxCompare(1.0, 1.0 + 1e-11, 1e-9, 1e-10);  // 0
-Floats::approxCompare(1.0, 1.0 + 1e-9, 1e-9, 1e-10);   // 1
-
-// Handles precision issues
-Floats::approxCompare(0.1 + 0.2, 0.3);  // 0 (approximately equal)
-
-// Infinities use exact equality via approxEqual()
-Floats::approxCompare(INF, INF);      // 0 (equal)
-Floats::approxCompare(INF, 1000.0);   // 1 (INF > finite)
-Floats::approxCompare(0.0, -0.0);     // 0 (equal)
-
-// NAN throws ValueError
-Floats::approxCompare(NAN, 1.0);      // throws ValueError
-```
-
-**Behavior:**
-- Throws `ValueError` if either argument is NAN (NAN cannot be meaningfully compared)
-- First checks approximate equality using `approxEqual()` with the specified tolerances
-- If approximately equal, returns `0`
-- Otherwise uses spaceship operator (`<=>`) to determine ordering, normalized to exactly -1 or 1 using `Numbers::sign()`
-- Infinities are handled by `approxEqual()` using exact equality
-
-**Use Cases:**
-- Implementing `compare()` methods in custom classes (e.g., `Comparable` trait)
-- Sorting floats with epsilon tolerance
-- Building comparison logic that needs three-way results
-- Switch statements based on comparison results
-
-**Example Usage in Sorting:**
-
-```php
-$values = [1.0000001, 1.0, 0.9999999];
-
-usort($values, function($a, $b) {
-    return Floats::approxCompare($a, $b, 1e-6);
-});
-
-// Result: All three values may be considered equal with tolerance 1e-6
-```
-
-**See Also:**
-- `approxEqual()` - Two-way approximate equality check
+## Inspection Methods
 
 ### isNegativeZero()
 
@@ -321,31 +127,6 @@ Floats::isPositiveZero(0.0);   // true
 Floats::isPositiveZero(-0.0);  // false
 Floats::isPositiveZero(1.0);   // false
 ```
-
-### normalizeZero()
-
-```php
-public static function normalizeZero(float $value): float
-```
-
-Normalizes negative zero to positive zero. This can be used to avoid surprising results from certain operations where the distinction between -0.0 and +0.0 matters.
-
-**Parameters:**
-- `$value` (float) - The floating-point number to normalize
-
-**Returns:**
-- `float` - Returns `0.0` if the input is `-0.0`, otherwise returns the value unchanged
-
-**Examples:**
-
-```php
-Floats::normalizeZero(-0.0);  // 0.0
-Floats::normalizeZero(0.0);   // 0.0
-Floats::normalizeZero(-1.5);  // -1.5
-Floats::normalizeZero(2.5);   // 2.5
-```
-
-**Use Case:** When you want consistent behavior regardless of whether a zero is positive or negative, especially in comparisons or output formatting.
 
 ### isNegative()
 
@@ -429,40 +210,322 @@ Floats::isSpecial(-42.5);  // false
 
 **Use Case:** Useful for validation or special handling of edge cases in numerical computations.
 
-### toHex()
+### isExactInt()
 
 ```php
-public static function toHex(float $value): string
+public static function isExactInt(float $value): bool
 ```
 
-Convert a float to a unique 16-character hexadecimal string representation. Every possible float value produces a unique hex string, making this method ideal for hashing or keying floats in collections.
+Check if a float value is exactly representable as an integer without rounding error. Returns `true` for finite integers within IEEE-754 double's exact integer range (±2<sup>53</sup>).
 
 **Parameters:**
-- `$value` (float) - The float to convert
+- `$value` (float) - The value to check
 
 **Returns:**
-- `string` - A 16-character hexadecimal string representing the binary representation of the float
+- `bool` - Returns `true` if the value represents an exact integer within ±2<sup>53</sup>, `false` otherwise
+
+**Behavior:**
+- Checks three conditions: `is_finite($value) && floor($value) === $value && abs($value) <= MAX_EXACT_INT`
+- Returns `true` for whole numbers within the exact range
+- Returns `false` for fractional values
+- Returns `false` for values beyond ±2<sup>53</sup>
+- Returns `false` for non-finite values (NAN, ±INF)
+- Handles negative zero (-0.0) as an exact integer
 
 **Examples:**
 
 ```php
-$hex1 = Floats::toHex(1.0);
-$hex2 = Floats::toHex(2.0);
-$hex1 !== $hex2;  // true - different values produce different hex strings
+// Whole numbers within range
+Floats::isExactInt(0.0);      // true
+Floats::isExactInt(1.0);      // true
+Floats::isExactInt(-42.0);    // true
+Floats::isExactInt(1000000.0);  // true
 
-// Distinguishes between -0.0 and +0.0
-Floats::toHex(-0.0) !== Floats::toHex(0.0);  // true
+// Fractional values
+Floats::isExactInt(0.5);      // false
+Floats::isExactInt(1.1);      // false
+Floats::isExactInt(-3.14);    // false
 
-// Even very close values produce different hex strings
-$a = 1.0;
-$b = 1.0 + PHP_FLOAT_EPSILON;
-Floats::toHex($a) !== Floats::toHex($b);  // true
+// Negative zero is exact
+Floats::isExactInt(-0.0);     // true
+
+// At the boundary (2^53 = 9,007,199,254,740,992)
+Floats::isExactInt((float)(1 << 53));   // true (exactly 2^53)
+Floats::isExactInt((float)(-(1 << 53)));  // true (exactly -2^53)
+
+// Beyond the boundary
+Floats::isExactInt((float)(1 << 54));   // false (2^54 exceeds ±2^53)
+Floats::isExactInt(1e20);               // false (too large)
+
+// Non-finite values
+Floats::isExactInt(INF);      // false
+Floats::isExactInt(-INF);     // false
+Floats::isExactInt(NAN);      // false
 ```
 
-**Advantages over string conversion:**
-- **Uniqueness**: Unlike casting to string or using `sprintf()`, every distinct float value (including -0.0 vs +0.0) produces a unique hex string
-- **Consistency**: Always produces exactly 16 characters
-- **Precision**: Preserves the exact binary representation of the float
+**Why ±2<sup>53</sup>?**
+
+IEEE-754 doubles use 52 bits for the fraction plus 1 implicit bit, giving 53 bits of precision. This means consecutive integers can be exactly represented up to 2<sup>53</sup>. Beyond this, the gaps between representable floats become larger than 1:
+
+```php
+// At 2^53, consecutive integers are exactly representable
+$boundary = (float)(1 << 53);  // 9007199254740992.0
+Floats::isExactInt($boundary);  // true
+
+// Beyond 2^53, gaps are > 1, so not all integers can be represented
+$beyond = (float)(1 << 54);  // 18014398509481984.0
+Floats::isExactInt($beyond);  // false (exceeds our boundary)
+```
+
+**Comparison with tryConvertToInt():**
+
+Both methods check for exact integer representation, but serve different purposes:
+
+| Method              | Purpose                    | Range                                               | Return |
+|---------------------|----------------------------|-----------------------------------------------------|--------|
+| `isExactInt()`      | Check exact representation | ±2<sup>53</sup> (float's exact range)               | `bool` |
+| `tryConvertToInt()` | Lossless conversion        | -2<sup>63</sup> to 2<sup>63</sup>-1 (PHP int range) | `?int` |
+
+For small integers, both agree:
+
+```php
+$value = 42.0;
+Floats::isExactInt($value);  // true
+Floats::tryConvertToInt($value);  // 42 (not null)
+```
+
+**Use Cases:**
+- Validating that a float represents a whole number before operations
+- Optimizing arithmetic by detecting when float → int conversion is safe
+- Determining when to use integer math vs float math
+- Error checking in numerical algorithms
+- Calculating error bounds in error tracking systems
+
+**See Also:**
+- `tryConvertToInt()` - Convert float to int losslessly
+- `ulp()` - Calculate the spacing between adjacent floats
+
+## Comparison Methods
+
+### approxEqual()
+
+```php
+public static function approxEqual(
+    float $a,
+    float $b,
+    float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
+    float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
+): bool
+```
+
+Check if two floats are approximately equal using combined absolute and relative tolerance. This is the recommended way to compare floating-point numbers for equality, as direct comparison (`===`) can fail due to precision issues.
+
+This method mirrors [Python's `math.isclose()` function](https://docs.python.org/3/library/math.html#math.isclose), which uses the following algorithm:
+1. First checks if values are exactly equal (handles identical values efficiently)
+2. Checks absolute tolerance (useful for comparisons near zero)
+3. If exceeded, checks relative tolerance (scales with magnitude)
+
+**Parameters:**
+- `$a` (float) - The first float
+- `$b` (float) - The second float
+- `$relTol` (float) - The maximum allowed relative difference (default: `1e-9`)
+- `$absTol` (float) - The maximum allowed absolute difference (default: `PHP_FLOAT_EPSILON`, which is ~2.22e-16)
+
+**Returns:**
+- `bool` - Returns `true` if the floats are approximately equal, `false` otherwise
+
+**Throws:**
+- `ValueError` - If either tolerance is negative
+
+**Examples:**
+
+Basic usage with combined tolerance:
+```php
+// Direct float comparison can fail due to precision issues
+0.1 + 0.2 === 0.3;  // false (!)
+
+// Use approxEqual instead
+Floats::approxEqual(0.1 + 0.2, 0.3);  // true
+
+// Identical values (fast path)
+Floats::approxEqual(1.0, 1.0);  // true
+
+// Near zero - absolute tolerance applies
+Floats::approxEqual(1e-20, 2e-20);  // true (within PHP_FLOAT_EPSILON)
+
+// Larger values - relative tolerance applies
+Floats::approxEqual(1000000.0, 1000000.1, 1e-6);  // true
+Floats::approxEqual(1.0, 1.1, 1e-6);  // false
+```
+
+With custom tolerances:
+```php
+// Tighter absolute tolerance
+Floats::approxEqual(1e-20, 2e-20, 1e-9, 0.0);  // false
+
+// Looser relative tolerance
+Floats::approxEqual(100.0, 101.0, 0.02);  // true (1% difference, within 2%)
+
+// Custom both
+Floats::approxEqual(0.001, 0.0011, 0.01, 1e-4);  // true
+```
+
+Special values:
+```php
+// Handles positive and negative zero
+Floats::approxEqual(0.0, -0.0);  // true
+
+// Infinities use exact equality
+Floats::approxEqual(INF, INF);    // true
+Floats::approxEqual(-INF, -INF);  // true
+Floats::approxEqual(INF, -INF);   // false
+
+// NAN is never equal to anything
+Floats::approxEqual(NAN, NAN);    // false
+Floats::approxEqual(NAN, 0.0);    // false
+```
+
+**Behavior:**
+- Handles NAN by returning `false` (NAN is never equal to anything)
+- Handles infinities using exact equality (`INF === INF`, `-INF === -INF`)
+- First checks exact equality (`$a === $b`) as a fast path
+- Then checks absolute tolerance: `abs($a - $b) <= $absTol`
+- Finally checks relative tolerance: `abs($a - $b) <= $relTol * max(abs($a), abs($b))`
+- **Symmetric**: `approxEqual($a, $b)` equals `approxEqual($b, $a)`
+
+**Choosing Tolerances:**
+- **Defaults**: Work well for most general-purpose comparisons
+- **Absolute tolerance**: Use `PHP_FLOAT_EPSILON` (default) for values near zero, or custom values for domain-specific precision
+- **Relative tolerance**: Use `1e-9` (default) for tight comparisons, `1e-6` for looser comparisons
+
+If you want to compare values by relative tolerance only, set `$absTol` to zero.\
+If you want to compare values by absolute tolerance only, set `$relTol` to zero.
+
+If in doubt, write tests that reflect expected/typical usage in your application, and adjust tolerances for optimal results.
+
+**Use Cases:**
+- Comparing results of floating-point calculations
+- Unit testing numerical code
+- Checking convergence in iterative algorithms
+- Scientific and engineering calculations
+
+**See Also:**
+- `approxCompare()` - Three-way comparison with approximate equality
+
+### approxCompare()
+
+```php
+public static function approxCompare(
+    float $a,
+    float $b,
+    float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
+    float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
+): int
+```
+
+Three-way comparison of two floats with approximate equality support. Returns an integer indicating whether the first float is less than, equal to (within tolerance), or greater than the second float.
+
+**Parameters:**
+- `$a` (float) - The first float
+- `$b` (float) - The second float
+- `$relTol` (float) - The maximum allowed relative difference (default: `1e-9`)
+- `$absTol` (float) - The maximum allowed absolute difference (default: `PHP_FLOAT_EPSILON`)
+
+**Returns:**
+- `int` - Returns exactly `-1` if `$a < $b`, `0` if approximately equal, `1` if `$a > $b`
+
+**Throws:**
+- `ValueError` - If either float is NAN, or either tolerance is negative
+
+**Examples:**
+
+```php
+// Basic three-way comparison
+Floats::approxCompare(1.0, 2.0);  // -1 (less than)
+Floats::approxCompare(2.0, 1.0);  // 1 (greater than)
+Floats::approxCompare(1.0, 1.0);  // 0 (equal)
+
+// Approximate equality with default tolerances
+Floats::approxCompare(1.0, 1.0 + 1e-11);  // 0 (within tolerance)
+Floats::approxCompare(1.0, 1.1);          // -1 (exceeds tolerance)
+
+// Combined absolute and relative tolerance
+Floats::approxCompare(1000000.0, 1000000.1, 1e-6);  // 0 (within relative tolerance)
+Floats::approxCompare(1.0, 1.1, 1e-6);              // -1 (exceeds relative tolerance)
+
+// Custom tolerances
+Floats::approxCompare(1.0, 1.0 + 1e-11, 1e-9, 1e-10);  // 0
+Floats::approxCompare(1.0, 1.0 + 1e-9, 1e-9, 1e-10);   // 1
+
+// Handles precision issues
+Floats::approxCompare(0.1 + 0.2, 0.3);  // 0 (approximately equal)
+
+// Infinities use exact equality via approxEqual()
+Floats::approxCompare(INF, INF);      // 0 (equal)
+Floats::approxCompare(INF, 1000.0);   // 1 (INF > finite)
+Floats::approxCompare(0.0, -0.0);     // 0 (equal)
+
+// NAN throws ValueError
+Floats::approxCompare(NAN, 1.0);      // throws ValueError
+```
+
+**Behavior:**
+- Throws `ValueError` if either argument is NAN (NAN cannot be meaningfully compared)
+- First checks approximate equality using `approxEqual()` with the specified tolerances
+- If approximately equal, returns `0`
+- Otherwise uses spaceship operator (`<=>`) to determine ordering, normalized to exactly -1 or 1 using `Numbers::sign()`
+- Infinities are handled by `approxEqual()` using exact equality
+
+**Use Cases:**
+- Implementing `compare()` methods in custom classes (e.g., `Comparable` trait)
+- Sorting floats with epsilon tolerance
+- Building comparison logic that needs three-way results
+- Switch statements based on comparison results
+- Less-than or greater-than functions with tolerances
+
+**Example Usage in Sorting:**
+
+```php
+$values = [1.0000001, 1.0, 0.9999999];
+
+usort($values, function($a, $b) {
+    return Floats::approxCompare($a, $b, 1e-6);
+});
+
+// Result: All three values may be considered equal with tolerance 1e-6
+```
+
+**See Also:**
+- `approxEqual()` - Two-way approximate equality check
+
+## Transformation Methods
+
+### normalizeZero()
+
+```php
+public static function normalizeZero(float $value): float
+```
+
+Normalizes negative zero to positive zero. This can be used to avoid surprising results from certain operations where the distinction between -0.0 and +0.0 matters.
+
+**Parameters:**
+- `$value` (float) - The floating-point number to normalize
+
+**Returns:**
+- `float` - Returns `0.0` if the input is `-0.0`, otherwise returns the value unchanged
+
+**Examples:**
+
+```php
+Floats::normalizeZero(-0.0);  // 0.0
+Floats::normalizeZero(0.0);   // 0.0
+Floats::normalizeZero(-1.5);  // -1.5
+Floats::normalizeZero(2.5);   // 2.5
+```
+
+**Use Case:** When you want consistent behavior regardless of whether a zero is positive or negative, especially in comparisons or output formatting.
+
+## Conversion Methods
 
 ### tryConvertToInt()
 
@@ -515,192 +578,384 @@ Floats::tryConvertToInt(NAN);  // null
 ```
 
 **Use Cases:**
-- Optimizing constructors that accept `int|float` by avoiding expensive float-to-rational conversions when possible
-- Validating that a float represents a whole number before casting
+- Optimizing methods that accept `int|float` by avoiding expensive conversions when possible
+- Validating that a float represents a whole number
 - Conditional type conversion in generic numeric code
 
 **Precision Limits:**
-On 64-bit systems, floats can exactly represent integers up to 2^53 (9,007,199,254,740,992). Beyond this, not all integers can be represented exactly as floats. Powers of 2 can be represented exactly up to much larger values.
+On 64-bit systems, floats can exactly represent integers up to 2<sup>53</sup> (9,007,199,254,740,992). Beyond this, not all integers can be represented exactly as floats. Powers of 2 can be represented exactly up to much larger values.
 
-### isExactInt()
+### toHex()
 
 ```php
-public static function isExactInt(float $value): bool
+public static function toHex(float $value): string
 ```
 
-Check if a float value is exactly representable as an integer without rounding error. Returns `true` for finite integers within IEEE-754 double's exact integer range (±2^53).
+Convert a float to a unique 16-character hexadecimal string representation. Every possible float value produces a unique hex string, making this method ideal for hashing or keying floats in collections.
+
+**Note:** The method works for NAN, but, be aware, NAN doesn't technically have a unique hex representation; in fact, for 64-bit IEEE floats, 2<sup>53</sup> - 2 bit patterns mean NAN. This method will return the hex representation of NAN used by PHP ('7ff8000000000000'). Also see notes for `bitsToFloat()`.
 
 **Parameters:**
-- `$value` (float) - The value to check
+- `$value` (float) - The float to convert
 
 **Returns:**
-- `bool` - Returns `true` if the value represents an exact integer within ±2^53, `false` otherwise
-
-**Behavior:**
-- Checks three conditions: `is_finite($value) && floor($value) === $value && abs($value) <= MAX_EXACT_INT`
-- Returns `true` for whole numbers within the exact range
-- Returns `false` for fractional values
-- Returns `false` for values beyond ±2^53
-- Returns `false` for non-finite values (NAN, ±INF)
-- Handles negative zero (-0.0) as an exact integer
+- `string` - A 16-character hexadecimal string representing the binary representation of the float
 
 **Examples:**
 
 ```php
-// Whole numbers within range
-Floats::isExactInt(0.0);      // true
-Floats::isExactInt(1.0);      // true
-Floats::isExactInt(-42.0);    // true
-Floats::isExactInt(1000000.0);  // true
+$hex1 = Floats::toHex(1.0);
+$hex2 = Floats::toHex(2.0);
+$hex1 !== $hex2;  // true - different values produce different hex strings
 
-// Fractional values
-Floats::isExactInt(0.5);      // false
-Floats::isExactInt(1.1);      // false
-Floats::isExactInt(-3.14);    // false
+// Distinguishes between -0.0 and +0.0
+Floats::toHex(-0.0) !== Floats::toHex(0.0);  // true
 
-// Negative zero is exact
-Floats::isExactInt(-0.0);     // true
-
-// At the boundary (2^53 = 9,007,199,254,740,992)
-Floats::isExactInt((float)(1 << 53));   // true (exactly 2^53)
-Floats::isExactInt((float)(-(1 << 53)));  // true (exactly -2^53)
-
-// Beyond the boundary
-Floats::isExactInt((float)(1 << 54));   // false (2^54 exceeds ±2^53)
-Floats::isExactInt(1e20);               // false (too large)
-
-// Non-finite values
-Floats::isExactInt(INF);      // false
-Floats::isExactInt(-INF);     // false
-Floats::isExactInt(NAN);      // false
+// Even very close values produce different hex strings
+$a = 1.0;
+$b = 1.0 + PHP_FLOAT_EPSILON;
+Floats::toHex($a) !== Floats::toHex($b);  // true
 ```
 
-**Why ±2^53?**
+**Advantages over string conversion:**
+- **Uniqueness**: Unlike casting to string or using `sprintf()`, every distinct float value (including -0.0 vs +0.0) produces a unique hex string
+- **Consistency**: Always produces exactly 16 characters
+- **Precision**: Preserves the exact binary representation of the float
 
-IEEE-754 doubles use 52 bits for the fraction plus 1 implicit bit, giving 53 bits of precision. This means consecutive integers can be exactly represented up to 2^53. Beyond this, the gaps between representable floats become larger than 1:
+## Random Methods
+
+### rand()
 
 ```php
-// At 2^53, consecutive integers are exactly representable
-$boundary = (float)(1 << 53);  // 9007199254740992.0
-Floats::isExactInt($boundary);  // true
-
-// Beyond 2^53, gaps are > 1, so not all integers can be represented
-$beyond = (float)(1 << 54);  // 18014398509481984.0
-Floats::isExactInt($beyond);  // false (exceeds our boundary)
+public static function rand(float $min = -PHP_FLOAT_MAX, float $max = PHP_FLOAT_MAX): float
 ```
 
-**Comparison with tryConvertToInt():**
-
-Both methods check for exact integer representation, but serve different purposes:
-
-| Method | Purpose | Range | Return |
-|--------|---------|-------|--------|
-| `isExactInt()` | Check exact representation | ±2^53 (float's exact range) | `bool` |
-| `tryConvertToInt()` | Lossless conversion | ±2^63-1 (PHP int range) | `?int` |
-
-For small integers, both agree:
-
-```php
-$value = 42.0;
-Floats::isExactInt($value);  // true
-Floats::tryConvertToInt($value);  // 42 (not null)
-```
-
-**Use Cases:**
-- Validating that a float represents a whole number before operations
-- Optimizing arithmetic by detecting when float → int conversion is safe
-- Determining when to use integer math vs float math
-- Error checking in numerical algorithms
-- Calculating error bounds in error tracking systems
-
-**See Also:**
-- `tryConvertToInt()` - Convert float to int losslessly
-- `ulp()` - Calculate the spacing between adjacent floats
-
-### ulp()
-
-```php
-public static function ulp(float $value): float
-```
-
-Calculate the Unit in Last Place (ULP) - the spacing between adjacent representable floats at a given magnitude. ULP represents the gap between a float and the next representable float value.
+Generate a random float in the specified range by constructing IEEE-754 components. This method can return any representable float within the given range except -0.0, which is specifically excluded for two reasons:
+- It's usually not a wanted value.
+- To avoid a zero-equivalent value (-0.0 or +0.0) having twice the probability of being returned as any non-zero value.
 
 **Parameters:**
-- `$value` (float) - The value to calculate ULP for
+- `$min` (float) - The minimum value (inclusive, default: -PHP_FLOAT_MAX)
+- `$max` (float) - The maximum value (inclusive, default: PHP_FLOAT_MAX)
 
 **Returns:**
-- `float` - The ULP spacing. Returns `INF` for non-finite values (NAN, ±INF)
+- `float` - A random finite float in the range [min, max]
 
-**Behavior:**
-- For normalized numbers: returns `abs($value) * PHP_FLOAT_EPSILON`
-- For zero (positive or negative): returns `PHP_FLOAT_EPSILON * PHP_FLOAT_MIN`
-- Larger magnitude numbers have larger ULP values
-- Uses absolute value, so ULP is the same for positive and negative values of the same magnitude
+**Throws:**
+- `RuntimeException` - If the system is not 64-bit
+- `ValueError` - If min or max are non-finite (NAN, ±INF), or if min > max
 
 **Examples:**
 
 ```php
-// ULP of 1.0 is PHP_FLOAT_EPSILON (~2.22e-16)
-Floats::ulp(1.0);  // 2.220446049250313e-16
+// Random float across the entire finite float space
+$f = Floats::rand();
 
-// ULP scales with magnitude
-Floats::ulp(1000.0);  // 2.2204460492503131e-13 (1000x larger)
-Floats::ulp(0.001);   // 2.2204460492503131e-19 (1000x smaller)
+// Random float in a specific range
+$f = Floats::rand(0.0, 100.0);
 
-// Large values have large ULP
-Floats::ulp(1e20);  // ~22204460492503.13
+// Random float between -1 and 1
+$f = Floats::rand(-1.0, 1.0);
 
-// Zero has special handling
-Floats::ulp(0.0);   // PHP_FLOAT_EPSILON * PHP_FLOAT_MIN (~4.94e-324)
-Floats::ulp(-0.0);  // Same as positive zero
-
-// Negative values use absolute value
-Floats::ulp(-100.0) === Floats::ulp(100.0);  // true
-
-// Non-finite values
-Floats::ulp(INF);   // INF
-Floats::ulp(-INF);  // INF
-Floats::ulp(NAN);   // INF
+// When min equals max, returns that value
+$f = Floats::rand(5.0, 5.0);  // 5.0
 ```
 
-**Relationship with next():**
+**Characteristics:**
+- Can return **any representable float** in the given range
+- Will not return a special value (NAN, ±INF, or -0.0)
+- Uses IEEE-754 component assembly (sign, exponent, fraction)
+- Distribution is **not uniform** - there will be more values near zero due to IEEE-754 density
+- Handles ranges spanning zero correctly
 
-The ULP approximately equals the difference between a value and `next($value)`:
+**How it works:**
+1. Determines valid sign values based on min/max
+2. Determines valid exponent range based on min/max
+3. Generates random fraction bits
+4. Assembles components and validates result is in range and non-special
+
+**Use Cases:**
+- Fuzzing and property-based testing with full float coverage
+- Testing edge cases in floating-point algorithms
+- Generating test data that exercises the full precision of floats
+
+**See Also:**
+- `randUniform()` - For uniformly distributed random floats
+
+### randUniform()
 
 ```php
-$value = 42.0;
-$ulp = Floats::ulp($value);
-$next = Floats::next($value);
-$diff = $next - $value;  // Approximately equals $ulp
+public static function randUniform(float $min, float $max): float
 ```
 
-**Understanding ULP:**
+Generate a uniformly distributed random float in the specified range. The step size is automatically calculated using ULP to ensure that the number of values the function can return for a given range is maximized, and the probability of each possible return value is equal.
 
-ULP reveals why floating-point precision decreases at larger magnitudes:
+**Parameters:**
+- `$min` (float) - The minimum value (inclusive)
+- `$max` (float) - The maximum value (inclusive)
+
+**Returns:**
+- `float` - A random float in the range [min, max]
+
+**Throws:**
+- `ValueError` - If min or max are non-finite (NAN, ±INF), or if min > max
+- `RandomException` - If an appropriate source of randomness is unavailable
+
+**Examples:**
 
 ```php
-// Around 1.0, ULP is ~2.22e-16
-Floats::ulp(1.0);  // 2.220446049250313e-16
+// Random float between 0.0 and 1.0
+$f = Floats::randUniform(0.0, 1.0);
 
-// Around 1 trillion, ULP is ~0.00024
-Floats::ulp(1e12);  // 0.000244140625
+// Random temperature between -10°C and 40°C
+$temp = Floats::randUniform(-10.0, 40.0);
 
-// This means there's no float between 1e12 and 1e12 + 0.00024
+// When min equals max, returns that value
+$f = Floats::randUniform(5.0, 5.0);  // 5.0
+```
+
+**Characteristics:**
+- **Uniform distribution** in the numeric range
+- Uses `random_int()` internally for cryptographic randomness
+- Step size calculated using `ulp()` of the maximum magnitude
+- Avoids duplicate values by using ULP-based step calculation
+- Not all representable floats in the range are returnable, but distribution is uniform
+- Returns exactly min or max when randomly selected
+
+**How it works:**
+1. Calculates ULP at the maximum magnitude
+2. Determines number of steps: `round($range / $ulp)`
+3. Generates random integer from 0 to number of steps
+4. Interpolates: `$min + ($randomStep / $numSteps) * $range`
+
+**Use Cases:**
+- Monte Carlo simulations requiring uniform distribution
+- Generating test data within specific ranges
+- Random sampling for statistical analysis
+- Cases where uniform distribution is more important than full float coverage
+
+**Comparison with `rand()`:**
+
+| Feature      | `rand()`                          | `randUniform()`             |
+|--------------|-----------------------------------|-----------------------------|
+| Distribution | IEEE-754 density (more near zero) | Uniform                     |
+| Precision    | Any representable float           | ULP-based steps             |
+| Speed        | Slower (rejection loop)           | Faster (direct calculation) |
+| Use case     | Fuzzing, edge cases               | Statistics, simulations     |
+| Duplicates   | Possible                          | Avoided via ULP calculation |
+
+**See Also:**
+- `rand()` - For non-uniform distribution with full float coverage
+- `ulp()` - Underlying calculation for step size
+
+## Bit Operations
+
+These methods work on the IEEE-754 bit representation of a double-width (64-bit) float. They can be used to extract individual components, to construct a float from them, or find adjacent values in the float space.
+
+### floatToBits()
+
+```php
+public static function floatToBits(float $f): int
+```
+
+Converts a float to its 64-bit integer representation. This reinterprets the IEEE-754 bit pattern as an integer.
+
+**Parameters:**
+- `$f` (float) - The float to convert
+
+**Returns:**
+- `int` - The 64-bit integer represented by the same bit pattern
+
+**Throws:**
+- `RuntimeException` - If the system is not 64-bit
+
+**Examples:**
+
+```php
+// Get bit pattern of 1.0
+$bits = Floats::floatToBits(1.0);
+// $bits = 4607182418800017408 (0x3FF0000000000000)
+
+// Positive and negative zero have different bit patterns
+Floats::floatToBits(0.0);   // 0
+Floats::floatToBits(-0.0);  // -9223372036854775808 (sign bit set)
+
+// Round-trip with bitsToFloat()
+$original = 3.14159;
+$bits = Floats::floatToBits($original);
+$restored = Floats::bitsToFloat($bits);
+$original === $restored;  // true
 ```
 
 **Use Cases:**
-- Understanding floating-point precision limits
-- Implementing numerical algorithms with appropriate tolerances
-- Calculating rounding error bounds in error analysis
-- Testing floating-point code with appropriate epsilons
-- Debugging precision issues in calculations
-- Used by `randUniform()` to calculate optimal step size
+- Low-level float manipulation
+- Extracting individual IEEE-754 components (sign, exponent, fraction)
+- Implementing `next()` and `previous()` methods
+- Understanding IEEE-754 representation
+- Custom serialization of floats
 
 **See Also:**
-- `isExactInt()` - Check if a float represents an exact integer
-- `next()` - Get the next representable float
-- `previous()` - Get the previous representable float
-- `randUniform()` - Uses ULP for collision-free random generation
+- `bitsToFloat()` - Convert bits back to float
+- `disassemble()` - Extract individual IEEE-754 components
+
+### bitsToFloat()
+
+```php
+public static function bitsToFloat(int $bits): float
+```
+
+Converts a 64-bit integer to a float by reinterpreting its bit pattern. This is different from casting an integer to a float, which preserves the numeric value rather than the bit representation.
+
+**Parameters:**
+- `$bits` (int) - The 64-bit integer representing the desired bit pattern
+
+**Returns:**
+- `float` - The float with the specified bit pattern
+
+**Throws:**
+- `RuntimeException` - If the system is not 64-bit
+
+**Note:** The IEEE 754 standard supports 2<sup>53</sup> - 2 distinct bit patterns that represent NAN values. While this method can construct floats from any of these bit patterns, PHP normalizes all NAN values to a canonical representation (0x7ff8000000000000) in subsequent operations.
+
+**Examples:**
+
+```php
+// Construct 1.0 from its bit pattern
+$f = Floats::bitsToFloat(0x3FF0000000000000);  // 1.0
+
+// Construct negative zero
+$f = Floats::bitsToFloat(0x8000000000000000);  // -0.0
+
+// Round-trip with floatToBits()
+$original = -273.15;
+$bits = Floats::floatToBits($original);
+$restored = Floats::bitsToFloat($bits);
+$original === $restored;  // true
+```
+
+**Use Cases:**
+- Constructing specific float values for testing
+- Implementing `next()` and `previous()` methods
+- Low-level IEEE-754 manipulation
+
+**See Also:**
+- `floatToBits()` - Convert float to bits
+- `assemble()` - Construct float from IEEE-754 components
+
+### disassemble()
+
+```php
+public static function disassemble(float $f): array
+```
+
+Disassemble a float into its IEEE-754 double-precision components.
+
+**Parameters:**
+- `$f` (float) - The float to disassemble
+
+**Returns:**
+- An associative array containing:
+    - `bits` (int): Complete 64-bit representation
+    - `sign` (int): 0 for positive, 1 for negative
+    - `exponent` (int): 11-bit biased exponent (0-2047, bias is 1023)
+    - `fraction` (int): 52-bit fraction/mantissa
+
+**Throws:**
+- `RuntimeException` - If the system is not 64-bit
+
+**Examples:**
+
+```php
+// Disassemble 1.0
+$parts = Floats::disassemble(1.0);
+// $parts = ['bits' => ..., 'sign' => 0, 'exponent' => 1023, 'fraction' => 0]
+
+// Disassemble -1.0
+$parts = Floats::disassemble(-1.0);
+// $parts = ['bits' => ..., 'sign' => 1, 'exponent' => 1023, 'fraction' => 0]
+
+// Disassemble 1.5 (binary: 1.1)
+$parts = Floats::disassemble(1.5);
+// $parts = ['bits' => ..., 'sign' => 0, 'exponent' => 1023, 'fraction' => 2251799813685248] (2^51)
+
+// Positive and negative zero have different representations
+$pos = Floats::disassemble(0.0);   // sign = 0, exponent = 0, fraction = 0
+$neg = Floats::disassemble(-0.0);  // sign = 1, exponent = 0, fraction = 0
+
+// Infinity has exponent 2047 and fraction 0
+$inf = Floats::disassemble(INF);   // sign = 0, exponent = 2047, fraction = 0
+
+// NAN has exponent 2047 and non-zero fraction
+$nan = Floats::disassemble(NAN);   // sign = ?, exponent = 2047, fraction > 0
+```
+
+**Use Cases:**
+- Understanding IEEE-754 representation
+- Debugging floating-point issues
+- Implementing custom float manipulation algorithms
+- Educational purposes
+
+### assemble()
+
+```php
+public static function assemble(int $sign, int $exponent, int $fraction): float
+```
+
+Assemble a float from its IEEE-754 double-precision components.
+
+**Parameters:**
+- `$sign` (int) - The sign bit (0 = positive, 1 = negative)
+- `$exponent` (int) - The 11-bit biased exponent (0-2047)
+- `$fraction` (int) - The 52-bit fraction/mantissa (0 to 2^52 - 1)
+
+**Returns:**
+- `float` - The assembled float
+
+**Throws:**
+- `RuntimeException` - If the system is not 64-bit
+- `ValueError` - If sign is not 0 or 1
+- `ValueError` - If exponent is not in range [0, 2047]
+- `ValueError` - If fraction is not in range [0, 2^52 - 1]
+
+**Examples:**
+
+```php
+// Assemble 1.0
+$f = Floats::assemble(0, 1023, 0);  // 1.0
+
+// Assemble -1.0
+$f = Floats::assemble(1, 1023, 0);  // -1.0
+
+// Assemble 2.0 (exponent = 1024 = 1023 + 1)
+$f = Floats::assemble(0, 1024, 0);  // 2.0
+
+// Assemble 1.5
+$f = Floats::assemble(0, 1023, 1 << 51);  // 1.5
+
+// Assemble positive and negative zero
+$posZero = Floats::assemble(0, 0, 0);  // 0.0
+$negZero = Floats::assemble(1, 0, 0);  // -0.0
+
+// Assemble infinity
+$inf = Floats::assemble(0, 2047, 0);  // INF
+
+// Assemble NAN (exponent 2047 with non-zero fraction)
+$nan = Floats::assemble(0, 2047, 1);  // NAN
+```
+
+**Round-trip with disassemble():**
+
+```php
+$original = 42.5;
+$parts = Floats::disassemble($original);
+$reassembled = Floats::assemble($parts['sign'], $parts['exponent'], $parts['fraction']);
+$original === $reassembled;  // true
+```
+
+**Use Cases:**
+- Creating specific float bit patterns for testing
+- Implementing custom random float generators
+- Low-level float manipulation
 
 ### next()
 
@@ -805,241 +1060,92 @@ Floats::previous(Floats::next($f)) === $f;  // true
 - Generating test cases for numerical code
 - Exploring floating-point precision limits
 
-### disassemble()
+### ulp()
 
 ```php
-public static function disassemble(float $f): array
+public static function ulp(float $value): float
 ```
 
-Disassemble a float into its IEEE-754 double-precision components.
+Calculate the Unit in Last Place (ULP) - the spacing between adjacent representable floats at a given magnitude. ULP represents the gap between a float and the next representable float value.
 
 **Parameters:**
-- `$f` (float) - The float to disassemble
+- `$value` (float) - The value to calculate ULP for
 
 **Returns:**
-- `array{bits: int, sign: int, exponent: int, fraction: int}` - An associative array containing:
-  - `bits` (int): Complete 64-bit representation
-  - `sign` (int): 0 for positive, 1 for negative
-  - `exponent` (int): 11-bit biased exponent (0-2047, bias is 1023)
-  - `fraction` (int): 52-bit fraction/mantissa
+- `float` - The ULP spacing. Returns `INF` for non-finite values (NAN, ±INF)
 
-**Throws:**
-- `RuntimeException` - If the system is not 64-bit
+**Behavior:**
+- For normalized numbers: returns `abs($value) * PHP_FLOAT_EPSILON`
+- For zero (positive or negative): returns `PHP_FLOAT_EPSILON * PHP_FLOAT_MIN`
+- Larger magnitude numbers have larger ULP values
+- Uses absolute value, so ULP is the same for positive and negative values of the same magnitude
 
 **Examples:**
 
 ```php
-// Disassemble 1.0
-$parts = Floats::disassemble(1.0);
-// $parts = ['bits' => ..., 'sign' => 0, 'exponent' => 1023, 'fraction' => 0]
+// ULP of 1.0 is PHP_FLOAT_EPSILON (~2.22e-16)
+Floats::ulp(1.0);  // 2.220446049250313e-16
 
-// Disassemble -1.0
-$parts = Floats::disassemble(-1.0);
-// $parts = ['bits' => ..., 'sign' => 1, 'exponent' => 1023, 'fraction' => 0]
+// ULP scales with magnitude
+Floats::ulp(1000.0);  // 2.2204460492503131e-13 (1000x larger)
+Floats::ulp(0.001);   // 2.2204460492503131e-19 (1000x smaller)
 
-// Disassemble 1.5 (binary: 1.1)
-$parts = Floats::disassemble(1.5);
-// $parts = ['bits' => ..., 'sign' => 0, 'exponent' => 1023, 'fraction' => 2251799813685248] (2^51)
+// Large values have large ULP
+Floats::ulp(1e20);  // ~22204460492503.13
 
-// Positive and negative zero have different representations
-$pos = Floats::disassemble(0.0);   // sign = 0, exponent = 0, fraction = 0
-$neg = Floats::disassemble(-0.0);  // sign = 1, exponent = 0, fraction = 0
+// Zero has special handling
+Floats::ulp(0.0);   // PHP_FLOAT_EPSILON * PHP_FLOAT_MIN (~4.94e-324)
+Floats::ulp(-0.0);  // Same as positive zero
 
-// Infinity has exponent 2047 and fraction 0
-$inf = Floats::disassemble(INF);   // sign = 0, exponent = 2047, fraction = 0
+// Negative values use absolute value
+Floats::ulp(-100.0) === Floats::ulp(100.0);  // true
 
-// NAN has exponent 2047 and non-zero fraction
-$nan = Floats::disassemble(NAN);   // sign = ?, exponent = 2047, fraction > 0
+// Non-finite values
+Floats::ulp(INF);   // INF
+Floats::ulp(-INF);  // INF
+Floats::ulp(NAN);   // INF
+```
+
+**Relationship with next():**
+
+The ULP approximately equals the difference between a value and `next($value)`:
+
+```php
+$value = 42.0;
+$ulp = Floats::ulp($value);
+$next = Floats::next($value);
+$diff = $next - $value;  // Approximately equals $ulp
+```
+
+**Understanding ULP:**
+
+ULP reveals why floating-point precision decreases at larger magnitudes:
+
+```php
+// Around 1.0, ULP is ~2.22e-16
+Floats::ulp(1.0);  // 2.220446049250313e-16
+
+// Around 1 trillion, ULP is ~0.00024
+Floats::ulp(1e12);  // 0.000244140625
+
+// This means there's no float between 1e12 and 1e12 + 0.00024
 ```
 
 **Use Cases:**
-- Understanding IEEE-754 representation
-- Debugging floating-point issues
-- Implementing custom float manipulation algorithms
-- Educational purposes
-
-### assemble()
-
-```php
-public static function assemble(int $sign, int $exponent, int $fraction): float
-```
-
-Assemble a float from its IEEE-754 double-precision components.
-
-**Parameters:**
-- `$sign` (int) - The sign bit (0 = positive, 1 = negative)
-- `$exponent` (int) - The 11-bit biased exponent (0-2047)
-- `$fraction` (int) - The 52-bit fraction/mantissa (0 to 2^52 - 1)
-
-**Returns:**
-- `float` - The assembled float
-
-**Throws:**
-- `RuntimeException` - If the system is not 64-bit
-- `ValueError` - If sign is not 0 or 1
-- `ValueError` - If exponent is not in range [0, 2047]
-- `ValueError` - If fraction is not in range [0, 2^52 - 1]
-
-**Examples:**
-
-```php
-// Assemble 1.0
-$f = Floats::assemble(0, 1023, 0);  // 1.0
-
-// Assemble -1.0
-$f = Floats::assemble(1, 1023, 0);  // -1.0
-
-// Assemble 2.0 (exponent = 1024 = 1023 + 1)
-$f = Floats::assemble(0, 1024, 0);  // 2.0
-
-// Assemble 1.5
-$f = Floats::assemble(0, 1023, 1 << 51);  // 1.5
-
-// Assemble positive and negative zero
-$posZero = Floats::assemble(0, 0, 0);  // 0.0
-$negZero = Floats::assemble(1, 0, 0);  // -0.0
-
-// Assemble infinity
-$inf = Floats::assemble(0, 2047, 0);  // INF
-
-// Assemble NAN (exponent 2047 with non-zero fraction)
-$nan = Floats::assemble(0, 2047, 1);  // NAN
-```
-
-**Round-trip with disassemble():**
-
-```php
-$original = 42.5;
-$parts = Floats::disassemble($original);
-$reassembled = Floats::assemble($parts['sign'], $parts['exponent'], $parts['fraction']);
-$original === $reassembled;  // true
-```
-
-**Use Cases:**
-- Creating specific float bit patterns for testing
-- Implementing custom random float generators
-- Low-level float manipulation
-- Educational purposes
-
-### rand()
-
-```php
-public static function rand(float $min = -PHP_FLOAT_MAX, float $max = PHP_FLOAT_MAX): float
-```
-
-Generate a random float in the specified range by constructing IEEE-754 components. This method can return any representable float within the given range except -0.0.
-
-**Parameters:**
-- `$min` (float) - The minimum value (inclusive, default: -PHP_FLOAT_MAX)
-- `$max` (float) - The maximum value (inclusive, default: PHP_FLOAT_MAX)
-
-**Returns:**
-- `float` - A random finite float in the range [min, max]
-
-**Throws:**
-- `RuntimeException` - If the system is not 64-bit
-- `ValueError` - If min or max are non-finite (NAN, ±INF), or if min > max
-
-**Examples:**
-
-```php
-// Random float across the entire finite float space
-$f = Floats::rand();
-
-// Random float in a specific range
-$f = Floats::rand(0.0, 100.0);
-
-// Random float between -1 and 1
-$f = Floats::rand(-1.0, 1.0);
-
-// When min equals max, returns that value
-$f = Floats::rand(5.0, 5.0);  // 5.0
-```
-
-**Characteristics:**
-- Can return **any representable float** in the given range
-- Will not return a special value (NAN, ±INF, or -0.0)
-- Uses IEEE-754 component assembly (sign, exponent, fraction)
-- Distribution is **not uniform** - more values near zero due to IEEE-754 density
-- Handles ranges spanning zero correctly
-- Optimized for narrow ranges with same sign and exponent
-
-**How it works:**
-1. Determines valid sign values based on min/max
-2. Determines valid exponent range based on min/max
-3. Generates random fraction bits
-4. Assembles components and validates result is in range
-
-**Use Cases:**
-- Fuzzing and property-based testing with full float coverage
-- Testing edge cases in floating-point algorithms
-- Generating test data that exercises the full precision of floats
+- Understanding floating-point precision limits
+- Implementing numerical algorithms with appropriate tolerances
+- Calculating rounding error bounds in error analysis
+- Testing floating-point code with appropriate epsilons
+- Debugging precision issues in calculations
+- Used by `randUniform()` to calculate optimal step size
 
 **See Also:**
-- `randUniform()` - For uniformly distributed random floats
+- `isExactInt()` - Check if a float represents an exact integer
+- `next()` - Get the next representable float
+- `previous()` - Get the previous representable float
+- `randUniform()` - Uses ULP for collision-free random generation
 
-### randUniform()
+## See Also
 
-```php
-public static function randUniform(float $min, float $max): float
-```
-
-Generate a uniformly distributed random float in the specified range. The step size is automatically calculated using ULP to ensure that the number of values the function can return for a given range is maximized, and the probability of each being returned is equal.
-
-**Parameters:**
-- `$min` (float) - The minimum value (inclusive)
-- `$max` (float) - The maximum value (inclusive)
-
-**Returns:**
-- `float` - A random float in the range [min, max]
-
-**Throws:**
-- `ValueError` - If min or max are non-finite (NAN, ±INF), or if min > max
-- `RandomException` - If an appropriate source of randomness is unavailable
-
-**Examples:**
-
-```php
-// Random float between 0.0 and 1.0
-$f = Floats::randUniform(0.0, 1.0);
-
-// Random temperature between -10°C and 40°C
-$temp = Floats::randUniform(-10.0, 40.0);
-
-// When min equals max, returns that value
-$f = Floats::randUniform(5.0, 5.0);  // 5.0
-```
-
-**Characteristics:**
-- **Uniform distribution** in the numeric range
-- Uses `random_int()` internally for cryptographic randomness
-- Step size calculated using `ulp()` of the maximum magnitude
-- Avoids duplicate values by using ULP-based step calculation
-- Not all representable floats in the range are returnable, but distribution is uniform
-- Returns exactly min or max when randomly selected
-
-**How it works:**
-1. Calculates ULP at the maximum magnitude
-2. Determines number of steps: `round($range / $ulp)`
-3. Generates random integer from 0 to number of steps
-4. Interpolates: `$min + ($randomStep / $numSteps) * $range`
-
-**Use Cases:**
-- Monte Carlo simulations requiring uniform distribution
-- Generating test data within specific ranges
-- Random sampling for statistical analysis
-- Cases where uniform distribution is more important than full float coverage
-
-**Comparison with `rand()`:**
-
-| Feature | `rand()` | `randUniform()` |
-|---------|----------|-----------------|
-| Distribution | IEEE-754 density (more near zero) | Uniform |
-| Precision | Any representable float | ULP-based steps |
-| Speed | Slower (rejection loop) | Faster (direct calculation) |
-| Use case | Fuzzing, edge cases | Statistics, simulations |
-| Duplicates | Possible | Avoided via ULP calculation |
-
-**See Also:**
-- `rand()` - For non-uniform distribution with full float coverage
-- `ulp()` - Underlying calculation for step size
+- **[Integers](Integers.md)** - Integer utility methods
+- **[Numbers](Numbers.md)** - General number utilities

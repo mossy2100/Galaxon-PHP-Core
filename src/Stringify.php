@@ -21,6 +21,8 @@ use ValueError;
  */
 final class Stringify
 {
+    // region Constructor
+
     /**
      * Private constructor to prevent instantiation.
      *
@@ -29,6 +31,10 @@ final class Stringify
     private function __construct()
     {
     }
+
+    // endregion
+
+    // region Formatting methods
 
     /**
      * Convert a value to a readable string representation.
@@ -90,11 +96,13 @@ final class Stringify
 
         // Convert the float to a string, showing maximum useful precision.
         $s = sprintf('%.16H', $value);
+
         // If the string representation of the float value has no decimal point or exponent (i.e. nothing to distinguish
         // it from an integer), append a decimal point.
         if (!preg_match('/[.eE]/', $s)) {
             $s .= '.0';
         }
+
         return $s;
     }
 
@@ -201,7 +209,6 @@ final class Stringify
         }
 
         // Convert the object to an array to get its properties.
-        // This works better than reflection, as new properties can be created when converting the object to an array.
         $a = (array)$obj;
 
         // Early return if no properties.
@@ -265,4 +272,6 @@ final class Stringify
 
         return $result;
     }
+
+    // endregion
 }

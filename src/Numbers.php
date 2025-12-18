@@ -68,13 +68,11 @@ final class Numbers
 
         // If $a is an int and $b is a float, check if $b can be losslessly converted to an equal integer.
         if (is_int($a)) {
-            $ib = Floats::tryConvertToInt($b);
-            return $a === $ib;
+            return $a === Floats::tryConvertToInt($b);
         }
 
         // If $a is a float and $b is an int, check if $a can be losslessly converted to an equal integer.
-        $ia = Floats::tryConvertToInt($a);
-        return $b === $ia;
+        return $b === Floats::tryConvertToInt($a);
     }
 
     // endregion

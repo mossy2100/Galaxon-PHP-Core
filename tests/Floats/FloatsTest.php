@@ -264,6 +264,27 @@ final class FloatsTest extends TestCase
     }
 
     /**
+     * Test toHex with specific expected hex values for special floats.
+     */
+    public function testToHexSpecialValues(): void
+    {
+        // Positive zero: all bits are 0.
+        $this->assertSame('0000000000000000', Floats::toHex(0.0));
+
+        // Negative zero: sign bit is 1, all other bits are 0.
+        $this->assertSame('8000000000000000', Floats::toHex(-0.0));
+
+        // Positive infinity: sign=0, exponent=2047 (all 1s), fraction=0.
+        $this->assertSame('7ff0000000000000', Floats::toHex(INF));
+
+        // Negative infinity: sign=1, exponent=2047 (all 1s), fraction=0.
+        $this->assertSame('fff0000000000000', Floats::toHex(-INF));
+
+        // NAN: PHP's canonical NAN representation.
+        $this->assertSame('7ff8000000000000', Floats::toHex(NAN));
+    }
+
+    /**
      * Test tryConvertToInt with floats that equal whole numbers.
      */
     public function testTryConvertToIntWithWholeNumbers(): void

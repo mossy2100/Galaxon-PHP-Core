@@ -7,13 +7,57 @@ namespace Galaxon\Core;
 use ArgumentCountError;
 use OverflowException;
 use RangeException;
-use ValueError;
+use UnderflowException;
 
 /**
  * Container for useful integer-related methods.
  */
 final class Integers
 {
+    // region Constants
+
+    /**
+     * Unicode subscript characters for digits and minus sign.
+     *
+     * @var array<non-numeric-string, string>
+     */
+    public const array SUBSCRIPT_CHARACTERS = [
+        '-' => "\u{208b}",
+        '0' => "\u{2080}",
+        '1' => "\u{2081}",
+        '2' => "\u{2082}",
+        '3' => "\u{2083}",
+        '4' => "\u{2084}",
+        '5' => "\u{2085}",
+        '6' => "\u{2086}",
+        '7' => "\u{2087}",
+        '8' => "\u{2088}",
+        '9' => "\u{2089}",
+    ];
+
+    /**
+     * Unicode superscript characters for digits and minus sign.
+     *
+     * @var array<non-numeric-string, string>
+     */
+    public const array SUPERSCRIPT_CHARACTERS = [
+        '-' => "\u{207b}",
+        '0' => "\u{2070}",
+        '1' => "\u{00b9}",
+        '2' => "\u{00b2}",
+        '3' => "\u{00b3}",
+        '4' => "\u{2074}",
+        '5' => "\u{2075}",
+        '6' => "\u{2076}",
+        '7' => "\u{2077}",
+        '8' => "\u{2078}",
+        '9' => "\u{2079}",
+    ];
+
+    // endregion
+
+    // region Constructor
+
     /**
      * Private constructor to prevent instantiation.
      *
@@ -22,6 +66,10 @@ final class Integers
     private function __construct()
     {
     }
+
+    // endregion
+
+    // region Arithmetic methods
 
     /**
      * Add two integers with overflow check.
@@ -96,19 +144,24 @@ final class Integers
     }
 
     /**
-     * Raise one integer to the power of another with an overflow check.
+     * Raise one integer to the power, to either produce an integer result or throw an exception.
+     *
+     * There are two possible reasons why the method could throw, i.e. the result is a float rather than an int:
+     * - The exponent is negative, which produces a float result in all cases (including 1^-1 or -1^-1).
+     * - The result of the operation is too large to be represented as an integer.
      *
      * @param int $a The base.
      * @param int $b The exponent (must be non-negative).
-     * @return int The result of raising a to the power of b.
-     * @throws ValueError If $b is negative.
-     * @throws OverflowException If the exponentiation results in overflow.
+     * @return int The result of raising $a to the power of $b.
+     * @throws UnderflowException If the exponent is negative.
+     * @throws OverflowException If the result is too large to be represented as an integer.
      */
     public static function pow(int $a, int $b): int
     {
-        // Handle b < 0.
+        // If the exponent is negative, throw an exception.
+        // We know the result will be a float, so there's no need to do the operation.
         if ($b < 0) {
-            throw new ValueError('Negative exponents are not supported.');
+            throw new UnderflowException('Underflow in exponentiation.');
         }
 
         // Do the exponentiation.
@@ -122,6 +175,10 @@ final class Integers
         // Return the result.
         return $c;
     }
+
+    // endregion
+
+    // region Number theory methods
 
     /**
      * Calculate the greatest common divisor of two or more integers.
@@ -168,4 +225,44 @@ final class Integers
 
         return $result;
     }
+
+    // endregion
+
+    // region Conversion methods
+
+    /**
+     * Convert an integer to Unicode subscript characters.
+     *
+     * @param int $n The integer to convert.
+     * @return string The integer as subscript characters (e.g., 123 → ₁₂₃).
+     */
+    public static function toSubscript(int $n): string
+    {
+        $s = (string)$n;
+        $len = strlen($s);
+        $result = '';
+        for ($i = 0; $i < $len; $i++) {
+            $result .= self::SUBSCRIPT_CHARACTERS[$s[$i]];
+        }
+        return $result;
+    }
+
+    /**
+     * Convert an integer to Unicode superscript characters.
+     *
+     * @param int $n The integer to convert.
+     * @return string The integer as superscript characters (e.g., 123 → ¹²³).
+     */
+    public static function toSuperscript(int $n): string
+    {
+        $s = (string)$n;
+        $len = strlen($s);
+        $result = '';
+        for ($i = 0; $i < $len; $i++) {
+            $result .= self::SUPERSCRIPT_CHARACTERS[$s[$i]];
+        }
+        return $result;
+    }
+
+    // endregion
 }

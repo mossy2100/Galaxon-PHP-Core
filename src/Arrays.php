@@ -12,6 +12,8 @@ use TypeError;
  */
 final class Arrays
 {
+    // region Constructor
+
     /**
      * Private constructor to prevent instantiation.
      *
@@ -20,6 +22,10 @@ final class Arrays
     private function __construct()
     {
     }
+
+    // endregion
+
+    // region Inspection methods
 
     /**
      * Checks if an array contains recursion.
@@ -40,11 +46,16 @@ final class Arrays
         return false;
     }
 
+    // endregion
+
+    // region Transformation methods
+
     /**
      * Wrap each string value in the array with quotes.
      *
      * Useful for formatting lists in error messages or output.
      * Does not perform escaping - values containing quotes will not be escaped.
+     * Array keys are preserved.
      *
      * @param array<string> $arr Array of strings to quote.
      * @param bool $doubleQuotes Use double quotes instead of single quotes.
@@ -54,15 +65,20 @@ final class Arrays
     public static function quoteValues(array $arr, bool $doubleQuotes = false): array
     {
         $quoteChar = $doubleQuotes ? '"' : "'";
-        return array_map(static function ($value) use ($quoteChar) {
+
+        $quoteFn = static function ($value) use ($quoteChar) {
             // Type check.
-            // @phpstan-ignore function.alreadyNarrowedType
             if (!is_string($value)) {
                 throw new TypeError('The array values must be strings.');
             }
 
             // Wrap the value in quotes.
             return $quoteChar . $value . $quoteChar;
-        }, $arr);
+        };
+
+        // Apply the quotes. array_map() preserves the array keys.
+        return array_map($quoteFn, $arr);
     }
+
+    // endregion
 }
