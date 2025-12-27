@@ -261,7 +261,7 @@ See [Traits.md](Traits.md) for complete hierarchy and usage guide.
 
 ## Classes Using Comparable
 
-- `Galaxon\Units\Measurement` - Physical measurements with unit-aware ordering.
+- `Galaxon\Quantities\Quantity` - Physical quantities with unit-aware ordering.
 
 ## Best Practices
 

@@ -11,7 +11,7 @@ use Galaxon\Core\Floats;
  *
  * This trait extends Equatable by adding an approxEqual() method that allows comparison within specified absolute
  * and relative tolerances. This is essential for value types that contain floating-point components (like Complex
- * numbers or Measurements), where exact equality comparison may fail due to floating-point precision limitations.
+ * numbers or Quantities), where exact equality comparison may fail due to floating-point precision limitations.
  *
  * The trait uses Equatable via composition, so classes using ApproxEquatable get both exact equality (equal()) and
  * approximate equality (approxEqual()) methods.

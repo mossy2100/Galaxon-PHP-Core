@@ -11,7 +11,7 @@ use TypeError;
  * Trait providing complete comparison operations with both exact and approximate equality.
  *
  * This trait combines Comparable and ApproxEquatable to provide a comprehensive comparison API for numeric value
- * types that contain floating-point components. It's ideal for types like Rational, Measurement, or other numeric
+ * types that contain floating-point components. It's ideal for types like Rational, Quantity, or other numeric
  * types where both exact ordering and tolerance-based comparison are needed.
  *
  * Classes using this trait get:

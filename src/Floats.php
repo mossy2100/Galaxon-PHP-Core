@@ -257,6 +257,53 @@ final class Floats
         return self::isNegativeZero($value) ? 0.0 : $value;
     }
 
+    /**
+     * Wrap a value (typically an angle) to a standard range.
+     *
+     * The range of values varies depending on the $unitsPerTurn parameter *and* the $signed flag.
+     *
+     * 1. If $signed is true (default), the range is (-$unitsPerTurn/2, $unitsPerTurn/2]
+     * This means the minimum value is *excluded* in the range, while the maximum value is *included*.
+     * For radians, this is (-π, π]
+     * For degrees, this is (-180, 180]
+     *
+     * 2. If $signed is false, the range is [0, $unitsPerTurn)
+     * This means the minimum value is *included* in the range, while the maximum value is *excluded*.
+     * For radians, this is [0, τ)
+     * For degrees, this is [0, 360)
+     *
+     * @param float $value The value to wrap.
+     * @param float $unitsPerTurn The number of units per full rotation (default TAU).
+     * @param bool $signed If true (default), wrap to the signed range; otherwise wrap to the unsigned range.
+     * @return float The wrapped value.
+     */
+    public static function wrap(float $value, float $unitsPerTurn = self::TAU, bool $signed = true): float
+    {
+        // Reduce using fmod to avoid large magnitudes.
+        // $r will be in the range [0, $unitsPerTurn) if $value is positive, or (-$unitsPerTurn, 0] if negative.
+        $r = fmod($value, $unitsPerTurn);
+
+        // Adjust to fit within range bounds.
+        // The value may be outside the range due to the sign of $value or the value of $signed.
+        if ($signed) {
+            // Signed range is (-$half, $half]
+            $half = $unitsPerTurn / 2.0;
+            if ($r <= -$half) {
+                $r += $unitsPerTurn;
+            } elseif ($r > $half) {
+                $r -= $unitsPerTurn;
+            }
+        } else {
+            // Unsigned range is [0, $unitsPerTurn)
+            if ($r < 0.0) {
+                $r += $unitsPerTurn;
+            }
+        }
+
+        // Canonicalize -0.0 to 0.0.
+        return self::normalizeZero($r);
+    }
+
     // endregion
 
     // region Conversion methods
