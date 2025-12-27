@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2025-12-27
+
+### Added
+
+- **Environment class** - New utility class for runtime environment detection
+  - `is64Bit()` - Check if the system is 64-bit
+  - `require64Bit()` - Throw `RuntimeException` if not 64-bit (used by Floats bit operations)
+
+- **Integers formatting methods** - Convert integers to Unicode sub/superscript
+  - `SUBSCRIPT_CHARACTERS` constant - Unicode subscript character mappings
+  - `SUPERSCRIPT_CHARACTERS` constant - Unicode superscript character mappings
+  - `toSubscript()` - Convert integer to subscript characters (e.g., 123 → ₁₂₃)
+  - `toSuperscript()` - Convert integer to superscript characters (e.g., 123 → ¹²³)
+
+### Changed
+
+- **Floats::ulp()** - Now uses `next()` for exact ULP calculation instead of approximation
+- **Integers::pow()** - Now throws `UnderflowException` instead of `ValueError` for negative exponents
+- **Floats class** - Reorganized with region markers for better code navigation
+
+### Tests
+
+- **Floats::wrap() tests** - Expanded from 1 test with 4 assertions to 9 tests with 57 assertions
+  - Added tests for degrees (360) with signed and unsigned ranges
+  - Added boundary condition tests (included/excluded bounds)
+  - Added tests for radians (default), gradians, turns, and hours
+  - Fixed deprecated `assertEquals` with delta to use `assertEqualsWithDelta`
+
+### Documentation
+
+- **New documentation**: `docs/Environment.md`
+- **Floats.md** - Comprehensive rewrite of `wrap()` documentation
+  - Added Returns, Behavior, and Use Cases sections
+  - Added examples with degrees, radians, gradians, turns, and hours
+  - Added table explaining boundary inclusion/exclusion rules
+- **Integers.md** - Added documentation for formatting methods
+- **Various docs** - Minor updates to Numbers.md, Stringify.md, Types.md, and trait documentation
+
 ## [0.5.0] - 2025-12-10
 
 ### Breaking Changes
@@ -87,7 +125,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Floats constants**
   - `DEFAULT_RELATIVE_TOLERANCE` (1e-9) - Default relative tolerance for `approxEqual()`
   - `DEFAULT_ABSOLUTE_TOLERANCE` (PHP_FLOAT_EPSILON) - Default absolute tolerance
-  - `MAX_EXACT_INT` (2^53) - Maximum integer exactly representable as float
+  - `MAX_EXACT_INT` (2⁵³) - Maximum integer exactly representable as float
 
 - **Types::same()** - Check if two values have the same type using `get_debug_type()`
 
@@ -152,7 +190,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Moved from `NumberWithError` in Units package to provide general-purpose float utility
 
 - **Floats::isExactInt()** - Check if a float represents an exact integer without rounding error
-  - Validates integers are within IEEE-754 double's exact integer range (±2^53)
+  - Validates integers are within IEEE-754 double's exact integer range (±2⁵³)
   - Returns `true` for whole numbers that can be exactly represented as floats
   - Moved from `NumberWithError::isExactFloat()` in Units package with improved naming
 
@@ -167,7 +205,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added 18 comprehensive tests for Floats precision methods:
   - `ulp()` tests: standard values, zero handling, negative values, large/small magnitudes, non-finite values, relationship with `next()`
-  - `isExactInt()` tests: whole numbers, fractional values, boundary cases (±2^53), non-finite values, comparison with `tryConvertToInt()`
+  - `isExactInt()` tests: whole numbers, fractional values, boundary cases (±2⁵³), non-finite values, comparison with `tryConvertToInt()`
 
 ### Documentation
 

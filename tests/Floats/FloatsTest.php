@@ -233,6 +233,157 @@ final class FloatsTest extends TestCase
     }
 
     /**
+     * Test wrap() with values already within the signed range.
+     */
+    public function testWrapSignedValuesInRange(): void
+    {
+        // Values already in (-180, 180] should remain unchanged.
+        $this->assertSame(0.0, Floats::wrap(0.0, 360.0));
+        $this->assertSame(45.0, Floats::wrap(45.0, 360.0));
+        $this->assertSame(-45.0, Floats::wrap(-45.0, 360.0));
+        $this->assertSame(179.0, Floats::wrap(179.0, 360.0));
+        $this->assertSame(-179.0, Floats::wrap(-179.0, 360.0));
+    }
+
+    /**
+     * Test wrap() with values already within the unsigned range.
+     */
+    public function testWrapUnsignedValuesInRange(): void
+    {
+        // Values already in [0, 360) should remain unchanged.
+        $this->assertSame(0.0, Floats::wrap(0.0, 360.0, signed: false));
+        $this->assertSame(45.0, Floats::wrap(45.0, 360.0, signed: false));
+        $this->assertSame(270.0, Floats::wrap(270.0, 360.0, signed: false));
+        $this->assertSame(359.0, Floats::wrap(359.0, 360.0, signed: false));
+    }
+
+    /**
+     * Test wrap() signed boundary conditions.
+     * Signed range is (-180, 180] so -180 is excluded and 180 is included.
+     */
+    public function testWrapSignedBoundaries(): void
+    {
+        // 180 is included in the signed range.
+        $this->assertSame(180.0, Floats::wrap(180.0, 360.0));
+
+        // -180 is excluded, should wrap to 180.
+        $this->assertSame(180.0, Floats::wrap(-180.0, 360.0));
+
+        // Values just inside the boundaries.
+        $this->assertSame(179.9, Floats::wrap(179.9, 360.0));
+        $this->assertSame(-179.9, Floats::wrap(-179.9, 360.0));
+    }
+
+    /**
+     * Test wrap() unsigned boundary conditions.
+     * Unsigned range is [0, 360) so 0 is included and 360 is excluded.
+     */
+    public function testWrapUnsignedBoundaries(): void
+    {
+        // 0 is included in the unsigned range.
+        $this->assertSame(0.0, Floats::wrap(0.0, 360.0, signed: false));
+
+        // 360 is excluded, should wrap to 0.
+        $this->assertSame(0.0, Floats::wrap(360.0, 360.0, signed: false));
+
+        // Values just inside the boundaries.
+        $this->assertSame(0.1, Floats::wrap(0.1, 360.0, signed: false));
+        $this->assertSame(359.9, Floats::wrap(359.9, 360.0, signed: false));
+    }
+
+    /**
+     * Test wrap() with values requiring positive wrapping (signed).
+     */
+    public function testWrapSignedPositiveValues(): void
+    {
+        // Values > 180 should wrap into the negative range.
+        $this->assertSame(-90.0, Floats::wrap(270.0, 360.0));
+        $this->assertSame(0.0, Floats::wrap(360.0, 360.0));
+        $this->assertSame(90.0, Floats::wrap(450.0, 360.0));
+        $this->assertSame(180.0, Floats::wrap(540.0, 360.0));
+
+        // Multiple full rotations.
+        $this->assertSame(90.0, Floats::wrap(810.0, 360.0)); // 2*360 + 90
+    }
+
+    /**
+     * Test wrap() with values requiring negative wrapping (signed).
+     */
+    public function testWrapSignedNegativeValues(): void
+    {
+        // Values < -180 should wrap into the positive range.
+        $this->assertSame(90.0, Floats::wrap(-270.0, 360.0));
+        $this->assertSame(0.0, Floats::wrap(-360.0, 360.0));
+        $this->assertSame(-90.0, Floats::wrap(-450.0, 360.0));
+        $this->assertSame(180.0, Floats::wrap(-540.0, 360.0));
+
+        // Multiple full rotations.
+        $this->assertSame(-90.0, Floats::wrap(-810.0, 360.0)); // -2*360 - 90
+    }
+
+    /**
+     * Test wrap() with values requiring wrapping (unsigned).
+     */
+    public function testWrapUnsignedWrapping(): void
+    {
+        // Positive values >= 360.
+        $this->assertSame(0.0, Floats::wrap(360.0, 360.0, signed: false));
+        $this->assertSame(90.0, Floats::wrap(450.0, 360.0, signed: false));
+        $this->assertSame(0.0, Floats::wrap(720.0, 360.0, signed: false));
+
+        // Negative values should wrap to positive range.
+        $this->assertSame(270.0, Floats::wrap(-90.0, 360.0, signed: false));
+        $this->assertSame(180.0, Floats::wrap(-180.0, 360.0, signed: false));
+        $this->assertSame(0.0, Floats::wrap(-360.0, 360.0, signed: false));
+        $this->assertSame(270.0, Floats::wrap(-450.0, 360.0, signed: false));
+    }
+
+    /**
+     * Test wrap() with radians (default unitsPerTurn).
+     */
+    public function testWrapRadians(): void
+    {
+        // Signed (default): range is (-π, π].
+        $this->assertSame(0.0, Floats::wrap(0.0));
+        $this->assertSame(M_PI, Floats::wrap(M_PI));
+        $this->assertSame(M_PI, Floats::wrap(-M_PI));
+        $this->assertEqualsWithDelta(0.0, Floats::wrap(Floats::TAU), 1e-10);
+        $this->assertEqualsWithDelta(-M_PI / 2, Floats::wrap(3 * M_PI / 2), 1e-10);
+
+        // Unsigned: range is [0, τ).
+        $this->assertSame(0.0, Floats::wrap(0.0, signed: false));
+        $this->assertSame(M_PI, Floats::wrap(M_PI, signed: false));
+        $this->assertSame(M_PI, Floats::wrap(-M_PI, signed: false));
+        $this->assertEqualsWithDelta(0.0, Floats::wrap(Floats::TAU, signed: false), 1e-10);
+        $this->assertEqualsWithDelta(3 * M_PI / 2, Floats::wrap(-M_PI / 2, signed: false), 1e-10);
+    }
+
+    /**
+     * Test wrap() with other unit systems.
+     */
+    public function testWrapOtherUnits(): void
+    {
+        // Gradians (400 per turn).
+        $this->assertSame(0.0, Floats::wrap(0.0, 400.0));
+        $this->assertSame(100.0, Floats::wrap(100.0, 400.0));
+        $this->assertSame(-100.0, Floats::wrap(300.0, 400.0));
+        $this->assertSame(0.0, Floats::wrap(400.0, 400.0));
+
+        // Turns (1 per turn).
+        $this->assertSame(0.0, Floats::wrap(0.0, 1.0));
+        $this->assertSame(0.25, Floats::wrap(0.25, 1.0));
+        $this->assertSame(-0.25, Floats::wrap(0.75, 1.0));
+        $this->assertSame(0.0, Floats::wrap(1.0, 1.0));
+
+        // Hours (24-hour clock, unsigned).
+        $this->assertSame(0.0, Floats::wrap(0.0, 24.0, signed: false));
+        $this->assertSame(6.0, Floats::wrap(6.0, 24.0, signed: false));
+        $this->assertSame(18.0, Floats::wrap(18.0, 24.0, signed: false));
+        $this->assertSame(1.0, Floats::wrap(25.0, 24.0, signed: false));
+        $this->assertSame(21.0, Floats::wrap(-3.0, 24.0, signed: false));
+    }
+
+    /**
      * Test conversion of floats to hexadecimal strings.
      */
     public function testToHex(): void

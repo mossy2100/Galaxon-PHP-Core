@@ -525,6 +525,107 @@ Floats::normalizeZero(2.5);   // 2.5
 
 **Use Case:** When you want consistent behavior regardless of whether a zero is positive or negative, especially in comparisons or output formatting.
 
+### wrap()
+
+```php
+public static function wrap(float $value, float $unitsPerTurn = Floats::TAU, bool $signed = true): float
+```
+
+Wrap a value into a standard range, typically used for normalizing angles or other cyclic quantities. The method reduces the value modulo the period and adjusts it to fit within the specified range.
+
+**Parameters:**
+- `$value` (float) - The value to wrap
+- `$unitsPerTurn` (float) - The period/range size (default: `TAU` for radians)
+- `$signed` (bool) - If `true`, use signed range; if `false`, use unsigned range (default: `true`)
+
+**Returns:**
+- `float` - The wrapped value within the specified range
+
+**Behavior:**
+
+The range depends on the `$signed` parameter:
+
+| Mode | Range | Lower Bound | Upper Bound |
+|------|-------|-------------|-------------|
+| Signed (`true`) | `(-period/2, period/2]` | Excluded | Included |
+| Unsigned (`false`) | `[0, period)` | Included | Excluded |
+
+Note that each range has one boundary excluded and one included:
+- **Signed**: The lower bound is excluded, upper bound is included. For degrees: `(-180°, 180°]`
+- **Unsigned**: The lower bound is included, upper bound is excluded. For degrees: `[0°, 360°)`
+
+The method also normalizes `-0.0` to `0.0` to avoid unexpected behavior.
+
+**Examples with Degrees (360):**
+
+```php
+// Values already in range remain unchanged
+Floats::wrap(0.0, 360.0);      // 0.0
+Floats::wrap(45.0, 360.0);     // 45.0
+Floats::wrap(-90.0, 360.0);    // -90.0
+
+// Values outside range are wrapped
+Floats::wrap(270.0, 360.0);    // -90.0 (wraps to negative)
+Floats::wrap(450.0, 360.0);    // 90.0
+Floats::wrap(-270.0, 360.0);   // 90.0 (wraps to positive)
+Floats::wrap(720.0, 360.0);    // 0.0 (multiple rotations)
+
+// Boundary behavior (signed)
+Floats::wrap(180.0, 360.0);    // 180.0 (upper bound included)
+Floats::wrap(-180.0, 360.0);   // 180.0 (lower bound excluded, wraps to upper)
+
+// Unsigned range [0°, 360°)
+Floats::wrap(270.0, 360.0, signed: false);   // 270.0 (in range)
+Floats::wrap(-90.0, 360.0, signed: false);   // 270.0 (negative wraps to positive)
+Floats::wrap(360.0, 360.0, signed: false);   // 0.0 (upper bound excluded)
+Floats::wrap(450.0, 360.0, signed: false);   // 90.0
+```
+
+**Examples with Radians (default):**
+
+```php
+// Signed range (-π, π] - default
+Floats::wrap(0.0);                  // 0.0
+Floats::wrap(M_PI);                 // π (upper bound included)
+Floats::wrap(-M_PI);                // π (lower bound excluded, wraps to upper)
+Floats::wrap(3 * M_PI / 2);         // -π/2
+Floats::wrap(Floats::TAU);          // 0.0
+
+// Unsigned range [0, τ)
+Floats::wrap(M_PI, signed: false);            // π
+Floats::wrap(-M_PI / 2, signed: false);       // 3π/2
+Floats::wrap(Floats::TAU, signed: false);     // 0.0
+```
+
+**Examples with Other Units:**
+
+```php
+// Gradians (400 per turn)
+Floats::wrap(300.0, 400.0);    // -100.0
+Floats::wrap(500.0, 400.0);    // 100.0
+
+// Turns (1 per turn)
+Floats::wrap(0.75, 1.0);       // -0.25
+Floats::wrap(1.5, 1.0);        // 0.5
+
+// Hours (24-hour clock, unsigned)
+Floats::wrap(25.0, 24.0, signed: false);   // 1.0
+Floats::wrap(-3.0, 24.0, signed: false);   // 21.0 (3 hours before midnight)
+Floats::wrap(50.0, 24.0, signed: false);   // 2.0
+```
+
+**Use Cases:**
+- Normalizing angles after arithmetic operations
+- Compass bearings and navigation calculations
+- Clock/time arithmetic (hours, minutes)
+- Periodic/cyclic signal processing
+- Game development (rotation, direction)
+- Any domain with wraparound behavior
+
+**See Also:**
+- `TAU` - The circle constant τ = 2π, default period for radians
+- `normalizeZero()` - Used internally to handle negative zero
+
 ## Conversion Methods
 
 ### tryConvertToInt()

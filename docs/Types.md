@@ -1,12 +1,20 @@
 # Types
 
-Type checking and inspection utilities with methods for identifying numbers, unsigned integers, traits, and generating unique string keys.
+Static utility class for type checking, inspection, and trait introspection.
 
-## Background
+## Overview
 
-This class provides utilities for working with PHP's type system, offering enhanced type checking beyond PHP's built-in functions and methods for trait introspection and value hashing.
+The `Types` class provides utilities for working with PHP's type system, offering enhanced type checking beyond PHP's built-in functions, methods for generating unique string keys from any value, and comprehensive trait introspection. This is a static utility class and cannot be instantiated.
 
-## Methods
+### Key Features
+
+- **Basic type identification**: Get canonical type names for any value
+- **Unique string keys**: Convert any PHP value to a unique string for use as collection keys
+- **Type comparison**: Check if two values have the same type
+- **Error creation**: Generate consistent TypeError messages
+- **Trait introspection**: Detect trait usage including inherited and nested traits
+
+## Inspection Methods
 
 ### getBasicType()
 
@@ -36,6 +44,8 @@ Types::getBasicType(new stdClass()); // "object"
 
 **Use Case:** Getting consistent type names for logging, error messages, or switch statements.
 
+## Formatting Methods
+
 ### getUniqueString()
 
 ```php
@@ -49,6 +59,9 @@ Convert any PHP value into a unique string suitable for use as a key in collecti
 
 **Returns:**
 - `string` - A unique string representation of the value
+
+**Throws:**
+- `TypeError` - If the value has an unknown type
 
 **String Format (by type):**
 - `null`: `"n"`
@@ -81,6 +94,35 @@ Types::getUniqueString($obj);              // "o:1" (based on object ID)
 ```
 
 **Use Case:** Implementing collections that can use any PHP value as a key, or generating unique identifiers for values.
+
+## Type Checking Methods
+
+### same()
+
+```php
+public static function same(mixed $obj1, mixed $obj2): bool
+```
+
+Check if two values have the same type using `get_debug_type()` for comparison.
+
+**Parameters:**
+- `$obj1` (mixed) - The first value to compare
+- `$obj2` (mixed) - The second value to compare
+
+**Returns:**
+- `bool` - True if the types are the same, false otherwise
+
+**Examples:**
+
+```php
+Types::same(1, 2);                    // true (both int)
+Types::same(1, 1.0);                  // false (int vs float)
+Types::same('hello', 'world');        // true (both string)
+Types::same(new Foo(), new Foo());    // true (same class)
+Types::same(new Foo(), new Bar());    // false (different classes)
+```
+
+**Use Case:** Type comparison for equality checks or conditional logic based on type matching.
 
 ### createError()
 
@@ -116,32 +158,7 @@ throw $error;
 
 **Use Case:** Creating consistent, informative error messages for type validation failures.
 
-### same()
-
-```php
-public static function same(mixed $obj1, mixed $obj2): bool
-```
-
-Check if two values have the same type using `get_debug_type()` for comparison.
-
-**Parameters:**
-- `$obj1` (mixed) - The first value to compare
-- `$obj2` (mixed) - The second value to compare
-
-**Returns:**
-- `bool` - True if the types are the same, false otherwise
-
-**Examples:**
-
-```php
-Types::same(1, 2);                    // true (both int)
-Types::same(1, 1.0);                  // false (int vs float)
-Types::same('hello', 'world');        // true (both string)
-Types::same(new Foo(), new Foo());    // true (same class)
-Types::same(new Foo(), new Bar());    // false (different classes)
-```
-
-**Use Case:** Type comparison for equality checks or conditional logic based on type matching.
+## Trait-related Methods
 
 ### usesTrait()
 
@@ -249,3 +266,63 @@ Types::getTraits(TraitC::class);   // ['TraitA']
 ```
 
 **Use Case:** Introspection, reflection, dependency analysis, or documentation generation.
+
+## Usage Examples
+
+### Using Types with Collections
+
+```php
+use Galaxon\Core\Types;
+
+// Generate unique keys for a custom dictionary that accepts any value type
+$dictionary = [];
+
+$key1 = Types::getUniqueString([1, 2, 3]);
+$key2 = Types::getUniqueString(new DateTime());
+$key3 = Types::getUniqueString(3.14);
+
+$dictionary[$key1] = 'array value';
+$dictionary[$key2] = 'object value';
+$dictionary[$key3] = 'float value';
+```
+
+### Type Validation in Functions
+
+```php
+use Galaxon\Core\Types;
+
+function processItems(array $items): void
+{
+    foreach ($items as $index => $item) {
+        if (Types::getBasicType($item) !== 'object') {
+            throw Types::createError("items[$index]", 'object', $item);
+        }
+    }
+}
+```
+
+### Capability Detection with Traits
+
+```php
+use Galaxon\Core\Types;
+use Galaxon\Core\Traits\Comparable;
+
+function sortIfComparable(array $items): array
+{
+    if (empty($items)) {
+        return $items;
+    }
+
+    // Check if items can be compared
+    if (Types::usesTrait($items[0], Comparable::class)) {
+        usort($items, fn($a, $b) => $a->compare($b));
+    }
+
+    return $items;
+}
+```
+
+## See Also
+
+- **[Floats](Floats.md)** - Used internally by `getUniqueString()` for float-to-hex conversion
+- **[Stringify](Stringify.md)** - Used internally by `getUniqueString()` for array stringification
