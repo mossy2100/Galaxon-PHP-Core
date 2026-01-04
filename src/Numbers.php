@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Galaxon\Core;
 
-use ValueError;
+use DomainException;
 
 /**
  * Container for general number-related utility methods.
@@ -120,13 +120,13 @@ final class Numbers
      * @param int|float $num The number whose magnitude to use.
      * @param int|float $signSource The number whose sign to copy.
      * @return int|float The magnitude of $num with the sign of $signSource.
-     * @throws ValueError If NAN is passed as either parameter.
+     * @throws DomainException If NAN is passed as either parameter.
      */
     public static function copySign(int|float $num, int|float $signSource): int|float
     {
         // Guard. This method won't work for NAN, which doesn't have a sign.
         if (is_nan($num) || is_nan($signSource)) {
-            throw new ValueError('NAN is not allowed for either parameter.');
+            throw new DomainException('NAN is not allowed for either parameter.');
         }
 
         return abs($num) * self::sign($signSource, false);

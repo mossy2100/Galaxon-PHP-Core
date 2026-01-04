@@ -130,7 +130,7 @@ Raise one integer to the power of another, returning an integer result or throwi
 - `int` - The result of raising a to the power of b
 
 **Throws:**
-- `UnderflowException` - If the result is a fractional value (absolute value less than or equal to 1).
+- `DomainException` - If the exponent is negative (except for bases ±1, which return valid integer results).
 - `OverflowException` - If the result is too large to represent as an integer.
 
 **Examples:**
@@ -141,11 +141,11 @@ Integers::pow(5, 0);    // 1
 Integers::pow(-2, 3);   // -8
 Integers::pow(1, -1);   // 1 (1⁻¹ = 1)
 Integers::pow(-1, -1);  // -1 ((-1)⁻¹ = -1)
-Integers::pow(2, -1);   // throws UnderflowException (2⁻¹ = 0.5)
+Integers::pow(2, -1);   // throws DomainException (negative exponent)
 Integers::pow(10, 100); // throws OverflowException
 ```
 
-**Note:** Negative exponents produce fractional results for most bases (e.g., 2⁻¹ = 0.5), which throws `UnderflowException`. The only exceptions are 1⁻¹ = 1 and (-1)⁻¹ = -1, which are valid integer results.
+**Note:** Negative exponents are not allowed except for bases ±1 (which return valid integer results: 1⁻¹ = 1 and (-1)⁻¹ = -1). A `DomainException` is thrown for other bases with negative exponents.
 
 ## Number Theory Methods
 
@@ -165,7 +165,7 @@ Calculate the greatest common divisor (GCD) of two or more integers using Euclid
 
 **Throws:**
 - `ArgumentCountError` - If no arguments are provided
-- `RangeException` - If any argument equals `PHP_INT_MIN`
+- `DomainException` - If any argument equals `PHP_INT_MIN`
 
 **Examples:**
 

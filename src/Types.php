@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Galaxon\Core;
 
+use DomainException;
 use TypeError;
-use ValueError;
 
 /**
  * Convenience methods for working with types.
@@ -92,7 +92,7 @@ final class Types
                 return 's:' . strlen($value) . ":$value";
 
             case 'array':
-                /** @var mixed[] $value */
+                /** @var list<mixed> $value */
                 return 'a:' . count($value) . ':' . Stringify::stringifyArray($value);
 
             case 'object':
@@ -173,8 +173,8 @@ final class Types
      * other traits.
      *
      * @param object|string $objOrClass The object or class (or interface or trait) to inspect.
-     * @return string[] The list of traits used by the object or class.
-     * @throws ValueError If the provided class name is invalid.
+     * @return list<string> The list of traits used by the object or class.
+     * @throws DomainException If the provided class name is invalid.
      */
     public static function getTraits(object|string $objOrClass): array
     {
@@ -184,7 +184,7 @@ final class Types
         } elseif (class_exists($objOrClass) || interface_exists($objOrClass) || trait_exists($objOrClass)) {
             $class = (string)$objOrClass;
         } else {
-            throw new ValueError("Invalid class name: $objOrClass");
+            throw new DomainException("Invalid class name: $objOrClass");
         }
 
         return self::getTraitsRecursive($class);
@@ -198,7 +198,7 @@ final class Types
      * Get all traits used by a class, interface, or trait, including parent classes and trait inheritance.
      *
      * @param string $class The class, interface, or trait to inspect.
-     * @return string[] The list of traits used by the type.
+     * @return list<string> The list of traits used by the type.
      */
     private static function getTraitsRecursive(string $class): array
     {
@@ -228,7 +228,7 @@ final class Types
             $class = get_parent_class($class);
         } while ($class !== false);
 
-        return array_unique($traits);
+        return array_values(array_unique($traits));
     }
 
     // endregion

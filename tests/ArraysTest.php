@@ -28,7 +28,10 @@ final class ArraysTest extends TestCase
         $this->assertFalse(Arrays::containsRecursion([1, 2, 3]));
 
         // Test associative array.
-        $this->assertFalse(Arrays::containsRecursion(['name' => 'John', 'age' => 30]));
+        $this->assertFalse(Arrays::containsRecursion([
+            'name' => 'John',
+            'age'  => 30,
+        ]));
 
         // Test array with mixed types.
         $this->assertFalse(Arrays::containsRecursion([1, 'hello', true, null, 3.14]));
@@ -40,23 +43,29 @@ final class ArraysTest extends TestCase
     public function testContainsRecursionNestedArray(): void
     {
         // Test nested array without recursion.
-        $this->assertFalse(Arrays::containsRecursion([[1, 2], [3, 4]]));
+        $this->assertFalse(Arrays::containsRecursion([
+            [1, 2],
+            [3, 4],
+        ]));
 
         // Test deeply nested array without recursion.
         $this->assertFalse(Arrays::containsRecursion([
             'level1' => [
                 'level2' => [
                     'level3' => [
-                        'value' => 42
-                    ]
-                ]
-            ]
+                        'value' => 42,
+                    ],
+                ],
+            ],
+
         ]));
 
         // Test array containing objects without recursion.
         $obj = new stdClass();
         $obj->name = 'test';
-        $this->assertFalse(Arrays::containsRecursion(['object' => $obj]));
+        $this->assertFalse(Arrays::containsRecursion([
+            'object' => $obj,
+        ]));
     }
 
     /**
@@ -65,7 +74,9 @@ final class ArraysTest extends TestCase
     public function testContainsRecursionDirectReference(): void
     {
         // Create array with direct self-reference.
-        $arr = ['foo' => 'bar'];
+        $arr = [
+            'foo' => 'bar',
+        ];
         $arr['self'] = &$arr;
 
         // Test that recursion is detected.
@@ -78,8 +89,12 @@ final class ArraysTest extends TestCase
     public function testContainsRecursionIndirectReference(): void
     {
         // Create array with indirect recursion.
-        $arr1 = ['name' => 'array1'];
-        $arr2 = ['name' => 'array2'];
+        $arr1 = [
+            'name' => 'array1',
+        ];
+        $arr2 = [
+            'name' => 'array2',
+        ];
         $arr1['child'] = &$arr2;
         $arr2['parent'] = &$arr1;
 
@@ -99,9 +114,10 @@ final class ArraysTest extends TestCase
         $arr = [
             'level1' => [
                 'level2' => [
-                    'level3' => []
-                ]
-            ]
+                    'level3' => [],
+                ],
+            ],
+
         ];
         $arr['level1']['level2']['level3']['back'] = &$arr;
 
@@ -115,7 +131,10 @@ final class ArraysTest extends TestCase
     public function testContainsRecursionMultipleReferences(): void
     {
         // Create array with multiple references to itself.
-        $arr = ['a' => 1, 'b' => 2];
+        $arr = [
+            'a' => 1,
+            'b' => 2,
+        ];
         $arr['ref1'] = &$arr;
         $arr['ref2'] = &$arr;
 
@@ -129,10 +148,14 @@ final class ArraysTest extends TestCase
     public function testContainsRecursionSubArrayReference(): void
     {
         // Create array with reference to a sub-array (not recursion).
-        $subArray = ['x' => 1, 'y' => 2];
+        $subArray = [
+            'x' => 1,
+            'y' => 2,
+        ];
         $arr = [
             'original'  => $subArray,
-            'reference' => &$subArray
+            'reference' => &$subArray,
+
         ];
 
         // Test that this is not detected as recursion (it's just a reference to a sub-array).
@@ -156,10 +179,12 @@ final class ArraysTest extends TestCase
             'array'  => [1, 2, 3],
             'nested' => [
                 'deep' => [
-                    'value' => 'test'
-                ]
+                    'value' => 'test',
+                ],
+
             ],
-            'object' => new stdClass()
+            'object' => new stdClass(),
+
         ];
 
         // Test that no recursion is detected.
@@ -217,8 +242,16 @@ final class ArraysTest extends TestCase
      */
     public function testQuoteValuesPreservesKeys(): void
     {
-        $input = ['first' => 'apple', 'second' => 'banana', 'third' => 'cherry'];
-        $expected = ['first' => "'apple'", 'second' => "'banana'", 'third' => "'cherry'"];
+        $input = [
+            'first'  => 'apple',
+            'second' => 'banana',
+            'third'  => 'cherry',
+        ];
+        $expected = [
+            'first'  => "'apple'",
+            'second' => "'banana'",
+            'third'  => "'cherry'",
+        ];
         $result = Arrays::quoteValues($input);
 
         $this->assertEquals($expected, $result);
@@ -355,7 +388,11 @@ final class ArraysTest extends TestCase
      */
     public function testQuoteValuesThrowsTypeErrorForArrays(): void
     {
-        $input = ['foo', ['nested'], 'bar'];
+        $input = [
+            'foo',
+            ['nested'],
+            'bar',
+        ];
 
         $this->expectException(TypeError::class);
         $this->expectExceptionMessage('The array values must be strings.');

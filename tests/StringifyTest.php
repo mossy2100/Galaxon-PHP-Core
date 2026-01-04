@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Galaxon\Core\Tests;
 
+use DomainException;
 use Galaxon\Core\Stringify;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use TypeError;
-use ValueError;
 
 /**
  * Test class for Stringify utility class.
@@ -134,13 +134,23 @@ final class StringifyTest extends TestCase
     public function testStringifyAssociativeArray(): void
     {
         // Test simple associative array.
-        $this->assertSame('{"name": "John", "age": 30}', Stringify::stringify(['name' => 'John', 'age' => 30]));
+        $this->assertSame('{"name": "John", "age": 30}', Stringify::stringify([
+            'name' => 'John',
+            'age'  => 30,
+        ]));
 
         // Test associative array with integer keys (not sequential from 0).
-        $this->assertSame('{1: "a", 3: "b", 5: "c"}', Stringify::stringify([1 => 'a', 3 => 'b', 5 => 'c']));
+        $this->assertSame('{1: "a", 3: "b", 5: "c"}', Stringify::stringify([
+            1 => 'a',
+            3 => 'b',
+            5 => 'c',
+        ]));
 
         // Test associative array with mixed key types.
-        $this->assertSame('{"key": "value", 0: 42}', Stringify::stringify(['key' => 'value', 0 => 42]));
+        $this->assertSame('{"key": "value", 0: 42}', Stringify::stringify([
+            'key' => 'value',
+            0     => 42,
+        ]));
     }
 
     /**
@@ -149,18 +159,26 @@ final class StringifyTest extends TestCase
     public function testStringifyNestedArray(): void
     {
         // Test nested list.
-        $this->assertSame('[[1, 2], [3, 4]]', Stringify::stringify([[1, 2], [3, 4]]));
+        $this->assertSame('[[1, 2], [3, 4]]', Stringify::stringify([
+            [1, 2],
+            [3, 4],
+        ]));
 
         // Test nested associative array.
         $this->assertSame('{"user": {"name": "John", "age": 30}}', Stringify::stringify([
             'user' => [
                 'name' => 'John',
-                'age'  => 30
-            ]
+                'age'  => 30,
+            ],
+
         ]));
 
         // Test mixed nesting.
-        $this->assertSame('[1, ["a", "b"], 3]', Stringify::stringify([1, ['a', 'b'], 3]));
+        $this->assertSame('[1, ["a", "b"], 3]', Stringify::stringify([
+            1,
+            ['a', 'b'],
+            3,
+        ]));
     }
 
     /**
@@ -174,11 +192,17 @@ final class StringifyTest extends TestCase
 
         // Test associative array with pretty print.
         $expected = "{\n    \"name\": \"John\",\n    \"age\": 30\n}";
-        $this->assertSame($expected, Stringify::stringify(['name' => 'John', 'age' => 30], true));
+        $this->assertSame($expected, Stringify::stringify([
+            'name' => 'John',
+            'age'  => 30,
+        ], true));
 
         // Test nested array with pretty print.
         $expected = "[\n    [\n        1,\n        2\n    ],\n    [\n        3,\n        4\n    ]\n]";
-        $this->assertSame($expected, Stringify::stringify([[1, 2], [3, 4]], true));
+        $this->assertSame($expected, Stringify::stringify([
+            [1, 2],
+            [3, 4],
+        ], true));
     }
 
     /**
@@ -187,11 +211,13 @@ final class StringifyTest extends TestCase
     public function testStringifyArrayCircularReference(): void
     {
         // Create an array with circular reference.
-        $array = ['foo' => 'bar'];
+        $array = [
+            'foo' => 'bar',
+        ];
         $array['self'] = &$array;
 
         // Test that circular reference throws ValueError.
-        $this->expectException(ValueError::class);
+        $this->expectException(DomainException::class);
         $this->expectExceptionMessage('Cannot stringify arrays containing circular references.');
         Stringify::stringify($array);
     }
@@ -358,7 +384,7 @@ final class StringifyTest extends TestCase
      */
     public function testAbbrevMaxLenTooSmall(): void
     {
-        $this->expectException(ValueError::class);
+        $this->expectException(DomainException::class);
         $this->expectExceptionMessage('The maximum string length must be at least 10.');
         Stringify::abbrev(123, 9);
     }
@@ -388,12 +414,42 @@ final class StringifyTest extends TestCase
             public string $name = 'test';
         };
 
-        $array = ['object' => $obj, 'numbers' => [4, 5, 6]];
+        $array = [
+            'object'  => $obj,
+            'numbers' => [4, 5, 6],
+        ];
 
         $result = Stringify::stringify($array);
         $expected = '{"object": <@anonymous +items: [1, 2, 3], +name: "test">, "numbers": [4, 5, 6]}';
 
         // Test result matches expected.
         $this->assertSame($expected, $result);
+    }
+
+    /**
+     * Test echo method outputs stringified value.
+     */
+    public function testEcho(): void
+    {
+        // Capture output using output buffering.
+        ob_start();
+        Stringify::echo('hello');
+        $output = ob_get_clean();
+
+        $this->assertSame('"hello"', $output);
+
+        // Test with array.
+        ob_start();
+        Stringify::echo([1, 2, 3]);
+        $output = ob_get_clean();
+
+        $this->assertSame('[1, 2, 3]', $output);
+
+        // Test with integer.
+        ob_start();
+        Stringify::echo(42);
+        $output = ob_get_clean();
+
+        $this->assertSame('42', $output);
     }
 }

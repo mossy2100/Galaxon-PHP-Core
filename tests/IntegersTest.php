@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Galaxon\Core\Tests;
 
 use ArgumentCountError;
+use DomainException;
 use Galaxon\Core\Integers;
 use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use RangeException;
-use UnderflowException;
 
 /**
  * Test class for Integers utility class.
@@ -187,9 +186,9 @@ final class IntegersTest extends TestCase
      */
     public function testPowNegativeExponentUnderflow(): void
     {
-        // Test that negative exponents throw UnderflowException.
-        $this->expectException(UnderflowException::class);
-        $this->expectExceptionMessage('Underflow in exponentiation.');
+        // Test that negative exponents throw DomainException.
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Exponents must be non-negative.');
         Integers::pow(2, -1);
     }
 
@@ -306,7 +305,7 @@ final class IntegersTest extends TestCase
      */
     public function testGcdWithPhpIntMinFirstArgThrows(): void
     {
-        $this->expectException(RangeException::class);
+        $this->expectException(DomainException::class);
         $this->expectExceptionMessage('Arguments must be greater than PHP_INT_MIN');
         Integers::gcd(PHP_INT_MIN, 5);
     }
@@ -316,7 +315,7 @@ final class IntegersTest extends TestCase
      */
     public function testGcdWithPhpIntMinSecondArgThrows(): void
     {
-        $this->expectException(RangeException::class);
+        $this->expectException(DomainException::class);
         $this->expectExceptionMessage('Arguments must be greater than PHP_INT_MIN');
         Integers::gcd(5, PHP_INT_MIN);
     }
@@ -326,7 +325,7 @@ final class IntegersTest extends TestCase
      */
     public function testGcdWithPhpIntMinSingleArgThrows(): void
     {
-        $this->expectException(RangeException::class);
+        $this->expectException(DomainException::class);
         $this->expectExceptionMessage('Arguments must be greater than PHP_INT_MIN');
         Integers::gcd(PHP_INT_MIN);
     }

@@ -176,7 +176,7 @@ Check if an object or class uses a given trait. This method detects traits used 
 - `bool` - Returns `true` if the object or class uses the trait, `false` otherwise
 
 **Throws:**
-- `ValueError` - If the provided class name is invalid
+- `DomainException` - If the provided class name is invalid
 
 **Examples:**
 
@@ -229,7 +229,7 @@ Get all traits used by an object, class, interface, or trait, including those in
 - `string[]` - Array of fully qualified trait names
 
 **Throws:**
-- `ValueError` - If the provided class name is invalid
+- `DomainException` - If the provided class name is invalid
 
 **Examples:**
 

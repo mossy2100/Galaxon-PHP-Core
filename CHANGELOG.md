@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-01-04
+
+### First Stable Release
+
+This is the first stable release of Galaxon Core, ready for publication on Packagist.
+
+### Breaking Changes
+
+- **Exception types standardized** - All domain validation errors now throw `DomainException` consistently:
+  - `Floats::approxEqual()` - Throws `DomainException` for negative tolerances (was `ValueError`)
+  - `Floats::approxCompare()` - Throws `DomainException` for NAN or negative tolerances (was `ValueError`)
+  - `Floats::rand()` - Throws `DomainException` for non-finite min/max (was `ValueError`)
+  - `Floats::randUniform()` - Throws `DomainException` for non-finite min/max (was `ValueError`)
+  - `Floats::assemble()` - Throws `DomainException` for invalid components (was `ValueError`)
+  - `Integers::pow()` - Throws `DomainException` for negative exponents (was `UnderflowException`)
+  - `Integers::gcd()` - Throws `DomainException` for `PHP_INT_MIN` (was `RangeException`)
+  - `Numbers::copySign()` - Throws `DomainException` for NAN (was `ValueError`)
+  - `Stringify::stringify()` - Throws `DomainException` for circular references (was `ValueError`)
+  - `Stringify::stringifyArray()` - Throws `DomainException` for circular references (was `ValueError`)
+  - `Stringify::abbrev()` - Throws `DomainException` for maxLen < 10 (was `ValueError`)
+  - `Types::usesTrait()` - Throws `DomainException` for invalid class name (was `ValueError`)
+  - `Types::getTraits()` - Throws `DomainException` for invalid class name (was `ValueError`)
+
+### Changed
+
+- **composer.json** - Updated for Packagist publication:
+  - Added keywords for discoverability
+  - Added author information
+  - Added homepage and support URLs
+  - Improved description
+
+### Documentation
+
+- Updated all class documentation to reflect new exception types
+
 ## [0.6.0] - 2025-12-27
 
 ### Added

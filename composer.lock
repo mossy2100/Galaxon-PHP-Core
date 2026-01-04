@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2549dca33c3f5c50663d014f6d0207db",
+    "content-hash": "940ddededd6f033b9f1caf0adb936d90",
     "packages": [],
     "packages-dev": [
         {
@@ -105,11 +105,17 @@
         },
         {
             "name": "galaxon/coding-standard",
-            "version": "dev-main",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mossy2100/Galaxon-PHP-Coding-Standard",
+                "reference": "fb877bbc0879e732a14830037aeb27755707d7db"
+            },
             "dist": {
-                "type": "path",
-                "url": "../CodingStandard",
-                "reference": "816604c984cc0bf00852dd020b22fec6a38471a1"
+                "type": "zip",
+                "url": "https://api.github.com/repos/mossy2100/Galaxon-PHP-Coding-Standard/zipball/fb877bbc0879e732a14830037aeb27755707d7db",
+                "reference": "fb877bbc0879e732a14830037aeb27755707d7db",
+                "shasum": ""
             },
             "require": {
                 "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
@@ -124,29 +130,32 @@
             "extra": {
                 "phpcodesniffer-search-depth": 3
             },
-            "scripts": {
-                "fix": [
-                    "vendor/bin/phpcbf -vp"
-                ],
-                "check": [
-                    "vendor/bin/phpcs -s"
-                ],
-                "analyze": [
-                    "vendor/bin/phpstan analyze -l 9"
-                ],
-                "quality": [
-                    "@fix",
-                    "@check",
-                    "@analyze"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
-            "description": "Galaxon PHP Coding Standard, based on PSR-12 plus some extra rules.",
-            "transport-options": {
-                "relative": true
-            }
+            "authors": [
+                {
+                    "name": "Shaun Moss",
+                    "email": "shaun@astromultimedia.com"
+                }
+            ],
+            "description": "PHP_CodeSniffer coding standard extending PSR-12 with lowerCamelCase naming and modern PHP 8.4+ rules.",
+            "homepage": "https://github.com/mossy2100/Galaxon-PHP-Coding-Standard",
+            "keywords": [
+                "code-style",
+                "codesniffer",
+                "coding-standard",
+                "linting",
+                "php",
+                "phpcs",
+                "psr-12"
+            ],
+            "support": {
+                "issues": "https://github.com/mossy2100/Galaxon-PHP-Coding-Standard/issues",
+                "source": "https://github.com/mossy2100/Galaxon-PHP-Coding-Standard"
+            },
+            "time": "2026-01-04T05:17:16+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -2069,9 +2078,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "galaxon/coding-standard": 20
-    },
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

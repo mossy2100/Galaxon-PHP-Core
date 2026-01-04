@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace Galaxon\Core;
 
 use ArgumentCountError;
+use DomainException;
 use OverflowException;
-use RangeException;
-use UnderflowException;
 
 /**
  * Container for useful integer-related methods.
@@ -153,7 +152,7 @@ final class Integers
      * @param int $a The base.
      * @param int $b The exponent (must be non-negative).
      * @return int The result of raising $a to the power of $b.
-     * @throws UnderflowException If the exponent is negative.
+     * @throws DomainException If the exponent is negative.
      * @throws OverflowException If the result is too large to be represented as an integer.
      */
     public static function pow(int $a, int $b): int
@@ -161,7 +160,7 @@ final class Integers
         // If the exponent is negative, throw an exception.
         // We know the result will be a float, so there's no need to do the operation.
         if ($b < 0) {
-            throw new UnderflowException('Underflow in exponentiation.');
+            throw new DomainException('Exponents must be non-negative.');
         }
 
         // Do the exponentiation.
@@ -186,7 +185,7 @@ final class Integers
      * @param int ...$nums The integers to calculate the GCD of.
      * @return int The greatest common divisor.
      * @throws ArgumentCountError If no arguments are provided.
-     * @throws RangeException If any of the integers equal PHP_INT_MIN.
+     * @throws DomainException If any of the integers equal PHP_INT_MIN.
      */
     public static function gcd(int ...$nums): int
     {
@@ -198,7 +197,7 @@ final class Integers
         // Check none of the values equal PHP_INT_MIN because otherwise abs() will not work properly.
         $rangeErr = 'Arguments must be greater than PHP_INT_MIN (' . PHP_INT_MIN . ').';
         if ($nums[0] === PHP_INT_MIN) {
-            throw new RangeException($rangeErr);
+            throw new DomainException($rangeErr);
         }
 
         // Initialise to the first number.
@@ -208,7 +207,7 @@ final class Integers
         for ($i = 1, $n = count($nums); $i < $n; $i++) {
             // Check integer is in the valid range.
             if ($nums[$i] === PHP_INT_MIN) {
-                throw new RangeException($rangeErr);
+                throw new DomainException($rangeErr);
             }
 
             $a = $result;

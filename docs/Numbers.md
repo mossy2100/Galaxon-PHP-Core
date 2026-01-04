@@ -167,7 +167,7 @@ Copy the sign of one number to another. Returns a value with the magnitude of th
 - `int|float` - The magnitude of `$num` with the sign of `$signSource`
 
 **Throws:**
-- `ValueError` - If NAN is passed as either parameter (NAN has no defined sign)
+- `DomainException` - If NAN is passed as either parameter (NAN has no defined sign)
 
 **Examples:**
 
@@ -195,8 +195,8 @@ Numbers::copySign(INF, -10);   // -INF
 
 Error cases:
 ```php
-Numbers::copySign(NAN, 5);     // throws ValueError
-Numbers::copySign(5, NAN);     // throws ValueError
+Numbers::copySign(NAN, 5);     // throws DomainException
+Numbers::copySign(5, NAN);     // throws DomainException
 ```
 
 **Use Cases:**

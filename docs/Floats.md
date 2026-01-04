@@ -335,7 +335,7 @@ This method mirrors [Python's `math.isclose()` function](https://docs.python.org
 - `bool` - Returns `true` if the floats are approximately equal, `false` otherwise
 
 **Throws:**
-- `ValueError` - If either tolerance is negative
+- `DomainException` - If either tolerance is negative
 
 **Examples:**
 
@@ -435,7 +435,7 @@ Three-way comparison of two floats with approximate equality support. Returns an
 - `int` - Returns exactly `-1` if `$a < $b`, `0` if approximately equal, `1` if `$a > $b`
 
 **Throws:**
-- `ValueError` - If either float is NAN, or either tolerance is negative
+- `DomainException` - If either float is NAN, or either tolerance is negative
 
 **Examples:**
 
@@ -465,12 +465,12 @@ Floats::approxCompare(INF, INF);      // 0 (equal)
 Floats::approxCompare(INF, 1000.0);   // 1 (INF > finite)
 Floats::approxCompare(0.0, -0.0);     // 0 (equal)
 
-// NAN throws ValueError
-Floats::approxCompare(NAN, 1.0);      // throws ValueError
+// NAN throws DomainException
+Floats::approxCompare(NAN, 1.0);      // throws DomainException
 ```
 
 **Behavior:**
-- Throws `ValueError` if either argument is NAN (NAN cannot be meaningfully compared)
+- Throws `DomainException` if either argument is NAN (NAN cannot be meaningfully compared)
 - First checks approximate equality using `approxEqual()` with the specified tolerances
 - If approximately equal, returns `0`
 - Otherwise uses spaceship operator (`<=>`) to determine ordering, normalized to exactly -1 or 1 using `Numbers::sign()`
@@ -744,7 +744,7 @@ Generate a random float in the specified range by constructing IEEE-754 componen
 
 **Throws:**
 - `RuntimeException` - If the system is not 64-bit
-- `ValueError` - If min or max are non-finite (NAN, ±INF), or if min > max
+- `DomainException` - If min or max are non-finite (NAN, ±INF), or if min > max
 
 **Examples:**
 
@@ -799,7 +799,7 @@ Generate a uniformly distributed random float in the specified range. The step s
 - `float` - A random float in the range [min, max]
 
 **Throws:**
-- `ValueError` - If min or max are non-finite (NAN, ±INF), or if min > max
+- `DomainException` - If min or max are non-finite (NAN, ±INF), or if min > max
 - `RandomException` - If an appropriate source of randomness is unavailable
 
 **Examples:**
@@ -1014,9 +1014,9 @@ Assemble a float from its IEEE-754 double-precision components.
 
 **Throws:**
 - `RuntimeException` - If the system is not 64-bit
-- `ValueError` - If sign is not 0 or 1
-- `ValueError` - If exponent is not in range [0, 2047]
-- `ValueError` - If fraction is not in range [0, 2^52 - 1]
+- `DomainException` - If sign is not 0 or 1
+- `DomainException` - If exponent is not in range [0, 2047]
+- `DomainException` - If fraction is not in range [0, 2^52 - 1]
 
 **Examples:**
 

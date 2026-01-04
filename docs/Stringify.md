@@ -35,7 +35,7 @@ Convert any PHP value to a readable string representation.
 - `string` - The string representation of the value
 
 **Throws:**
-- `ValueError` - If the value cannot be stringified (e.g., arrays with circular references)
+- `DomainException` - If the value cannot be stringified (e.g., arrays with circular references)
 - `TypeError` - If the value has an unknown type
 
 **Examples:**
@@ -110,7 +110,7 @@ Stringify an array in JSON-like style. Lists (sequential integer keys starting a
 - `string` - The string representation of the array
 
 **Throws:**
-- `ValueError` - If the array contains circular references
+- `DomainException` - If the array contains circular references
 
 **Examples:**
 
@@ -236,7 +236,7 @@ Get a short string representation of a value, truncated to a maximum length. Use
 - `string` - The abbreviated string representation
 
 **Throws:**
-- `ValueError` - If the maximum length is less than 10
+- `DomainException` - If the maximum length is less than 10
 - `TypeError` - If the value has an unknown type
 
 **Examples:**

@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Galaxon\Core;
 
-use JsonException;
+use DomainException;
 use TypeError;
-use ValueError;
 
 /**
  * This class provides a method of formatting any PHP value as a string, with a few differences from the default
@@ -45,7 +44,7 @@ final class Stringify
      * @param bool $prettyPrint Whether to use pretty printing with indentation (default false).
      * @param int $indentLevel The level of indentation for this structure (default 0).
      * @return string The string representation of the value.
-     * @throws ValueError If the value cannot be stringified.
+     * @throws DomainException If the value cannot be stringified.
      * @throws TypeError If the value has an unknown type.
      */
     public static function stringify(mixed $value, bool $prettyPrint = false, int $indentLevel = 0): string
@@ -56,22 +55,15 @@ final class Stringify
             case 'bool':
             case 'int':
             case 'string':
-                // This function call should never error for these types, but we'll wrap it in a try-catch block anyway,
-                // for compliance with coding standards.
-                // @codeCoverageIgnoreStart
-                try {
-                    return json_encode($value, JSON_THROW_ON_ERROR);
-                } catch (JsonException) {
-                    throw new ValueError('Error occurred stringifying value.');
-                }
-                // @codeCoverageIgnoreEnd
+                // This function call should never error for these types.
+                return json_encode($value, JSON_THROW_ON_ERROR);
 
             case 'float':
                 /** @var float $value */
                 return self::stringifyFloat($value);
 
             case 'array':
-                /** @var mixed[] $value */
+                /** @var list<mixed> $value */
                 return self::stringifyArray($value, $prettyPrint, $indentLevel);
 
             case 'resource':
@@ -126,17 +118,17 @@ final class Stringify
      *
      * If pretty printing is enabled, the result will be formatted with new lines and indentation.
      *
-     * @param mixed[] $ary The array to encode.
+     * @param array<array-key, mixed> $ary The array to encode.
      * @param bool $prettyPrint Whether to use pretty printing (default false).
      * @param int $indentLevel The level of indentation for this structure (default 0).
      * @return string The string representation of the array.
-     * @throws ValueError If the array contains circular references.
+     * @throws DomainException If the array contains circular references.
      */
     public static function stringifyArray(array $ary, bool $prettyPrint = false, int $indentLevel = 0): string
     {
         // Detect circular references.
         if (Arrays::containsRecursion($ary)) {
-            throw new ValueError('Cannot stringify arrays containing circular references.');
+            throw new DomainException('Cannot stringify arrays containing circular references.');
         }
 
         $pairs = [];
@@ -259,15 +251,16 @@ final class Stringify
      * @param mixed $value The value to get the string representation for.
      * @param int $maxLen The maximum length of the result.
      * @return string The short string representation.
-     * @throws ValueError If the maximum length is less than 10, or the value cannot be stringified.
+     * @throws DomainException If the maximum length is less than the minimum, or if the value cannot be stringified.
      * @throws TypeError If the value has an unknown type.
      * @see stringify()
      */
     public static function abbrev(mixed $value, int $maxLen = 30): string
     {
         // Check the max length is reasonable.
-        if ($maxLen < 10) {
-            throw new ValueError('The maximum string length must be at least 10.');
+        $minMaxLen = 10;
+        if ($maxLen < $minMaxLen) {
+            throw new DomainException("The maximum string length must be at least $minMaxLen.");
         }
 
         // Get the value as a string without newlines or indentation.
@@ -279,6 +272,22 @@ final class Stringify
         }
 
         return $result;
+    }
+
+    /**
+     * Output a stringified value directly to the output stream.
+     *
+     * This is a convenience method that combines stringify() with echo,
+     * useful for debugging and quick output of complex values.
+     *
+     * @param mixed $value The value to stringify and output.
+     * @throws TypeError If the value has an unknown type.
+     * @throws DomainException If the value cannot be stringified.
+     * @see stringify()
+     */
+    public static function echo(mixed $value): void
+    {
+        echo self::stringify($value);
     }
 
     // endregion

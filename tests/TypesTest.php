@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Galaxon\Core\Tests;
 
 use DateTime;
+use DomainException;
 use Galaxon\Core\Types;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use TypeError;
-use ValueError;
 
 /**
  * Test class for Types utility class.
@@ -83,7 +83,9 @@ final class TypesTest extends TestCase
         // Test that arrays return 'array'.
         $this->assertSame('array', Types::getBasicType([]));
         $this->assertSame('array', Types::getBasicType([1, 2, 3]));
-        $this->assertSame('array', Types::getBasicType(['key' => 'value']));
+        $this->assertSame('array', Types::getBasicType([
+            'key' => 'value',
+        ]));
     }
 
     /**
@@ -204,7 +206,9 @@ final class TypesTest extends TestCase
         $this->assertNotSame(Types::getUniqueString([1, 2]), Types::getUniqueString([3, 4]));
 
         // Test associative array.
-        $key3 = Types::getUniqueString(['key' => 'value']);
+        $key3 = Types::getUniqueString([
+            'key' => 'value',
+        ]);
         $this->assertStringStartsWith('a:1:', $key3);
     }
 
@@ -263,7 +267,7 @@ final class TypesTest extends TestCase
             Types::getUniqueString(0.0),
             Types::getUniqueString(''),
             Types::getUniqueString([]),
-            Types::getUniqueString(new stdClass()),
+            Types::getUniqueString(new stdClass())
         ];
 
         // Verify all keys are unique.
@@ -341,7 +345,11 @@ final class TypesTest extends TestCase
     public function testSameWithArrays(): void
     {
         $this->assertTrue(Types::same([], [1, 2, 3]));
-        $this->assertTrue(Types::same(['a' => 1], ['b' => 2]));
+        $this->assertTrue(Types::same([
+            'a' => 1,
+        ], [
+            'b' => 2,
+        ]));
         $this->assertFalse(Types::same([], new stdClass()));
     }
 
@@ -512,7 +520,7 @@ final class TypesTest extends TestCase
     public function testUsesTraitThrowsValueErrorForNonExistentClass(): void
     {
         // Test that passing a non-existent class name throws ValueError.
-        $this->expectException(ValueError::class);
+        $this->expectException(DomainException::class);
         $this->expectExceptionMessage('Invalid class name: NonExistentClass');
         Types::usesTrait('NonExistentClass', TestTrait::class);
     }
@@ -580,7 +588,7 @@ final class TypesTest extends TestCase
      */
     public function testGetTraitsThrowsValueErrorForNonExistentClass(): void
     {
-        $this->expectException(ValueError::class);
+        $this->expectException(DomainException::class);
         $this->expectExceptionMessage('Invalid class name: NonExistentClassName');
         Types::getTraits('NonExistentClassName');
     }

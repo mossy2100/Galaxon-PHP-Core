@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Galaxon\Core;
 
+use DomainException;
 use Random\RandomException;
 use RuntimeException;
-use ValueError;
 
 /**
  * Container for useful float-related methods.
@@ -175,7 +175,7 @@ final class Floats
      * @param float $relTol The maximum allowed relative difference.
      * @param float $absTol The maximum allowed absolute difference.
      * @return bool True if the two floats are approximately equal, false otherwise.
-     * @throws ValueError If either tolerance is negative.
+     * @throws DomainException If either tolerance is negative.
      */
     public static function approxEqual(
         float $a,
@@ -185,7 +185,7 @@ final class Floats
     ): bool {
         // Check tolerances are valid.
         if ($relTol < 0 || $absTol < 0) {
-            throw new ValueError('Tolerances must be non-negative.');
+            throw new DomainException('Tolerances must be non-negative.');
         }
 
         // Handle NAN. NAN != anything, even itself.
@@ -225,7 +225,8 @@ final class Floats
      * @param float $relTol The maximum allowed relative difference.
      * @param float $absTol The maximum allowed absolute difference.
      * @return int -1 if $a < $b, 0 if $a == $b (within tolerance), 1 if $a > $b.
-     * @throws ValueError If either tolerance is negative, or either float is NAN.
+     * @throws DomainException If either tolerance is negative, or either float is NAN.
+     * @see approxEqual()
      */
     public static function approxCompare(
         float $a,
@@ -235,7 +236,7 @@ final class Floats
     ): int {
         // NAN doesn't compare as equal, less than, or greater than anything, including itself.
         if (is_nan($a) || is_nan($b)) {
-            throw new ValueError('Cannot compare NAN with any other value, even itself.');
+            throw new DomainException('Cannot compare NAN with any other value, even itself.');
         }
 
         // If they are approximately equal, return 0, otherwise use the spaceship operator to get -1 or 1.
@@ -375,7 +376,9 @@ final class Floats
      * @param float $min The minimum value (inclusive).
      * @param float $max The maximum value (inclusive).
      * @return float A random float in the range [min, max]. Excludes NAN, ±INF, -0.0.
-     * @throws ValueError If min or max are non-finite, or if min > max.
+     * @throws DomainException If min or max are non-finite or min > max.
+     * @throws RandomException If an appropriate source of randomness is unavailable.
+     * @throws RuntimeException If the system is not a 64-bit system.
      *
      * @see randUniform() For uniformly distributed random floats (faster but limited precision)
      */
@@ -383,10 +386,10 @@ final class Floats
     {
         // Validate parameters.
         if (!is_finite($min) || !is_finite($max)) {
-            throw new ValueError('Min and max must be finite.');
+            throw new DomainException('Min and max must be finite.');
         }
         if ($min > $max) {
-            throw new ValueError('Min must be less than or equal to max.');
+            throw new DomainException('Min must be less than or equal to max.');
         }
 
         // Accept negative zero arguments but normalize to positive zero.
@@ -405,7 +408,7 @@ final class Floats
                 $bytes = random_bytes(8);
 
                 // Unpack into a float.
-                /** @var float[] $unpacked */
+                /** @var list<float> $unpacked */
                 $unpacked = unpack('d', $bytes);
                 $f = $unpacked[1];
 
@@ -459,18 +462,19 @@ final class Floats
      * @param float $min The minimum value (inclusive).
      * @param float $max The maximum value (inclusive).
      * @return float A random float in the range [min, max].
-     * @throws ValueError If min or max are non-finite, if min > max, or if numValues < 1.
+     * @throws DomainException If min or max are non-finite or min > max.
      * @throws RandomException If an appropriate source of randomness is unavailable.
+     * @throws RuntimeException If the system is not a 64-bit system.
      * @see rand() For non-uniform distribution across all representable floats.
      */
     public static function randUniform(float $min, float $max): float
     {
         // Validate parameters.
         if (!is_finite($min) || !is_finite($max)) {
-            throw new ValueError('Min and max must be finite.');
+            throw new DomainException('Min and max must be finite.');
         }
         if ($min > $max) {
-            throw new ValueError('Min must be less than or equal to max.');
+            throw new DomainException('Min must be less than or equal to max.');
         }
 
         // If min and max are the same, there's only one possible value.
@@ -540,7 +544,7 @@ final class Floats
         Environment::require64Bit();
 
         $packed = pack('Q', $bits);
-        /** @var float[] $result */
+        /** @var list<float> $result */
         $result = unpack('d', $packed);
         return $result[1];
     }
@@ -580,8 +584,8 @@ final class Floats
      * @param int $exponent The 11-bit biased exponent (0-2047).
      * @param int $fraction The 52-bit fraction/mantissa.
      * @return float The assembled float.
+     * @throws DomainException If any component is out of range.
      * @throws RuntimeException If the system is not a 64-bit system.
-     * @throws ValueError If any component is out of range.
      */
     public static function assemble(int $sign, int $exponent, int $fraction): float
     {
@@ -589,13 +593,13 @@ final class Floats
 
         // Validate components.
         if ($sign < 0 || $sign > 1) {
-            throw new ValueError('Sign must be 0 or 1.');
+            throw new DomainException('Sign must be 0 or 1.');
         }
         if ($exponent < 0 || $exponent > 2047) {
-            throw new ValueError('Exponent must be in the range [0, 2047].');
+            throw new DomainException('Exponent must be in the range [0, 2047].');
         }
         if ($fraction < 0 || $fraction > 0xFFFFFFFFFFFFF) {
-            throw new ValueError('Fraction must be in the range [0, 2^52 - 1].');
+            throw new DomainException('Fraction must be in the range [0, 2^52 - 1].');
         }
 
         // Assemble the float: sign (1 bit) | exponent (11 bits) | fraction (52 bits)
@@ -679,6 +683,7 @@ final class Floats
      *
      * @param float $value The value to calculate ULP for.
      * @return float The ULP spacing.
+     * @throws RuntimeException If the system is not a 64-bit system.
      *
      * @see next() Get the next representable float
      * @see previous() Get the previous representable float

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Galaxon\Core\Tests;
 
+use DomainException;
 use Galaxon\Core\Numbers;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
-use ValueError;
 
 /**
  * Test class for Numbers utility class.
@@ -193,7 +193,7 @@ final class NumbersTest extends TestCase
     public function testCopySignWithNanAsNum(): void
     {
         // Test that NAN as first parameter throws ValueError.
-        $this->expectException(ValueError::class);
+        $this->expectException(DomainException::class);
         $this->expectExceptionMessage('NAN is not allowed for either parameter.');
         Numbers::copySign(NAN, 5);
     }
@@ -204,7 +204,7 @@ final class NumbersTest extends TestCase
     public function testCopySignWithNanAsSignSource(): void
     {
         // Test that NAN as second parameter throws ValueError.
-        $this->expectException(ValueError::class);
+        $this->expectException(DomainException::class);
         $this->expectExceptionMessage('NAN is not allowed for either parameter.');
         Numbers::copySign(5, NAN);
     }
@@ -215,7 +215,7 @@ final class NumbersTest extends TestCase
     public function testCopySignWithBothNan(): void
     {
         // Test that NAN as both parameters throws ValueError.
-        $this->expectException(ValueError::class);
+        $this->expectException(DomainException::class);
         $this->expectExceptionMessage('NAN is not allowed for either parameter.');
         Numbers::copySign(NAN, NAN);
     }

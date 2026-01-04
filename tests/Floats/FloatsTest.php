@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Galaxon\Core\Tests\Floats;
 
+use DomainException;
 use Galaxon\Core\Floats;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use ValueError;
 
 /**
  * Test class for Floats utility class - core comparison, transformation, precision, and inspection methods.
@@ -49,7 +49,7 @@ final class FloatsTest extends TestCase
      */
     public function testApproxEqualWithNegativeTolerancesThrows(): void
     {
-        $this->expectException(ValueError::class);
+        $this->expectException(DomainException::class);
         $this->expectExceptionMessage('Tolerances must be non-negative');
         Floats::approxEqual(1.0, 1.0, -0.1, 0.0);
     }
@@ -178,7 +178,7 @@ final class FloatsTest extends TestCase
      */
     public function testApproxCompareWithNegativeToleranceThrows(): void
     {
-        $this->expectException(ValueError::class);
+        $this->expectException(DomainException::class);
         $this->expectExceptionMessage('Tolerances must be non-negative');
         Floats::approxCompare(1.0, 1.0, -0.1, 0.0);
     }
@@ -188,7 +188,7 @@ final class FloatsTest extends TestCase
      */
     public function testApproxCompareWithNanThrows(): void
     {
-        $this->expectException(ValueError::class);
+        $this->expectException(DomainException::class);
         $this->expectExceptionMessage('Cannot compare NAN');
         Floats::approxCompare(NAN, 1.0);
     }
@@ -198,7 +198,7 @@ final class FloatsTest extends TestCase
      */
     public function testApproxCompareWithNanSecondArgThrows(): void
     {
-        $this->expectException(ValueError::class);
+        $this->expectException(DomainException::class);
         $this->expectExceptionMessage('Cannot compare NAN');
         Floats::approxCompare(1.0, NAN);
     }
@@ -528,16 +528,7 @@ final class FloatsTest extends TestCase
      */
     public function testTryConvertToIntWithNonConvertibleFloats(): void
     {
-        $testCases = [
-            0.1,
-            0.5,
-            0.999,
-            1.1,
-            -0.5,
-            -1.5,
-            3.14159,
-            -2.71828,
-        ];
+        $testCases = [0.1, 0.5, 0.999, 1.1, -0.5, -1.5, 3.14159, -2.71828];
 
         foreach ($testCases as $float) {
             $this->assertNull(Floats::tryConvertToInt($float), "Should return null for $float");
