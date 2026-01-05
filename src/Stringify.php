@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Galaxon\Core;
 
 use DomainException;
-use TypeError;
+use InvalidArgumentException;
+use UnexpectedValueException;
 
 /**
  * This class provides a method of formatting any PHP value as a string, with a few differences from the default
@@ -45,7 +46,7 @@ final class Stringify
      * @param int $indentLevel The level of indentation for this structure (default 0).
      * @return string The string representation of the value.
      * @throws DomainException If the value cannot be stringified.
-     * @throws TypeError If the value has an unknown type.
+     * @throws UnexpectedValueException If the value has an unknown type.
      */
     public static function stringify(mixed $value, bool $prettyPrint = false, int $indentLevel = 0): string
     {
@@ -77,7 +78,7 @@ final class Stringify
             // This should never happen, but we'll include it for completeness/robustness.
             // We can't test this, so get phpunit to ignore it for code coverage purposes.
             default:
-                throw new TypeError('Unknown type.');
+                throw new UnexpectedValueException('Unknown type.');
             // @codeCoverageIgnoreEnd
         }
     }
@@ -167,7 +168,7 @@ final class Stringify
      *
      * @param mixed $value The resource to stringify.
      * @return string The string representation of the resource.
-     * @throws TypeError If the value is not a resource.
+     * @throws InvalidArgumentException If the value is not a resource.
      * @see stringifyObject()
      *
      */
@@ -175,7 +176,7 @@ final class Stringify
     {
         // Can't type hint for resource, so check manually.
         if (!is_resource($value)) {
-            throw new TypeError('Value is not a resource.');
+            throw new InvalidArgumentException('Value is not a resource.');
         }
 
         return '(resource type: ' . get_resource_type($value) . ', id: ' . get_resource_id($value) . ')';
@@ -252,7 +253,6 @@ final class Stringify
      * @param int $maxLen The maximum length of the result.
      * @return string The short string representation.
      * @throws DomainException If the maximum length is less than the minimum, or if the value cannot be stringified.
-     * @throws TypeError If the value has an unknown type.
      * @see stringify()
      */
     public static function abbrev(mixed $value, int $maxLen = 30): string
@@ -281,7 +281,6 @@ final class Stringify
      * useful for debugging and quick output of complex values.
      *
      * @param mixed $value The value to stringify and output.
-     * @throws TypeError If the value has an unknown type.
      * @throws DomainException If the value cannot be stringified.
      * @see stringify()
      */

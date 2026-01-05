@@ -72,6 +72,12 @@ Trait extending Equatable with tolerance-based comparison. Adds `approxEqual()` 
 
 Trait combining Comparable and ApproxEquatable for complete comparison support. Adds `approxCompare()` for comparing floating-point values within configurable tolerances. Provides both exact and approximate equality with full ordering operations.
 
+## Exceptions
+
+### [IncomparableTypesException](docs/Exceptions/IncomparableTypesException.md)
+
+Exception thrown when attempting to compare values of incompatible types. Used by the Comparable and ApproxComparable traits. Automatically generates descriptive error messages.
+
 ## Testing
 
 The library includes comprehensive test coverage:
@@ -101,11 +107,11 @@ Contributions are welcome! Please:
 4. Ensure all tests pass
 5. Submit a pull request
 
-For questions or suggestions, please [open an issue](https://github.com/mossy2100/PHP-Core/issues).
+For questions or suggestions, please [open an issue](https://github.com/mossy2100/Galaxon-PHP-Core/issues).
 
 ## Support
 
-- **Issues**: https://github.com/mossy2100/PHP-Core/issues
+- **Issues**: https://github.com/mossy2100/Galaxon-PHP-Core/issues
 - **Documentation**: See [docs/](docs/) directory for detailed class documentation
 - **Examples**: See test files for comprehensive usage examples
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Galaxon\Core;
 
 use DomainException;
-use TypeError;
+use UnexpectedValueException;
 
 /**
  * Convenience methods for working with types.
@@ -69,6 +69,8 @@ final class Types
      *
      * @param mixed $value The value to convert.
      * @return string The unique string key.
+     * @throws DomainException If an array could not be stringified.
+     * @throws UnexpectedValueException If the value has an unknown type.
      */
     public static function getUniqueString(mixed $value): string
     {
@@ -105,7 +107,7 @@ final class Types
 
             // @codeCoverageIgnoreStart
             default:
-                return throw new TypeError('Value has unknown type.');
+                return throw new UnexpectedValueException('Value has unknown type.');
             // @codeCoverageIgnoreEnd
         }
     }
@@ -127,27 +129,6 @@ final class Types
     public static function same(mixed $obj1, mixed $obj2): bool
     {
         return get_debug_type($obj1) === get_debug_type($obj2);
-    }
-
-    /**
-     * Create a new TypeError using information about the parameter and expected type.
-     *
-     * @param string $varName The name of the argument or variable that failed validation, e.g. 'index'.
-     * @param string $expectedType The expected type (e.g., 'int', 'string', 'callable').
-     * @param mixed $value The actual value that was provided (optional).
-     */
-    public static function createError(string $varName, string $expectedType, mixed $value = null): TypeError
-    {
-        $message = "Variable '$varName' must be of type $expectedType";
-
-        if (func_num_args() > 2) {
-            $actualType = get_debug_type($value);
-            $message .= ", $actualType given.";
-        } else {
-            $message .= '.';
-        }
-
-        return new TypeError($message);
     }
 
     // endregion

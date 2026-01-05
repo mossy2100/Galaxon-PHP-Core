@@ -10,7 +10,6 @@ use Galaxon\Core\Types;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
-use TypeError;
 
 /**
  * Test class for Types utility class.
@@ -275,46 +274,6 @@ final class TypesTest extends TestCase
     }
 
     /**
-     * Test createError with variable name and expected type only.
-     */
-    public function testCreateErrorBasic(): void
-    {
-        // Test error message without value.
-        $error = Types::createError('myVar', 'int');
-        $this->assertInstanceOf(TypeError::class, $error);
-        $this->assertSame("Variable 'myVar' must be of type int.", $error->getMessage());
-    }
-
-    /**
-     * Test createError with variable name, expected type, and actual value.
-     */
-    public function testCreateErrorWithValue(): void
-    {
-        // Test error message with value.
-        $error = Types::createError('myVar', 'int', 'hello');
-        $this->assertInstanceOf(TypeError::class, $error);
-        $this->assertSame("Variable 'myVar' must be of type int, string given.", $error->getMessage());
-    }
-
-    /**
-     * Test createError with different types.
-     */
-    public function testCreateErrorDifferentTypes(): void
-    {
-        // Test with array given.
-        $error = Types::createError('items', 'string', [1, 2, 3]);
-        $this->assertStringContainsString('array given', $error->getMessage());
-
-        // Test with object given.
-        $error = Types::createError('obj', 'callable', new stdClass());
-        $this->assertStringContainsString('stdClass given', $error->getMessage());
-
-        // Test with null given.
-        $error = Types::createError('value', 'string', null);
-        $this->assertStringContainsString('null given', $error->getMessage());
-    }
-
-    /**
      * Test same with identical primitive types.
      */
     public function testSameWithIdenticalPrimitives(): void
@@ -515,11 +474,11 @@ final class TypesTest extends TestCase
     }
 
     /**
-     * Test usesTrait throws ValueError for non-existent class.
+     * Test usesTrait throws DomainException for non-existent class.
      */
-    public function testUsesTraitThrowsValueErrorForNonExistentClass(): void
+    public function testUsesTraitThrowsExceptionForNonExistentClass(): void
     {
-        // Test that passing a non-existent class name throws ValueError.
+        // Test that passing a non-existent class name throws DomainException.
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('Invalid class name: NonExistentClass');
         Types::usesTrait('NonExistentClass', TestTrait::class);
@@ -584,9 +543,9 @@ final class TypesTest extends TestCase
     }
 
     /**
-     * Test getTraits throws ValueError for non-existent class.
+     * Test getTraits throws DomainException for non-existent class.
      */
-    public function testGetTraitsThrowsValueErrorForNonExistentClass(): void
+    public function testGetTraitsThrowsExceptionForNonExistentClass(): void
     {
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('Invalid class name: NonExistentClassName');

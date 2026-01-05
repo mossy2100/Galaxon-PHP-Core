@@ -91,7 +91,7 @@ final class FloatsRandomTest extends TestCase
     }
 
     /**
-     * Test randUniform with min >= max throws ValueError.
+     * Test randUniform with min >= max throws DomainException.
      */
     public function testRandUniformWithMinEqualToMax(): void
     {
@@ -100,7 +100,7 @@ final class FloatsRandomTest extends TestCase
     }
 
     /**
-     * Test randUniform with min > max throws ValueError.
+     * Test randUniform with min > max throws DomainException.
      */
     public function testRandUniformWithMinGreaterThanMaxThrows(): void
     {
@@ -110,7 +110,7 @@ final class FloatsRandomTest extends TestCase
     }
 
     /**
-     * Test randUniform with NAN min throws ValueError.
+     * Test randUniform with NAN min throws DomainException.
      */
     public function testRandUniformWithNanMinThrows(): void
     {
@@ -120,7 +120,7 @@ final class FloatsRandomTest extends TestCase
     }
 
     /**
-     * Test randUniform with NAN max throws ValueError.
+     * Test randUniform with NAN max throws DomainException.
      */
     public function testRandUniformWithNanMaxThrows(): void
     {
@@ -130,7 +130,7 @@ final class FloatsRandomTest extends TestCase
     }
 
     /**
-     * Test randUniform with positive infinity min throws ValueError.
+     * Test randUniform with positive infinity min throws DomainException.
      */
     public function testRandUniformWithInfMinThrows(): void
     {
@@ -140,7 +140,7 @@ final class FloatsRandomTest extends TestCase
     }
 
     /**
-     * Test randUniform with negative infinity max throws ValueError.
+     * Test randUniform with negative infinity max throws DomainException.
      */
     public function testRandUniformWithNegativeInfMaxThrows(): void
     {
@@ -275,7 +275,7 @@ final class FloatsRandomTest extends TestCase
     }
 
     /**
-     * Test rand with min > max throws ValueError.
+     * Test rand with min > max throws DomainException.
      */
     public function testRandWithRangeWithMinGreaterThanMaxThrows(): void
     {
@@ -285,7 +285,7 @@ final class FloatsRandomTest extends TestCase
     }
 
     /**
-     * Test rand with NAN throws ValueError.
+     * Test rand with NAN throws DomainException.
      */
     public function testRandWithRangeWithNanThrows(): void
     {
@@ -295,7 +295,7 @@ final class FloatsRandomTest extends TestCase
     }
 
     /**
-     * Test rand with INF throws ValueError.
+     * Test rand with INF throws DomainException.
      */
     public function testRandWithRangeWithInfThrows(): void
     {

@@ -67,7 +67,7 @@ trait ApproxEquatable
      * To compare using only absolute difference, set $relTol to 0.0.
      * To compare using only relative difference, set $absTol to 0.0.
      *
-     * Implementations should return false for incompatible types rather than throwing TypeError, to match the
+     * Implementations should return false for incompatible types rather than throwing an exception, to match the
      * behavior of equal().
      *
      * @param mixed $other The value to compare with.

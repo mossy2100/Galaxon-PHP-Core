@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Galaxon\Core\Tests;
 
 use Galaxon\Core\Arrays;
+use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
-use TypeError;
 
 /**
  * Test class for Arrays utility class.
@@ -332,61 +332,61 @@ final class ArraysTest extends TestCase
     }
 
     /**
-     * Test quoteValues throws TypeError for non-string values (integers).
+     * Test quoteValues throws InvalidArgumentException for non-string values (integers).
      */
-    public function testQuoteValuesThrowsTypeErrorForIntegers(): void
+    public function testQuoteValuesThrowsExceptionForIntegers(): void
     {
         $input = ['foo', 123, 'bar'];
 
-        $this->expectException(TypeError::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The array values must be strings.');
         // @phpstan-ignore argument.type
         Arrays::quoteValues($input);
     }
 
     /**
-     * Test quoteValues throws TypeError for non-string values (floats).
+     * Test quoteValues throws InvalidArgumentException for non-string values (floats).
      */
-    public function testQuoteValuesThrowsTypeErrorForFloats(): void
+    public function testQuoteValuesThrowsExceptionForFloats(): void
     {
         $input = ['foo', 3.14, 'bar'];
 
-        $this->expectException(TypeError::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The array values must be strings.');
         // @phpstan-ignore argument.type
         Arrays::quoteValues($input);
     }
 
     /**
-     * Test quoteValues throws TypeError for non-string values (booleans).
+     * Test quoteValues throws InvalidArgumentException for non-string values (booleans).
      */
-    public function testQuoteValuesThrowsTypeErrorForBooleans(): void
+    public function testQuoteValuesThrowsExceptionForBooleans(): void
     {
         $input = ['foo', true, 'bar'];
 
-        $this->expectException(TypeError::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The array values must be strings.');
         // @phpstan-ignore argument.type
         Arrays::quoteValues($input);
     }
 
     /**
-     * Test quoteValues throws TypeError for non-string values (null).
+     * Test quoteValues throws InvalidArgumentException for non-string values (null).
      */
-    public function testQuoteValuesThrowsTypeErrorForNull(): void
+    public function testQuoteValuesThrowsExceptionForNull(): void
     {
         $input = ['foo', null, 'bar'];
 
-        $this->expectException(TypeError::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The array values must be strings.');
         // @phpstan-ignore argument.type
         Arrays::quoteValues($input);
     }
 
     /**
-     * Test quoteValues throws TypeError for non-string values (arrays).
+     * Test quoteValues throws InvalidArgumentException for non-string values (arrays).
      */
-    public function testQuoteValuesThrowsTypeErrorForArrays(): void
+    public function testQuoteValuesThrowsExceptionForArrays(): void
     {
         $input = [
             'foo',
@@ -394,20 +394,20 @@ final class ArraysTest extends TestCase
             'bar',
         ];
 
-        $this->expectException(TypeError::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The array values must be strings.');
         // @phpstan-ignore argument.type
         Arrays::quoteValues($input);
     }
 
     /**
-     * Test quoteValues throws TypeError for non-string values (objects).
+     * Test quoteValues throws InvalidArgumentException for non-string values (objects).
      */
-    public function testQuoteValuesThrowsTypeErrorForObjects(): void
+    public function testQuoteValuesThrowsExceptionForObjects(): void
     {
         $input = ['foo', new stdClass(), 'bar'];
 
-        $this->expectException(TypeError::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The array values must be strings.');
         // @phpstan-ignore argument.type
         Arrays::quoteValues($input);

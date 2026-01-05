@@ -488,7 +488,7 @@ final class FloatsBitOperationsTest extends TestCase
     }
 
     /**
-     * Test assemble with invalid sign throws ValueError.
+     * Test assemble with invalid sign throws DomainException.
      */
     public function testAssembleInvalidSignThrows(): void
     {
@@ -498,7 +498,7 @@ final class FloatsBitOperationsTest extends TestCase
     }
 
     /**
-     * Test assemble with negative sign throws ValueError.
+     * Test assemble with negative sign throws DomainException.
      */
     public function testAssembleNegativeSignThrows(): void
     {
@@ -508,7 +508,7 @@ final class FloatsBitOperationsTest extends TestCase
     }
 
     /**
-     * Test assemble with invalid exponent throws ValueError.
+     * Test assemble with invalid exponent throws DomainException.
      */
     public function testAssembleInvalidExponentThrows(): void
     {
@@ -518,7 +518,7 @@ final class FloatsBitOperationsTest extends TestCase
     }
 
     /**
-     * Test assemble with negative exponent throws ValueError.
+     * Test assemble with negative exponent throws DomainException.
      */
     public function testAssembleNegativeExponentThrows(): void
     {
@@ -528,7 +528,7 @@ final class FloatsBitOperationsTest extends TestCase
     }
 
     /**
-     * Test assemble with invalid fraction throws ValueError.
+     * Test assemble with invalid fraction throws DomainException.
      */
     public function testAssembleInvalidFractionThrows(): void
     {
@@ -538,7 +538,7 @@ final class FloatsBitOperationsTest extends TestCase
     }
 
     /**
-     * Test assemble with negative fraction throws ValueError.
+     * Test assemble with negative fraction throws DomainException.
      */
     public function testAssembleNegativeFractionThrows(): void
     {

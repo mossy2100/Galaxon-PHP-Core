@@ -45,7 +45,7 @@ final class FloatsTest extends TestCase
     }
 
     /**
-     * Test approxEqual with negative tolerances throws ValueError.
+     * Test approxEqual with negative tolerances throws DomainException.
      */
     public function testApproxEqualWithNegativeTolerancesThrows(): void
     {
@@ -174,7 +174,7 @@ final class FloatsTest extends TestCase
     }
 
     /**
-     * Test compare with negative tolerance throws ValueError.
+     * Test compare with negative tolerance throws DomainException.
      */
     public function testApproxCompareWithNegativeToleranceThrows(): void
     {
@@ -184,7 +184,7 @@ final class FloatsTest extends TestCase
     }
 
     /**
-     * Test compare with NAN throws ValueError.
+     * Test compare with NAN throws DomainException.
      */
     public function testApproxCompareWithNanThrows(): void
     {
@@ -194,7 +194,7 @@ final class FloatsTest extends TestCase
     }
 
     /**
-     * Test compare with NAN as second argument throws ValueError.
+     * Test compare with NAN as second argument throws DomainException.
      */
     public function testApproxCompareWithNanSecondArgThrows(): void
     {

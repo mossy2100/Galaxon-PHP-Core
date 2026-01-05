@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Galaxon\Core\Traits;
 
+use Galaxon\Core\Exceptions\IncomparableTypesException;
 use Galaxon\Core\Floats;
-use TypeError;
 
 /**
  * Trait providing complete comparison operations with both exact and approximate equality.
@@ -35,7 +35,7 @@ use TypeError;
  *     public function compare(mixed $other): int
  *     {
  *         if (!Types::same($this, $other)) {
- *             throw new TypeError('Cannot compare different types.');
+ *             throw new IncomparableTypesException($this, $other);
  *         }
  *         return Numbers::sign($this->toFloat() <=> $other->toFloat());
  *     }
@@ -82,7 +82,7 @@ trait ApproxComparable
      * @param float $relTol The maximum allowed relative difference (default: 1e-9).
      * @param float $absTol The maximum allowed absolute difference (default: PHP_FLOAT_EPSILON).
      * @return int Exactly -1, 0, or 1 indicating the ordering relationship.
-     * @throws TypeError If the types are incompatible for comparison.
+     * @throws IncomparableTypesException If the types are incompatible for comparison.
      * @see approxEqual() The method used to check approximate equality.
      * @see compare() The method used for exact ordering when not approximately equal.
      */

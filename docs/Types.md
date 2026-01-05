@@ -11,7 +11,6 @@ The `Types` class provides utilities for working with PHP's type system, offerin
 - **Basic type identification**: Get canonical type names for any value
 - **Unique string keys**: Convert any PHP value to a unique string for use as collection keys
 - **Type comparison**: Check if two values have the same type
-- **Error creation**: Generate consistent TypeError messages
 - **Trait introspection**: Detect trait usage including inherited and nested traits
 
 ## Inspection Methods
@@ -123,40 +122,6 @@ Types::same(new Foo(), new Bar());    // false (different classes)
 ```
 
 **Use Case:** Type comparison for equality checks or conditional logic based on type matching.
-
-### createError()
-
-```php
-public static function createError(string $varName, string $expectedType, mixed $value = null): TypeError
-```
-
-Create a new `TypeError` with a formatted message about parameter validation failure.
-
-**Parameters:**
-- `$varName` (string) - The name of the variable or parameter (e.g., `"index"`)
-- `$expectedType` (string) - The expected type (e.g., `"int"`, `"string"`, `"callable"`)
-- `$value` (mixed) - The actual value that was provided (optional)
-
-**Returns:**
-- `TypeError` - A new TypeError exception with formatted message
-
-**Examples:**
-
-Without actual value:
-```php
-$error = Types::createError('index', 'int');
-// Message: "Variable 'index' must be of type int."
-throw $error;
-```
-
-With actual value:
-```php
-$error = Types::createError('index', 'int', 'hello');
-// Message: "Variable 'index' must be of type int, string given."
-throw $error;
-```
-
-**Use Case:** Creating consistent, informative error messages for type validation failures.
 
 ## Trait-related Methods
 
@@ -294,8 +259,9 @@ use Galaxon\Core\Types;
 function processItems(array $items): void
 {
     foreach ($items as $index => $item) {
-        if (Types::getBasicType($item) !== 'object') {
-            throw Types::createError("items[$index]", 'object', $item);
+        $type = Types::getBasicType($item);
+        if ($type !== 'object') {
+            throw new InvalidArgumentException("Item must be an object, $type given.");
         }
     }
 }

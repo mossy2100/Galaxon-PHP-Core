@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Galaxon\Core;
 
+use InvalidArgumentException;
 use JsonException;
-use TypeError;
 
 /**
  * Container for useful array-related methods.
@@ -60,7 +60,7 @@ final class Arrays
      * @param array<string> $arr Array of strings to quote.
      * @param bool $doubleQuotes Use double quotes instead of single quotes.
      * @return array<string> Array with each value wrapped in quotes.
-     * @throws TypeError If any array value is not a string.
+     * @throws InvalidArgumentException If any array value is not a string.
      */
     public static function quoteValues(array $arr, bool $doubleQuotes = false): array
     {
@@ -69,7 +69,7 @@ final class Arrays
         $quoteFn = static function ($value) use ($quoteChar) {
             // Type check.
             if (!is_string($value)) {
-                throw new TypeError('The array values must be strings.');
+                throw new InvalidArgumentException('The array values must be strings.');
             }
 
             // Wrap the value in quotes.

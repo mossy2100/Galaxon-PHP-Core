@@ -6,9 +6,9 @@ namespace Galaxon\Core\Tests;
 
 use DomainException;
 use Galaxon\Core\Stringify;
+use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use TypeError;
 
 /**
  * Test class for Stringify utility class.
@@ -206,7 +206,7 @@ final class StringifyTest extends TestCase
     }
 
     /**
-     * Test that circular references in arrays throw ValueError.
+     * Test that circular references in arrays throw DomainException.
      */
     public function testStringifyArrayCircularReference(): void
     {
@@ -216,7 +216,7 @@ final class StringifyTest extends TestCase
         ];
         $array['self'] = &$array;
 
-        // Test that circular reference throws ValueError.
+        // Test that circular reference throws DomainException.
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('Cannot stringify arrays containing circular references.');
         Stringify::stringify($array);
@@ -240,12 +240,12 @@ final class StringifyTest extends TestCase
     }
 
     /**
-     * Test stringifying resource with non-resource value throws TypeError.
+     * Test stringifying resource with non-resource value throws InvalidArgumentException.
      */
     public function testStringifyResourceWithNonResource(): void
     {
-        // Test that non-resource throws TypeError.
-        $this->expectException(TypeError::class);
+        // Test that non-resource throws InvalidArgumentException.
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Value is not a resource.');
         Stringify::stringifyResource('not a resource');
     }

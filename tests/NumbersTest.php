@@ -188,33 +188,33 @@ final class NumbersTest extends TestCase
     }
 
     /**
-     * Test that copySign throws ValueError when num is NAN.
+     * Test that copySign throws DomainException when num is NAN.
      */
     public function testCopySignWithNanAsNum(): void
     {
-        // Test that NAN as first parameter throws ValueError.
+        // Test that NAN as first parameter throws DomainException.
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('NAN is not allowed for either parameter.');
         Numbers::copySign(NAN, 5);
     }
 
     /**
-     * Test that copySign throws ValueError when sign_source is NAN.
+     * Test that copySign throws DomainException when sign_source is NAN.
      */
     public function testCopySignWithNanAsSignSource(): void
     {
-        // Test that NAN as second parameter throws ValueError.
+        // Test that NAN as second parameter throws DomainException.
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('NAN is not allowed for either parameter.');
         Numbers::copySign(5, NAN);
     }
 
     /**
-     * Test that copySign throws ValueError when both parameters are NAN.
+     * Test that copySign throws DomainException when both parameters are NAN.
      */
     public function testCopySignWithBothNan(): void
     {
-        // Test that NAN as both parameters throws ValueError.
+        // Test that NAN as both parameters throws DomainException.
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('NAN is not allowed for either parameter.');
         Numbers::copySign(NAN, NAN);

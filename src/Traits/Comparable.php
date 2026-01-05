@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Galaxon\Core\Traits;
 
-use Galaxon\Core\Types;
+use Galaxon\Core\Exceptions\IncomparableTypesException;
 use Override;
-use TypeError;
 
 /**
  * Trait providing a complete set of comparison operations based on a single compare() method.
@@ -16,10 +15,10 @@ use TypeError;
  * lessThanOrEqual(), greaterThan(), and greaterThanOrEqual().
  *
  * The trait uses Equatable via composition, providing an equal() method that returns false gracefully for incompatible
- * types (rather than throwing TypeError like the ordering methods do).
+ * types (rather than throwing IncomparableTypesException like the ordering methods do).
  *
  * Type safety should be enforced within the compare() implementation. Use Types::same() or `instanceof` to verify
- * type compatibility, and throw TypeError if the types don't match.
+ * type compatibility, and throw IncomparableTypesException if no ordering relationship exists between the two types.
  *
  * Example usage:
  * <code>
@@ -33,7 +32,7 @@ use TypeError;
  *     public function compare(mixed $other): int
  *     {
  *         if (!Types::same($this, $other)) {
- *             throw new TypeError('Cannot compare different types.');
+ *             throw new IncomparableTypesException($this, $other);
  *         }
  *         return Numbers::sign($this->value <=> $other->value);
  *     }
@@ -62,13 +61,13 @@ trait Comparable
      * strict equality checks. Use Numbers::sign() to normalize spaceship operator results.
      *
      * Implementation guidelines:
-     * - May throw TypeError for incompatible types (this is expected behavior)
+     * - May throw IncomparableTypesException for incompatible types (this is expected behavior)
      * - Must be consistent (same inputs always produce same result)
      * - Should be transitive (if A < B and B < C, then A < C)
      *
      * @param mixed $other The value to compare with.
      * @return int Exactly -1, 0, or 1 indicating the ordering relationship.
-     * @throws TypeError If the types are incompatible for comparison.
+     * @throws IncomparableTypesException If the types are incompatible for comparison.
      */
     abstract public function compare(mixed $other): int;
 
@@ -77,18 +76,17 @@ trait Comparable
      *
      * This method overrides the abstract equal() method from the Equatable trait. Unlike the other comparison methods
      * in this trait (lessThan, greaterThan, etc.), equal() returns false gracefully for incompatible types instead
-     * of throwing TypeError.
+     * of throwing IncomparableTypesException.
      *
      * @param mixed $other The value to compare with.
-     * @return bool True if the values are equal, false otherwise (including for incompatible types).
+     * @return bool True if the values are equal, false otherwise (including for incomparable types).
      */
     #[Override]
     public function equal(mixed $other): bool
     {
         try {
-            // This will throw TypeError on invalid type.
             return $this->compare($other) === 0;
-        } catch (TypeError) {
+        } catch (IncomparableTypesException) {
             return false;
         }
     }
@@ -96,11 +94,11 @@ trait Comparable
     /**
      * Check if this object is less than another object.
      *
-     * Verifies type compatibility before delegating to compare(). Throws TypeError for incompatible types.
+     * Verifies type compatibility before delegating to compare(). Throws exception for incompatible types.
      *
      * @param mixed $other The value to compare with.
      * @return bool True if this object is less than the other object, false otherwise.
-     * @throws TypeError If the types are not the same.
+     * @throws IncomparableTypesException If the types are incompatible for comparison.
      */
     public function lessThan(mixed $other): bool
     {
@@ -110,11 +108,12 @@ trait Comparable
     /**
      * Check if this object is less than or equal to another object.
      *
-     * Implemented as the negation of greaterThan() to maintain consistency. Throws TypeError for incompatible types.
+     * Implemented as the negation of greaterThan() to maintain consistency. Throws IncomparableTypesException for
+     * incompatible types.
      *
      * @param mixed $other The value to compare with.
      * @return bool True if this object is less than or equal to the other object, false otherwise.
-     * @throws TypeError If the types are not the same.
+     * @throws IncomparableTypesException If the types are incompatible for comparison.
      */
     public function lessThanOrEqual(mixed $other): bool
     {
@@ -124,11 +123,12 @@ trait Comparable
     /**
      * Check if this object is greater than another object.
      *
-     * Verifies type compatibility before delegating to compare(). Throws TypeError for incompatible types.
+     * Verifies type compatibility before delegating to compare(). Throws IncomparableTypesException for incompatible
+     * types.
      *
      * @param mixed $other The value to compare with.
      * @return bool True if this object is greater than the other object, false otherwise.
-     * @throws TypeError If the types are not the same.
+     * @throws IncomparableTypesException If the types are incompatible for comparison.
      */
     public function greaterThan(mixed $other): bool
     {
@@ -138,11 +138,12 @@ trait Comparable
     /**
      * Check if this object is greater than or equal to another object.
      *
-     * Implemented as the negation of lessThan() to maintain consistency. Throws TypeError for incompatible types.
+     * Implemented as the negation of lessThan() to maintain consistency. Throws IncomparableTypesException for
+     * incompatible types.
      *
      * @param mixed $other The value to compare with.
      * @return bool True if this object is greater than or equal to the other object, false otherwise.
-     * @throws TypeError If the types are not the same.
+     * @throws IncomparableTypesException If the types are incompatible for comparison.
      */
     public function greaterThanOrEqual(mixed $other): bool
     {
