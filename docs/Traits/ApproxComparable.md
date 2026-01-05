@@ -74,6 +74,7 @@ Compare with approximate equality awareness. Returns 0 if values are approximate
 ### Sorting with Approximate Equality
 
 ```php
+use Galaxon\Core\Exceptions\IncomparableTypesException;
 use Galaxon\Core\Floats;
 use Galaxon\Core\Traits\ApproxComparable;
 
@@ -90,7 +91,7 @@ class Score
     public function compare(mixed $other): int
     {
         if (!$other instanceof self) {
-            throw new TypeError('Can only compare with another Score');
+            throw new IncomparableTypesException($this, $other);
         }
 
         if ($this->value < $other->value) {
@@ -130,6 +131,7 @@ usort($scores, fn($a, $b) => $a->approxCompare($b, 0.01));
 ### Vector Comparison with Magnitude
 
 ```php
+use Galaxon\Core\Exceptions\IncomparableTypesException;
 use Galaxon\Core\Floats;
 use Galaxon\Core\Numbers;
 use Galaxon\Core\Traits\ApproxComparable;
@@ -151,7 +153,7 @@ class Vector2D
     public function compare(mixed $other): int
     {
         if (!$other instanceof self) {
-            throw new TypeError('Can only compare with another Vector2D');
+            throw new IncomparableTypesException($this, $other);
         }
 
         // Compare by magnitude
@@ -199,7 +201,7 @@ See [Traits.md](Traits.md) for complete hierarchy and usage guide.
 2. **Consistent Semantics**: Ensure approximate equality aligns with your ordering semantics
 3. **Don't Override approxCompare()**: Let the trait provide it based on `approxEqual()` and `compare()`
 4. **Document Precision**: Clearly document when to use exact vs approximate comparison
-5. **Type Safety**: Throw `TypeError` in `compare()` for incompatible types, return `false` in `approxEqual()`
+5. **Type Safety**: Throw `IncomparableTypesException` in `compare()` for incompatible types, return `false` in `approxEqual()`
 6. **Use Floats Utilities**: Leverage `Floats::approxEqual()` and `Floats::compare()` for float comparisons
 7. **Sensible Defaults**: Choose default tolerances appropriate for your type's typical use cases
 8. **Test Thoroughly**: Test edge cases like zero, very large values, and very small values
@@ -234,7 +236,7 @@ See [Traits.md](Traits.md) for complete hierarchy and usage guide.
 public function compare(mixed $other): int
 {
     if (!$other instanceof self) {
-        throw new TypeError('Type mismatch');
+        throw new IncomparableTypesException($this, $other);
     }
 
     // Use integer arithmetic for exact comparison
@@ -284,3 +286,10 @@ public function approxEqual(
         && Floats::approxEqual($this->z, $other->z, $relTol, $absTol);
 }
 ```
+
+## See Also
+
+- [Traits.md](Traits.md) - Trait hierarchy overview
+- [Comparable.md](Comparable.md) - Base ordering trait
+- [ApproxEquatable.md](ApproxEquatable.md) - Approximate equality trait
+- [IncomparableTypesException.md](../Exceptions/IncomparableTypesException.md) - Exception for type mismatches

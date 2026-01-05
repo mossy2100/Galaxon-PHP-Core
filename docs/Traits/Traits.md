@@ -129,7 +129,7 @@ class Version
     public function compare(mixed $other): int
     {
         if (!$other instanceof self) {
-            throw new TypeError('Cannot compare with non-Version');
+            throw new IncomparableTypesException($this, $other);
         }
 
         $result = $this->major <=> $other->major
@@ -186,7 +186,7 @@ class Rational
     public function compare(mixed $other): int
     {
         if (!$other instanceof self) {
-            throw new TypeError('Cannot compare with non-Rational');
+            throw new IncomparableTypesException($this, $other);
         }
 
         $left = $this->num * $other->den;
@@ -267,4 +267,5 @@ class CustomComparable
 - [Comparable.md](Comparable.md) - Trait for ordering
 - [ApproxEquatable.md](ApproxEquatable.md) - Trait for approximate equality
 - [ApproxComparable.md](ApproxComparable.md) - Trait for complete comparison
+- [IncomparableTypesException.md](../Exceptions/IncomparableTypesException.md) - Exception for type mismatches
 - [Floats.md](../Floats.md) - Utilities for floating-point comparison

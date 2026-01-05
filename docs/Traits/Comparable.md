@@ -37,7 +37,7 @@ abstract public function compare(mixed $other): int
 
 **Implementation Guidelines:**
 - Must return **exactly** -1, 0, or 1 (not just negative/zero/positive). The convenience methods use strict equality checks.
-- May throw `TypeError` for incompatible types (this is expected behavior).
+- Should throw `IncomparableTypesException` for incompatible types (this is expected behavior).
 
 ## Concrete Methods
 
@@ -57,7 +57,7 @@ Check if this object equals another. Provided by the trait - delegates to `compa
 
 **Behavior:**
 - Calls `compare()` within a try/catch block
-- Returns `false` gracefully if `compare()` throws `TypeError` for incompatible types
+- Returns `false` gracefully if `compare()` throws `IncomparableTypesException` for incompatible types
 - Returns `true` only if `compare()` returns `0`
 
 ### lessThan()
@@ -75,7 +75,7 @@ Check if this object is less than another.
 - `bool` - `true` if this < other, `false` otherwise
 
 **Throws:**
-- `TypeError` - If `$other` is not the same type as this object
+- `IncomparableTypesException` - If `$other` is not a compatible type
 
 ### lessThanOrEqual()
 
@@ -92,7 +92,7 @@ Check if this object is less than or equal to another.
 - `bool` - `true` if this <= other, `false` otherwise
 
 **Throws:**
-- `TypeError` - If `$other` is not the same type as this object
+- `IncomparableTypesException` - If `$other` is not a compatible type
 
 ### greaterThan()
 
@@ -109,7 +109,7 @@ Check if this object is greater than another.
 - `bool` - `true` if this > other, `false` otherwise
 
 **Throws:**
-- `TypeError` - If `$other` is not the same type as this object
+- `IncomparableTypesException` - If `$other` is not a compatible type
 
 ### greaterThanOrEqual()
 
@@ -126,13 +126,14 @@ Check if this object is greater than or equal to another.
 - `bool` - `true` if this >= other, `false` otherwise
 
 **Throws:**
-- `TypeError` - If `$other` is not the same type as this object
+- `IncomparableTypesException` - If `$other` is not a compatible type
 
 ## Examples
 
 ### Basic Implementation for Integers
 
 ```php
+use Galaxon\Core\Exceptions\IncomparableTypesException;
 use Galaxon\Core\Traits\Comparable;
 
 class Score
@@ -146,7 +147,7 @@ class Score
     public function compare(mixed $other): int
     {
         if (!$other instanceof self) {
-            throw new TypeError('Can only compare with another Score');
+            throw new IncomparableTypesException($this, $other);
         }
 
         if ($this->value < $other->value) {
@@ -173,6 +174,7 @@ var_dump($s1->lessThanOrEqual($s3));    // true
 ### Using Spaceship Operator with Sign Normalization
 
 ```php
+use Galaxon\Core\Exceptions\IncomparableTypesException;
 use Galaxon\Core\Numbers;
 use Galaxon\Core\Traits\Comparable;
 
@@ -189,7 +191,7 @@ class Version
     public function compare(mixed $other): int
     {
         if (!$other instanceof self) {
-            throw new TypeError('Can only compare with another Version');
+            throw new IncomparableTypesException($this, $other);
         }
 
         // Compare major, then minor, then patch
@@ -218,6 +220,7 @@ var_dump($v3->greaterThan($v1));  // true (2.0.0 > 1.2.3)
 ### Comparing with Multiple Types
 
 ```php
+use Galaxon\Core\Exceptions\IncomparableTypesException;
 use Galaxon\Core\Numbers;
 use Galaxon\Core\Traits\Comparable;
 
@@ -237,7 +240,7 @@ class Priority
         } elseif (is_int($other)) {
             $otherValue = $other;
         } else {
-            throw new TypeError('Can only compare with Priority or int');
+            throw new IncomparableTypesException($this, $other);
         }
 
         return Numbers::sign($this->value <=> $otherValue);
@@ -266,12 +269,17 @@ See [Traits.md](Traits.md) for complete hierarchy and usage guide.
 ## Best Practices
 
 1. **Return Exactly -1, 0, or 1**: Use `Numbers::sign()` or explicit conditionals to normalize the spaceship operator result
-2. **Type Checking**: Throw `TypeError` in `compare()` for incompatible types (don't try to handle them)
+2. **Type Checking**: Throw `IncomparableTypesException` in `compare()` for incompatible types (don't try to handle them)
 3. **Epsilon for Floats**: Use epsilon tolerance when comparing floating-point values via `Floats::compare()`
 4. **Consistency**: Ensure `compare()` is consistent with your type's equality semantics
 5. **Transitivity**: If A < B and B < C, then A < C must be true
 6. **Don't Override equal()**: Unless you have a very specific reason, let the trait provide `equal()` based on `compare()`
 7. **Use Trait Composition**: The Comparable trait already includes Equatable via trait composition - don't separately use Equatable
+
+## See Also
+
+- [Traits.md](Traits.md) - Trait hierarchy overview
+- [IncomparableTypesException.md](../Exceptions/IncomparableTypesException.md) - Exception for type mismatches
 
 ## Common Patterns
 
