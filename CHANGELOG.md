@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-01-05
+
+### Added
+
+- **IncomparableTypesException** - Documentation and tests for the custom exception
+  - Added PHPDoc comments to the exception class
+  - Added `docs/Exceptions/IncomparableTypesException.md`
+  - Added `tests/Exceptions/IncomparableTypesExceptionTest.php` (10 tests)
+  - Added Exceptions section to README.md
+
+### Fixed
+
+- Fixed GitHub URLs in README.md (`PHP-Core` → `Galaxon-PHP-Core`)
+- Removed `Types::createError()` from documentation (method was removed)
+
 ## [1.0.0] - 2026-01-04
 
 ### First Stable Release
