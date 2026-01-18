@@ -302,8 +302,71 @@ Floats::tryConvertToInt($value);  // 42 (not null)
 - Calculating error bounds in error tracking systems
 
 **See Also:**
+- `isApproxInt()` - Check if a float is approximately an integer
 - `tryConvertToInt()` - Convert float to int losslessly
 - `ulp()` - Calculate the spacing between adjacent floats
+
+### isApproxInt()
+
+```php
+public static function isApproxInt(
+    float $value,
+    float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
+    float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
+): bool
+```
+
+Check if a float value is approximately an integer (within tolerance). Unlike `isExactInt()`, this method allows for small floating-point errors that may accumulate during calculations.
+
+**Parameters:**
+- `$value` (float) - The value to check
+- `$relTol` (float) - The maximum allowed relative difference (default: `1e-9`)
+- `$absTol` (float) - The maximum allowed absolute difference (default: `PHP_FLOAT_EPSILON`)
+
+**Returns:**
+- `bool` - Returns `true` if the value is approximately an integer, `false` otherwise
+
+**Examples:**
+
+```php
+// Exact integers
+Floats::isApproxInt(3.0);      // true
+Floats::isApproxInt(-42.0);    // true
+Floats::isApproxInt(0.0);      // true
+
+// Values very close to integers (within tolerance)
+Floats::isApproxInt(3.0000000001);   // true
+Floats::isApproxInt(2.9999999999);   // true
+Floats::isApproxInt(-5.0000000001);  // true
+
+// Fractional values
+Floats::isApproxInt(3.5);      // false
+Floats::isApproxInt(0.001);    // false
+Floats::isApproxInt(-3.14);    // false
+
+// Useful for logarithm results
+Floats::isApproxInt(log10(1000));        // true (result is ~3)
+Floats::isApproxInt(log(1000000, 1000)); // true (result is ~2)
+Floats::isApproxInt(log(100, 1000));     // false (result is ~0.667)
+
+// Custom tolerance
+Floats::isApproxInt(3.0001, 0.0, 1e-3);  // true (within absolute tolerance)
+Floats::isApproxInt(3.0001, 0.0, 1e-5);  // false (exceeds tolerance)
+
+// Non-finite values
+Floats::isApproxInt(INF);      // false
+Floats::isApproxInt(-INF);     // false
+Floats::isApproxInt(NAN);      // false
+```
+
+**Use Cases:**
+- Checking if a logarithm result is an integer power
+- Validating that a calculation result is approximately a whole number
+- Filtering values based on "integrality" with tolerance for floating-point errors
+
+**See Also:**
+- `isExactInt()` - For exact integer check without tolerance
+- `approxEqual()` - For comparing two floats with tolerance
 
 ## Comparison Methods
 
@@ -524,6 +587,132 @@ Floats::normalizeZero(2.5);   // 2.5
 ```
 
 **Use Case:** When you want consistent behavior regardless of whether a zero is positive or negative, especially in comparisons or output formatting.
+
+### trunc()
+
+```php
+public static function trunc(float $value): float
+```
+
+Truncate a float towards zero (remove the fractional part). This is equivalent to `floor()` for positive numbers and `ceil()` for negative numbers. Unlike casting to int, this method handles values outside PHP's integer range.
+
+**Parameters:**
+- `$value` (float) - The value to truncate
+
+**Returns:**
+- `float` - The truncated value (integer part towards zero)
+
+**Examples:**
+
+```php
+// Positive values - same as floor()
+Floats::trunc(3.7);     // 3.0
+Floats::trunc(3.2);     // 3.0
+Floats::trunc(3.0);     // 3.0
+
+// Negative values - different from floor()
+Floats::trunc(-3.7);    // -3.0 (floor would give -4.0)
+Floats::trunc(-3.2);    // -3.0 (floor would give -4.0)
+Floats::trunc(-3.0);    // -3.0
+
+// Values between -1 and 1
+Floats::trunc(0.9);     // 0.0
+Floats::trunc(-0.9);    // 0.0
+
+// Zero values
+Floats::trunc(0.0);     // 0.0
+Floats::trunc(-0.0);    // 0.0
+
+// Non-finite values pass through unchanged
+Floats::trunc(INF);     // INF
+Floats::trunc(-INF);    // -INF
+Floats::trunc(NAN);     // NAN
+```
+
+**Comparison with floor():**
+
+| Value | `trunc()` | `floor()` |
+|-------|-----------|-----------|
+| 3.7   | 3.0       | 3.0       |
+| -3.7  | -3.0      | -4.0      |
+| 0.9   | 0.0       | 0.0       |
+| -0.9  | 0.0       | -1.0      |
+
+**Identity Property:**
+
+The `trunc()` and `frac()` methods satisfy the identity: `x = trunc(x) + frac(x)`
+
+```php
+$x = -3.7;
+Floats::trunc($x) + Floats::frac($x);  // -3.0 + (-0.7) = -3.7
+```
+
+**Use Cases:**
+- Extracting the integer part of a number towards zero
+- Implementing mathematical functions that require truncation semantics
+- Working with values too large for PHP's integer type
+
+**See Also:**
+- `frac()` - Get the fractional part (satisfies x = trunc(x) + frac(x))
+- `isExactInt()` - Check if a float represents an exact integer
+
+### frac()
+
+```php
+public static function frac(float $value): float
+```
+
+Return the fractional part of a float. This method satisfies the identity: `x = trunc(x) + frac(x)`. For negative values, the result is also negative.
+
+**Parameters:**
+- `$value` (float) - The value to get the fractional part of
+
+**Returns:**
+- `float` - The fractional part. Returns `NAN` for non-finite inputs.
+
+**Examples:**
+
+```php
+// Positive values
+Floats::frac(3.7);      // 0.7
+Floats::frac(3.2);      // 0.2
+Floats::frac(3.0);      // 0.0
+Floats::frac(0.9);      // 0.9
+Floats::frac(100.999);  // 0.999
+
+// Negative values - result is also negative
+Floats::frac(-3.7);     // -0.7
+Floats::frac(-3.2);     // -0.2
+Floats::frac(-3.0);     // 0.0
+Floats::frac(-0.9);     // -0.9
+
+// Zero values
+Floats::frac(0.0);      // 0.0
+Floats::frac(-0.0);     // 0.0
+
+// Non-finite values return NAN
+Floats::frac(INF);      // NAN
+Floats::frac(-INF);     // NAN
+Floats::frac(NAN);      // NAN
+```
+
+**Identity Property:**
+
+```php
+$values = [3.7, -3.7, 0.5, -0.5, 100.999, -100.999];
+foreach ($values as $x) {
+    $x === Floats::trunc($x) + Floats::frac($x);  // true for all
+}
+```
+
+**Use Cases:**
+- Extracting the decimal portion of a number
+- Implementing modular arithmetic with floats
+- Signal processing and waveform generation
+- Checking if a value has a fractional component
+
+**See Also:**
+- `trunc()` - Get the integer part towards zero
 
 ### wrap()
 

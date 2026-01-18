@@ -154,6 +154,37 @@ final class Floats
         return is_finite($value) && floor($value) === $value && abs($value) <= self::MAX_EXACT_INT;
     }
 
+    /**
+     * Check if a float value is approximately an integer (within tolerance).
+     *
+     * Unlike isExactInt(), this method allows for small floating-point errors
+     * that may accumulate during calculations.
+     *
+     * For example:
+     * - isApproxInt(3.0) → true
+     * - isApproxInt(3.0000000001) → true (within default tolerance)
+     * - isApproxInt(3.5) → false
+     * - isApproxInt(log(1000, 10)) → true (result is approximately 3)
+     *
+     * @param float $value The value to check.
+     * @param float $relTol The maximum allowed relative difference.
+     * @param float $absTol The maximum allowed absolute difference.
+     * @return bool True if the value is approximately an integer, false otherwise.
+     *
+     * @see isExactInt() For exact integer check without tolerance
+     * @see approxEqual() For comparing two floats with tolerance
+     */
+    public static function isApproxInt(
+        float $value,
+        float $relTol = self::DEFAULT_RELATIVE_TOLERANCE,
+        float $absTol = self::DEFAULT_ABSOLUTE_TOLERANCE
+    ): bool {
+        if (!is_finite($value)) {
+            return false;
+        }
+        return self::approxEqual($value, round($value), $relTol, $absTol);
+    }
+
     // endregion
 
     // region Comparison methods
@@ -256,6 +287,59 @@ final class Floats
     public static function normalizeZero(float $value): float
     {
         return self::isNegativeZero($value) ? 0.0 : $value;
+    }
+
+    /**
+     * Truncate a float towards zero (remove the fractional part).
+     *
+     * This is equivalent to floor() for positive numbers and ceil() for negative numbers.
+     * Unlike casting to int, this method handles values outside PHP's integer range.
+     *
+     * For example:
+     * - trunc(3.7) → 3.0
+     * - trunc(-3.7) → -3.0
+     * - trunc(3.0) → 3.0
+     * - trunc(-0.5) → 0.0
+     *
+     * Special cases:
+     * - trunc(NAN) returns NAN
+     * - trunc(±INF) returns ±INF
+     *
+     * @param float $value The value to truncate.
+     * @return float The truncated value.
+     */
+    public static function trunc(float $value): float
+    {
+        if (!is_finite($value)) {
+            return $value;
+        }
+        return $value >= 0 ? floor($value) : ceil($value);
+    }
+
+    /**
+     * Return the fractional part of a float.
+     *
+     * This method satisfies the identity: x = trunc(x) + frac(x)
+     *
+     * For negative values, the result is also negative:
+     * - frac(3.7) → 0.7
+     * - frac(-3.7) → -0.7
+     *
+     * Special cases:
+     * - frac(NAN) returns NAN
+     * - frac(±INF) returns NAN (fractional part is undefined)
+     *
+     * @param float $value The value to get the fractional part of.
+     * @return float The fractional part.
+     *
+     * @see trunc() For the integer part towards zero
+     */
+    public static function frac(float $value): float
+    {
+        if (!is_finite($value)) {
+            return NAN;
+        }
+        return $value - self::trunc($value);
     }
 
     /**

@@ -233,6 +233,124 @@ final class FloatsTest extends TestCase
     }
 
     /**
+     * Test trunc() with positive values.
+     */
+    public function testTruncPositive(): void
+    {
+        $this->assertSame(3.0, Floats::trunc(3.7));
+        $this->assertSame(3.0, Floats::trunc(3.2));
+        $this->assertSame(3.0, Floats::trunc(3.0));
+        $this->assertSame(0.0, Floats::trunc(0.9));
+        $this->assertSame(100.0, Floats::trunc(100.999));
+    }
+
+    /**
+     * Test trunc() with negative values.
+     */
+    public function testTruncNegative(): void
+    {
+        $this->assertSame(-3.0, Floats::trunc(-3.7));
+        $this->assertSame(-3.0, Floats::trunc(-3.2));
+        $this->assertSame(-3.0, Floats::trunc(-3.0));
+        $this->assertSame(0.0, Floats::trunc(-0.9));
+        $this->assertSame(-100.0, Floats::trunc(-100.999));
+    }
+
+    /**
+     * Test trunc() with zero values.
+     */
+    public function testTruncZero(): void
+    {
+        $this->assertSame(0.0, Floats::trunc(0.0));
+        $this->assertSame(0.0, Floats::trunc(-0.0));
+        $this->assertSame(0.0, Floats::trunc(0.5));
+        $this->assertSame(0.0, Floats::trunc(-0.5));
+    }
+
+    /**
+     * Test trunc() with non-finite values.
+     */
+    public function testTruncNonFinite(): void
+    {
+        $this->assertSame(INF, Floats::trunc(INF));
+        $this->assertSame(-INF, Floats::trunc(-INF));
+        $this->assertTrue(is_nan(Floats::trunc(NAN)));
+    }
+
+    /**
+     * Test trunc() differs from floor() for negative values.
+     */
+    public function testTruncDiffersFromFloor(): void
+    {
+        // floor() rounds toward -INF, trunc() rounds toward zero
+        $this->assertSame(-3.0, Floats::trunc(-3.7));
+        $this->assertSame(-4.0, floor(-3.7));
+
+        $this->assertSame(-3.0, Floats::trunc(-3.2));
+        $this->assertSame(-4.0, floor(-3.2));
+    }
+
+    /**
+     * Test frac() with positive values.
+     */
+    public function testFracPositive(): void
+    {
+        $this->assertEqualsWithDelta(0.7, Floats::frac(3.7), 1e-10);
+        $this->assertEqualsWithDelta(0.2, Floats::frac(3.2), 1e-10);
+        $this->assertEqualsWithDelta(0.0, Floats::frac(3.0), 1e-10);
+        $this->assertEqualsWithDelta(0.9, Floats::frac(0.9), 1e-10);
+        $this->assertEqualsWithDelta(0.999, Floats::frac(100.999), 1e-10);
+    }
+
+    /**
+     * Test frac() with negative values.
+     */
+    public function testFracNegative(): void
+    {
+        $this->assertEqualsWithDelta(-0.7, Floats::frac(-3.7), 1e-10);
+        $this->assertEqualsWithDelta(-0.2, Floats::frac(-3.2), 1e-10);
+        $this->assertEqualsWithDelta(0.0, Floats::frac(-3.0), 1e-10);
+        $this->assertEqualsWithDelta(-0.9, Floats::frac(-0.9), 1e-10);
+        $this->assertEqualsWithDelta(-0.999, Floats::frac(-100.999), 1e-10);
+    }
+
+    /**
+     * Test frac() with zero values.
+     */
+    public function testFracZero(): void
+    {
+        $this->assertSame(0.0, Floats::frac(0.0));
+        $this->assertSame(0.0, Floats::frac(-0.0));
+    }
+
+    /**
+     * Test frac() with non-finite values.
+     */
+    public function testFracNonFinite(): void
+    {
+        $this->assertTrue(is_nan(Floats::frac(INF)));
+        $this->assertTrue(is_nan(Floats::frac(-INF)));
+        $this->assertTrue(is_nan(Floats::frac(NAN)));
+    }
+
+    /**
+     * Test frac() satisfies the identity x = trunc(x) + frac(x).
+     */
+    public function testFracIdentity(): void
+    {
+        $testValues = [3.7, -3.7, 0.5, -0.5, 100.999, -100.999, 0.0, 42.0, -42.0];
+
+        foreach ($testValues as $value) {
+            $this->assertEqualsWithDelta(
+                $value,
+                Floats::trunc($value) + Floats::frac($value),
+                1e-10,
+                "Identity x = trunc(x) + frac(x) failed for x = $value"
+            );
+        }
+    }
+
+    /**
      * Test wrap() with values already within the signed range.
      */
     public function testWrapSignedValuesInRange(): void
@@ -677,6 +795,83 @@ final class FloatsTest extends TestCase
                 sprintf('isExactInt(%s) should be %s', $value, $expected ? 'true' : 'false')
             );
         }
+    }
+
+    /**
+     * Test isApproxInt with exact integers.
+     */
+    public function testIsApproxIntWithExactIntegers(): void
+    {
+        $this->assertTrue(Floats::isApproxInt(0.0));
+        $this->assertTrue(Floats::isApproxInt(1.0));
+        $this->assertTrue(Floats::isApproxInt(-1.0));
+        $this->assertTrue(Floats::isApproxInt(42.0));
+        $this->assertTrue(Floats::isApproxInt(-99.0));
+        $this->assertTrue(Floats::isApproxInt(1000000.0));
+    }
+
+    /**
+     * Test isApproxInt with values very close to integers.
+     */
+    public function testIsApproxIntWithNearIntegers(): void
+    {
+        // These should be approximately integers within default tolerance
+        $this->assertTrue(Floats::isApproxInt(3.0000000001));
+        $this->assertTrue(Floats::isApproxInt(2.9999999999));
+        $this->assertTrue(Floats::isApproxInt(-5.0000000001));
+        $this->assertTrue(Floats::isApproxInt(-4.9999999999));
+    }
+
+    /**
+     * Test isApproxInt with fractional values.
+     */
+    public function testIsApproxIntWithFractionalValues(): void
+    {
+        $this->assertFalse(Floats::isApproxInt(0.5));
+        $this->assertFalse(Floats::isApproxInt(1.1));
+        $this->assertFalse(Floats::isApproxInt(-3.14));
+        $this->assertFalse(Floats::isApproxInt(2.5));
+        $this->assertFalse(Floats::isApproxInt(0.001));
+    }
+
+    /**
+     * Test isApproxInt with logarithm results.
+     */
+    public function testIsApproxIntWithLogarithms(): void
+    {
+        // log10(1000) should be approximately 3
+        $this->assertTrue(Floats::isApproxInt(log10(1000)));
+
+        // log(1000, 10) should be approximately 3
+        $this->assertTrue(Floats::isApproxInt(log(1000, 10)));
+
+        // log(1000000, 1000) should be approximately 2
+        $this->assertTrue(Floats::isApproxInt(log(1000000, 1000)));
+
+        // log(100, 1000) is not an integer (it's 2/3)
+        $this->assertFalse(Floats::isApproxInt(log(100, 1000)));
+    }
+
+    /**
+     * Test isApproxInt with custom tolerance.
+     */
+    public function testIsApproxIntWithCustomTolerance(): void
+    {
+        // With very strict tolerance, near-integers should fail
+        $this->assertFalse(Floats::isApproxInt(3.0001, 0.0, 1e-5));
+
+        // With looser tolerance, they should pass
+        $this->assertTrue(Floats::isApproxInt(3.0001, 0.0, 1e-3));
+    }
+
+    /**
+     * Test isApproxInt with non-finite values.
+     */
+    public function testIsApproxIntWithNonFinite(): void
+    {
+        $this->assertFalse(Floats::isApproxInt(INF));
+        $this->assertFalse(Floats::isApproxInt(-INF));
+        $this->assertFalse(Floats::isApproxInt(NAN));
     }
 
     // endregion

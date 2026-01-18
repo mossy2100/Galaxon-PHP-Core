@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-01-18
+
+### Added
+
+- **Floats class** - New methods for integer/fractional part operations:
+  - `isApproxInt()` - Check if a float is approximately an integer within tolerance
+  - `trunc()` - Truncate a float towards zero (integer part)
+  - `frac()` - Get the fractional part of a float (satisfies x = trunc(x) + frac(x))
+
+- **Integers class** - New methods for Unicode sub/superscript conversion:
+  - `isSubscript()` - Check if a string is a valid subscript integer
+  - `isSuperscript()` - Check if a string is a valid superscript integer
+  - `fromSubscript()` - Convert subscript string to integer (e.g., ₁₂₃ → 123)
+  - `fromSuperscript()` - Convert superscript string to integer (e.g., ¹²³ → 123)
+
+- **Numbers class**:
+  - `REGEX` constant - Regular expression pattern for matching numbers
+
+### Documentation
+
+- **Floats.md** - Added documentation for `isApproxInt()`, `trunc()`, and `frac()`
+- **Trait documentation** - Updated to use `IncomparableTypesException`
+- Minor documentation updates to Arrays.md and IncomparableTypesException.md
+
+### Tests
+
+- Added 7 tests for `isApproxInt()` covering exact integers, near-integers, fractions, logarithms, custom tolerance, and non-finite values
+- Added 6 tests for `trunc()` and `frac()` covering positive/negative values, zero, non-finite values, and the identity property
+
 ## [1.0.1] - 2026-01-05
 
 ### Added

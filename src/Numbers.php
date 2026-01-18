@@ -11,6 +11,15 @@ use DomainException;
  */
 final class Numbers
 {
+    // region Constants
+
+    /**
+     * Regex for numbers.
+     */
+    public const string REGEX = '-?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?';
+
+    // endregion
+
     // region Constructor
 
     /**
@@ -89,8 +98,8 @@ final class Numbers
      *    int 0 or float +0.0.
      *
      * @param int|float $value The number to check.
-     * @param bool $zeroForZero If true, return 0 when $value equals 0. If false, return 1 or -1, indicating the sign
-     * of the zero.
+     * @param bool $zeroForZero If true (default), return 0 when $value equals 0. If false, return 1 or -1, indicating
+     * the sign of the zero.
      * @return int The sign of the $value argument (-1, 0, or 1).
      */
     public static function sign(int|float $value, bool $zeroForZero = true): int

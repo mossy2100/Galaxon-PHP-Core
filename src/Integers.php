@@ -195,9 +195,9 @@ final class Integers
         }
 
         // Check none of the values equal PHP_INT_MIN because otherwise abs() will not work properly.
-        $rangeErr = 'Arguments must be greater than PHP_INT_MIN (' . PHP_INT_MIN . ').';
+        $err = 'Arguments must be greater than PHP_INT_MIN (' . PHP_INT_MIN . ').';
         if ($nums[0] === PHP_INT_MIN) {
-            throw new DomainException($rangeErr);
+            throw new DomainException($err);
         }
 
         // Initialise to the first number.
@@ -207,7 +207,7 @@ final class Integers
         for ($i = 1, $n = count($nums); $i < $n; $i++) {
             // Check integer is in the valid range.
             if ($nums[$i] === PHP_INT_MIN) {
-                throw new DomainException($rangeErr);
+                throw new DomainException($err);
             }
 
             $a = $result;
@@ -261,6 +261,88 @@ final class Integers
             $result .= self::SUPERSCRIPT_CHARACTERS[$s[$i]];
         }
         return $result;
+    }
+
+    /**
+     * Check if a string is a valid subscript integer representation.
+     *
+     * @param string $s The string to check.
+     * @return bool True if the string matches the pattern for a subscript integer (e.g., ₁₂₃, ₋₅).
+     */
+    public static function isSubscript(string $s): bool
+    {
+        $minus = self::SUBSCRIPT_CHARACTERS['-'];
+        $digits = implode('', array_slice(self::SUBSCRIPT_CHARACTERS, 1));
+        return (bool)preg_match("/^$minus?[$digits]+$/u", $s);
+    }
+
+    /**
+     * Check if a string is a valid superscript integer representation.
+     *
+     * @param string $s The string to check.
+     * @return bool True if the string matches the pattern for a superscript integer (e.g., ¹²³, ⁻⁵).
+     */
+    public static function isSuperscript(string $s): bool
+    {
+        $minus = self::SUPERSCRIPT_CHARACTERS['-'];
+        $digits = implode('', array_slice(self::SUPERSCRIPT_CHARACTERS, 1));
+        return (bool)preg_match("/^$minus?[$digits]+$/u", $s);
+    }
+
+    /**
+     * Convert a string of Unicode subscript characters to an integer.
+     *
+     * @param string $s The subscript string to convert (e.g., ₁₂₃ → 123, ₋₅ → -5).
+     * @return int The integer value.
+     * @throws DomainException If the string contains invalid subscript characters.
+     */
+    public static function fromSubscript(string $s): int
+    {
+        // Create reverse mapping.
+        static $reverseMap = null;
+        if ($reverseMap === null) {
+            $reverseMap = array_flip(self::SUBSCRIPT_CHARACTERS);
+        }
+
+        // Convert each character.
+        $result = '';
+        $chars = mb_str_split($s);
+        foreach ($chars as $char) {
+            if (!isset($reverseMap[$char])) {
+                throw new DomainException("Invalid subscript character: '$char'.");
+            }
+            $result .= $reverseMap[$char];
+        }
+
+        return (int)$result;
+    }
+
+    /**
+     * Convert a string of Unicode superscript characters to an integer.
+     *
+     * @param string $s The superscript string to convert (e.g., ¹²³ → 123, ⁻⁵ → -5).
+     * @return int The integer value.
+     * @throws DomainException If the string contains invalid superscript characters.
+     */
+    public static function fromSuperscript(string $s): int
+    {
+        // Create reverse mapping.
+        static $reverseMap = null;
+        if ($reverseMap === null) {
+            $reverseMap = array_flip(self::SUPERSCRIPT_CHARACTERS);
+        }
+
+        // Convert each character.
+        $result = '';
+        $chars = mb_str_split($s);
+        foreach ($chars as $char) {
+            if (!isset($reverseMap[$char])) {
+                throw new DomainException("Invalid superscript character: '$char'.");
+            }
+            $result .= $reverseMap[$char];
+        }
+
+        return (int)$result;
     }
 
     // endregion
