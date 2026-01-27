@@ -139,7 +139,7 @@ Get the first value in an array. This is a polyfill for PHP versions prior to 8.
 
 This method doesn't behave exactly the same as `array_first()`, as it will throw a `LengthException` instead of returning `null` for empty arrays.
 
-This is because the first value in an array might actually be null.
+This allows distinguishing an empty array (no first value exists) from an array where the first value is actually null.
 
 **Parameters:**
 - `$arr` (non-empty-array) - The array to extract from
@@ -187,7 +187,7 @@ Get the last value in an array. This is a polyfill for PHP versions prior to 8.5
 
 This method doesn't behave exactly the same as `array_last()`, as it will throw a `LengthException` instead of returning `null` for empty arrays.
 
-This is because the last value in an array might actually be null.
+This allows distinguishing an empty array (no last value exists) from an array where the last value is actually null.
 
 **Parameters:**
 - `$arr` (non-empty-array) - The array to extract from
