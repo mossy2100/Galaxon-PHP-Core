@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-01-27
+
+### Added
+
+- **Arrays class** - New extraction methods (PHP 8.5 polyfills):
+  - `first()` - Get the first value in an array, throws `LengthException` if empty
+  - `last()` - Get the last value in an array, throws `LengthException` if empty
+
+- **FormatException** - New exception class for string format validation errors
+  - Extends `DomainException`
+  - For use when a string has an invalid format for the desired operation
+
+### Fixed
+
+- **Floats::normalizeZero()** - Simplified logic using `=== 0.0` comparison
+- **Floats::tryConvertToInt()** - Added bounds check for `PHP_INT_MIN`/`PHP_INT_MAX` before conversion to prevent overflow
+- **Stringify::stringify()** - Added error suppression for non-finite float string conversion
+
+### Tests
+
+- Added 11 tests for `Arrays::first()` and `Arrays::last()`
+- Added 18 tests for `Integers::isSubscript()`, `isSuperscript()`, `fromSubscript()`, `fromSuperscript()`
+- Added region comments to ArraysTest and IntegersTest for better organization
+
+### Documentation
+
+- **Arrays.md** - Added "Extraction Methods" section with `first()` and `last()` documentation
+- **Integers.md** - Renamed "Conversion Methods" to "Subscript/Superscript Methods", added documentation for validation and parsing methods
+
 ## [1.1.0] - 2026-01-18
 
 ### Added

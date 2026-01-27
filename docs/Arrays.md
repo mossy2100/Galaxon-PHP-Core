@@ -9,6 +9,7 @@ The `Arrays` class provides helper methods for working with PHP arrays. This is 
 Methods are organized into:
 - **Inspection methods** - Analyze array properties (e.g., detect circular references)
 - **Transformation methods** - Transform array values (e.g., quote strings)
+- **Extraction methods** - Extract values from arrays (e.g., first/last element)
 
 ## Inspection Methods
 
@@ -125,6 +126,104 @@ throw new ValueError('Invalid unit. Valid units: ' . implode(', ', $quotedUnits)
 ```
 
 **Note:** This method does not perform escaping. If the values contain the quote character, they will not be escaped. For proper escaping, use appropriate functions like `addslashes()` or context-specific escaping functions.
+
+## Extraction Methods
+
+### first()
+
+```php
+public static function first(array $arr): mixed
+```
+
+Get the first value in an array. This is a polyfill for PHP versions prior to 8.5, which provides the native `array_first()` function.
+
+This method doesn't behave exactly the same as `array_first()`, as it will throw a `LengthException` instead of returning `null` for empty arrays.
+
+This is because the first value in an array might actually be null.
+
+**Parameters:**
+- `$arr` (non-empty-array) - The array to extract from
+
+**Returns:**
+- `mixed` - The first value in the array
+
+**Throws:**
+- `LengthException` - If the array is empty
+
+**Examples:**
+
+List array:
+```php
+Arrays::first([1, 2, 3]); // 1
+Arrays::first(['apple', 'banana', 'cherry']); // 'apple'
+```
+
+Associative array:
+```php
+$config = ['host' => 'localhost', 'port' => 5432, 'db' => 'myapp'];
+Arrays::first($config); // 'localhost'
+```
+
+Single element:
+```php
+Arrays::first([42]); // 42
+Arrays::first(['only' => 'value']); // 'value'
+```
+
+Empty array throws exception:
+```php
+Arrays::first([]); // throws LengthException
+```
+
+**Note:** Unlike `reset()`, this method does not modify the array's internal pointer and throws an exception for empty arrays rather than returning `false`.
+
+### last()
+
+```php
+public static function last(array $arr): mixed
+```
+
+Get the last value in an array. This is a polyfill for PHP versions prior to 8.5, which provides the native `array_last()` function.
+
+This method doesn't behave exactly the same as `array_last()`, as it will throw a `LengthException` instead of returning `null` for empty arrays.
+
+This is because the last value in an array might actually be null.
+
+**Parameters:**
+- `$arr` (non-empty-array) - The array to extract from
+
+**Returns:**
+- `mixed` - The last value in the array
+
+**Throws:**
+- `LengthException` - If the array is empty
+
+**Examples:**
+
+List array:
+```php
+Arrays::last([1, 2, 3]); // 3
+Arrays::last(['apple', 'banana', 'cherry']); // 'cherry'
+```
+
+Associative array:
+```php
+$config = ['host' => 'localhost', 'port' => 5432, 'db' => 'myapp'];
+Arrays::last($config); // 'myapp'
+```
+
+Single element:
+```php
+Arrays::last([42]); // 42
+Arrays::last(['only' => 'value']); // 'value'
+```
+
+Empty array throws exception:
+```php
+Arrays::last([]); // throws LengthException
+```
+
+**Note:** Unlike `end()`, this method does not modify the array's internal pointer and throws an exception for empty arrays rather than returning `false`.
 
 ## See Also
 

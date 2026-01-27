@@ -93,7 +93,7 @@ final class Stringify
     {
         // Handle non-finite values.
         if (!is_finite($value)) {
-            return (string)$value;
+            return @(string)$value;
         }
 
         // Convert the float to a string, showing maximum useful precision.

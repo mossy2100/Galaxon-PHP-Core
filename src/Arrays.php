@@ -6,6 +6,7 @@ namespace Galaxon\Core;
 
 use InvalidArgumentException;
 use JsonException;
+use LengthException;
 
 /**
  * Container for useful array-related methods.
@@ -78,6 +79,48 @@ final class Arrays
 
         // Apply the quotes. array_map() preserves the array keys.
         return array_map($quoteFn, $arr);
+    }
+
+    // endregion
+
+    // region Extraction methods
+
+    /**
+     * Get the first value in an array.
+     *
+     * This is for PHP versions prior to 8.5, which provides the array_first() function.
+     *
+     * @param non-empty-array<array-key, mixed> $arr The array to extract from.
+     * @return mixed The first value in the array.
+     * @throws LengthException If the array is empty.
+     */
+    public static function first(array $arr): mixed
+    {
+        // Check the array is not empty.
+        if (count($arr) === 0) {
+            throw new LengthException('Cannot get the first element of an empty array.');
+        }
+
+        return $arr[array_key_first($arr)];
+    }
+
+    /**
+     * Get the last value in an array.
+     *
+     * This is for PHP versions prior to 8.5, which provides the array_last() function.
+     *
+     * @param non-empty-array<array-key, mixed> $arr The array to extract from.
+     * @return mixed The last value in the array.
+     * @throws LengthException If the array is empty.
+     */
+    public static function last(array $arr): mixed
+    {
+        // Check the array is not empty.
+        if (count($arr) === 0) {
+            throw new LengthException('Cannot get the last element of an empty array.');
+        }
+
+        return $arr[array_key_last($arr)];
     }
 
     // endregion

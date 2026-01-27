@@ -4,7 +4,7 @@ Static utility class for integer arithmetic with overflow detection and number f
 
 ## Overview
 
-The `Integers` class provides integer arithmetic methods with overflow detection and utility functions for number theory and Unicode formatting. This is a static utility class and cannot be instantiated.
+The `Integers` class provides integer arithmetic methods with overflow detection, number theory functions, and subscript/superscript conversion utilities. This is a static utility class and cannot be instantiated.
 
 ### Overflow Detection
 
@@ -184,7 +184,7 @@ Integers::gcd(0, 0);        // 0
 - The GCD of 0 and 0 is 0
 - `PHP_INT_MIN` is not allowed because `abs(PHP_INT_MIN)` overflows
 
-## Conversion Methods
+## Subscript/Superscript Methods
 
 ### toSubscript()
 
@@ -236,6 +236,120 @@ Integers::toSuperscript(-42);   // '⁻⁴²'
 
 **Use cases:**
 - Exponents, e.g. `x²`, `6.02×10²³`.
+
+### isSubscript()
+
+```php
+public static function isSubscript(string $s): bool
+```
+
+Check if a string is a valid subscript integer representation.
+
+**Parameters:**
+- `$s` (string) - The string to check
+
+**Returns:**
+- `bool` - True if the string matches the pattern for a subscript integer
+
+**Examples:**
+
+```php
+Integers::isSubscript('₁₂₃');   // true
+Integers::isSubscript('₋₄₂');   // true (negative)
+Integers::isSubscript('₀');     // true
+Integers::isSubscript('123');   // false (regular digits)
+Integers::isSubscript('¹²³');   // false (superscript)
+Integers::isSubscript('');      // false (empty)
+Integers::isSubscript('₋');     // false (just minus sign)
+```
+
+### isSuperscript()
+
+```php
+public static function isSuperscript(string $s): bool
+```
+
+Check if a string is a valid superscript integer representation.
+
+**Parameters:**
+- `$s` (string) - The string to check
+
+**Returns:**
+- `bool` - True if the string matches the pattern for a superscript integer
+
+**Examples:**
+
+```php
+Integers::isSuperscript('¹²³');   // true
+Integers::isSuperscript('⁻⁴²');   // true (negative)
+Integers::isSuperscript('⁰');     // true
+Integers::isSuperscript('123');   // false (regular digits)
+Integers::isSuperscript('₁₂₃');   // false (subscript)
+Integers::isSuperscript('');      // false (empty)
+Integers::isSuperscript('⁻');     // false (just minus sign)
+```
+
+### fromSubscript()
+
+```php
+public static function fromSubscript(string $s): int
+```
+
+Convert a string of Unicode subscript characters to an integer.
+
+**Parameters:**
+- `$s` (string) - The subscript string to convert
+
+**Returns:**
+- `int` - The integer value
+
+**Throws:**
+- `DomainException` - If the string contains invalid subscript characters
+
+**Examples:**
+
+```php
+Integers::fromSubscript('₁₂₃');   // 123
+Integers::fromSubscript('₋₄₂');   // -42
+Integers::fromSubscript('₀');     // 0
+Integers::fromSubscript('₅');     // 5
+
+Integers::fromSubscript('123');   // throws DomainException
+Integers::fromSubscript('¹²³');   // throws DomainException
+```
+
+**Note:** Use `isSubscript()` to validate input before calling this method if you need to handle invalid input gracefully.
+
+### fromSuperscript()
+
+```php
+public static function fromSuperscript(string $s): int
+```
+
+Convert a string of Unicode superscript characters to an integer.
+
+**Parameters:**
+- `$s` (string) - The superscript string to convert
+
+**Returns:**
+- `int` - The integer value
+
+**Throws:**
+- `DomainException` - If the string contains invalid superscript characters
+
+**Examples:**
+
+```php
+Integers::fromSuperscript('¹²³');   // 123
+Integers::fromSuperscript('⁻⁴²');   // -42
+Integers::fromSuperscript('⁰');     // 0
+Integers::fromSuperscript('⁵');     // 5
+
+Integers::fromSuperscript('123');   // throws DomainException
+Integers::fromSuperscript('₁₂₃');   // throws DomainException
+```
+
+**Note:** Use `isSuperscript()` to validate input before calling this method if you need to handle invalid input gracefully.
 
 ## See Also
 

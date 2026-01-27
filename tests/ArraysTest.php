@@ -6,6 +6,7 @@ namespace Galaxon\Core\Tests;
 
 use Galaxon\Core\Arrays;
 use InvalidArgumentException;
+use LengthException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
@@ -16,6 +17,8 @@ use stdClass;
 #[CoversClass(Arrays::class)]
 final class ArraysTest extends TestCase
 {
+    // region Tests for containsRecursion()
+
     /**
      * Test that simple arrays without recursion return false.
      */
@@ -190,6 +193,10 @@ final class ArraysTest extends TestCase
         // Test that no recursion is detected.
         $this->assertFalse(Arrays::containsRecursion($arr));
     }
+
+    // endregion
+
+    // region Tests for quoteValues()
 
     /**
      * Test quoteValues with single quotes (default).
@@ -436,4 +443,133 @@ final class ArraysTest extends TestCase
 
         $this->assertEquals($original, $input);
     }
+
+    // endregion
+
+    // region Tests for first()
+
+    /**
+     * Test first() returns first value of a list array.
+     */
+    public function testFirstWithListArray(): void
+    {
+        $this->assertEquals(1, Arrays::first([1, 2, 3]));
+        $this->assertEquals('apple', Arrays::first(['apple', 'banana', 'cherry']));
+    }
+
+    /**
+     * Test first() returns first value of an associative array.
+     */
+    public function testFirstWithAssociativeArray(): void
+    {
+        $arr = [
+            'a' => 'alpha',
+            'b' => 'beta',
+            'c' => 'gamma',
+        ];
+        $this->assertEquals('alpha', Arrays::first($arr));
+    }
+
+    /**
+     * Test first() works with a single-element array.
+     */
+    public function testFirstWithSingleElement(): void
+    {
+        $this->assertEquals(42, Arrays::first([42]));
+        $this->assertEquals('only', Arrays::first(['key' => 'only']));
+    }
+
+    /**
+     * Test first() works with various value types.
+     */
+    public function testFirstWithVariousTypes(): void
+    {
+        $this->assertNull(Arrays::first([null, 'foo']));
+        $this->assertTrue(Arrays::first([true, false]));
+        $this->assertEquals(3.14, Arrays::first([3.14, 2.71]));
+
+        $obj = new stdClass();
+        $this->assertSame($obj, Arrays::first([$obj, 'other']));
+    }
+
+    /**
+     * Test first() throws LengthException for empty array.
+     */
+    public function testFirstThrowsExceptionForEmptyArray(): void
+    {
+        $this->expectException(LengthException::class);
+        $this->expectExceptionMessage('Cannot get the first element of an empty array.');
+        // @phpstan-ignore argument.type
+        Arrays::first([]);
+    }
+
+    // endregion
+
+    // region Tests for last()
+
+    /**
+     * Test last() returns last value of a list array.
+     */
+    public function testLastWithListArray(): void
+    {
+        $this->assertEquals(3, Arrays::last([1, 2, 3]));
+        $this->assertEquals('cherry', Arrays::last(['apple', 'banana', 'cherry']));
+    }
+
+    /**
+     * Test last() returns last value of an associative array.
+     */
+    public function testLastWithAssociativeArray(): void
+    {
+        $arr = [
+            'a' => 'alpha',
+            'b' => 'beta',
+            'c' => 'gamma',
+        ];
+        $this->assertEquals('gamma', Arrays::last($arr));
+    }
+
+    /**
+     * Test last() works with a single-element array.
+     */
+    public function testLastWithSingleElement(): void
+    {
+        $this->assertEquals(42, Arrays::last([42]));
+        $this->assertEquals('only', Arrays::last(['key' => 'only']));
+    }
+
+    /**
+     * Test last() works with various value types.
+     */
+    public function testLastWithVariousTypes(): void
+    {
+        $this->assertNull(Arrays::last(['foo', null]));
+        $this->assertFalse(Arrays::last([true, false]));
+        $this->assertEquals(2.71, Arrays::last([3.14, 2.71]));
+
+        $obj = new stdClass();
+        $this->assertSame($obj, Arrays::last(['other', $obj]));
+    }
+
+    /**
+     * Test last() throws LengthException for empty array.
+     */
+    public function testLastThrowsExceptionForEmptyArray(): void
+    {
+        $this->expectException(LengthException::class);
+        $this->expectExceptionMessage('Cannot get the last element of an empty array.');
+        // @phpstan-ignore argument.type
+        Arrays::last([]);
+    }
+
+    /**
+     * Test first() and last() return same value for single-element array.
+     */
+    public function testFirstAndLastSameForSingleElement(): void
+    {
+        $arr = ['only' => 'value'];
+        $this->assertEquals(Arrays::first($arr), Arrays::last($arr));
+    }
+
+    // endregion
 }

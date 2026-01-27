@@ -38,11 +38,11 @@ Float-specific utilities for handling IEEE-754 special values (-0.0, ±INF, NAN)
 
 ### [Integers](docs/Integers.md)
 
-Integer arithmetic operations with overflow checking (add, subtract, multiply, power) and GCD calculation.
+Integer arithmetic operations with overflow checking (add, subtract, multiply, power), GCD calculation, and Unicode subscript/superscript conversion.
 
 ### [Arrays](docs/Arrays.md)
 
-Array utility methods including circular reference detection.
+Array utility methods including circular reference detection, value quoting, and first/last element extraction.
 
 ### [Types](docs/Types.md)
 
@@ -77,6 +77,10 @@ Trait combining Comparable and ApproxEquatable for complete comparison support. 
 ### [IncomparableTypesException](docs/Exceptions/IncomparableTypesException.md)
 
 Exception thrown when attempting to compare values of incompatible types. Used by the Comparable and ApproxComparable traits. Automatically generates descriptive error messages.
+
+### [FormatException](docs/Exceptions/FormatException.md)
+
+Exception thrown when a string has an invalid format for the desired operation. Extends `DomainException`. Useful for parse methods or constructors that accept string arguments.
 
 ## Testing
 

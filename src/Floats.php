@@ -286,7 +286,8 @@ final class Floats
      */
     public static function normalizeZero(float $value): float
     {
-        return self::isNegativeZero($value) ? 0.0 : $value;
+        // The values +0.0 and -0.0 are considered equal by PHP's equality operators.
+        return $value === 0.0 ? 0.0 : $value;
     }
 
     /**
@@ -407,9 +408,11 @@ final class Floats
         }
 
         // Check if the argument is a float that can be converted losslessly to an integer.
-        $i = (int)$f;
-        if ($f === (float)$i) {
-            return $i;
+        if ($f >= PHP_INT_MIN && $f <= PHP_INT_MAX) {
+            $i = (int)$f;
+            if ($f === (float)$i) {
+                return $i;
+            }
         }
 
         // Argument is a float that cannot be losslessly converted to an integer.
