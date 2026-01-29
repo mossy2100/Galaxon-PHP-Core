@@ -261,11 +261,42 @@ class CustomComparable
 - You need both exact and approximate comparison
 - Mixed integer/float types (e.g., rational numbers converted to float)
 
+## Testing Trait
+
+### FloatAssertions
+
+The [FloatAssertions](FloatAssertions.md) trait is separate from the comparison hierarchy above. It provides PHPUnit assertions for testing floating-point values:
+
+```php
+use Galaxon\Core\Traits\FloatAssertions;
+use PHPUnit\Framework\TestCase;
+
+class MyTest extends TestCase
+{
+    use FloatAssertions;
+
+    public function testCalculation(): void
+    {
+        $result = someCalculation();
+
+        // Instead of: $this->assertTrue(Floats::approxEqual(3.14159, $result));
+        // Which gives: "Failed asserting that false is true."
+
+        // Use this for informative failure messages:
+        $this->assertApproxEqual(3.14159, $result, absTol: 1e-4);
+        // Gives: "Failed asserting that 2.5 approximately equals 3.14159.
+        //         Absolute difference: 0.64159 (tolerance: 0.0001)
+        //         Relative difference: 0.204225... (tolerance: 1.0e-9)"
+    }
+}
+```
+
 ## See Also
 
 - [Equatable.md](Equatable.md) - Base trait for equality
 - [Comparable.md](Comparable.md) - Trait for ordering
 - [ApproxEquatable.md](ApproxEquatable.md) - Trait for approximate equality
 - [ApproxComparable.md](ApproxComparable.md) - Trait for complete comparison
+- [FloatAssertions.md](FloatAssertions.md) - PHPUnit assertions for float comparison
 - [IncomparableTypesException.md](../Exceptions/IncomparableTypesException.md) - Exception for type mismatches
 - [Floats.md](../Floats.md) - Utilities for floating-point comparison

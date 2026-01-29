@@ -72,6 +72,10 @@ Trait extending Equatable with tolerance-based comparison. Adds `approxEqual()` 
 
 Trait combining Comparable and ApproxEquatable for complete comparison support. Adds `approxCompare()` for comparing floating-point values within configurable tolerances. Provides both exact and approximate equality with full ordering operations.
 
+### [FloatAssertions](docs/Traits/FloatAssertions.md)
+
+Trait for PHPUnit test cases providing `assertApproxEqual()` and `assertApproxZero()` methods. Produces informative failure messages showing expected/actual values and differences.
+
 ## Exceptions
 
 ### [IncomparableTypesException](docs/Exceptions/IncomparableTypesException.md)

@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-01-30
+
+### Added
+
+- **FloatAssertions trait** - PHPUnit assertions for approximate floating-point comparison
+  - `assertApproxEqual()` - Assert two floats are approximately equal with informative failure messages
+  - `assertApproxZero()` - Assert a float is approximately zero
+  - Produces detailed failure messages showing expected/actual values and differences
+  - Replaces uninformative `assertTrue(Floats::approxEqual(...))` pattern
+
+### Documentation
+
+- **FloatAssertions.md** - New documentation for the FloatAssertions trait
+- **Traits.md** - Added "Testing Trait" section for FloatAssertions
+- **README.md** - Added FloatAssertions to the Traits section
+
+### Tests
+
+- Added 12 tests for FloatAssertions trait covering passing/failing assertions, error messages, infinity handling, and assertApproxZero
+
 ## [1.2.0] - 2026-01-27
 
 ### Added
