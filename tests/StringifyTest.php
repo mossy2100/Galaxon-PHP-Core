@@ -297,6 +297,28 @@ final class StringifyTest extends TestCase
     }
 
     /**
+     * Test that a list with long items falls back to one-per-line format (no grid padding).
+     */
+    public function testStringifyArrayPrettyPrintLongItems(): void
+    {
+        $uuids = [
+            'c9e35c00-0f1e-4804-b5fe-6c4c9718db60',
+            'd2aee4c5-a7f7-4018-a635-c3f4c317033e',
+            'd266963a-c4e0-4255-a97d-f070e51fcb5e',
+        ];
+
+        // maxLineLen of 40 — items are too wide for 2 per line, so grid is skipped.
+        $result = Stringify::stringifyArray($uuids, true, 0, 40);
+
+        $expected = "[\n"
+            . "    'c9e35c00-0f1e-4804-b5fe-6c4c9718db60',\n"
+            . "    'd2aee4c5-a7f7-4018-a635-c3f4c317033e',\n"
+            . "    'd266963a-c4e0-4255-a97d-f070e51fcb5e',\n"
+            . ']';
+        $this->assertSame($expected, $result);
+    }
+
+    /**
      * Test that circular references in arrays throw DomainException.
      */
     public function testStringifyArrayCircularReference(): void

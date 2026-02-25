@@ -201,7 +201,7 @@ final class Stringify
         $isList = array_is_list($arr);
         $items = [];
 
-        // Non-pretty format. No newlines or extra spaces.
+        // Unpretty format. No newlines or extra spaces.
         if (!$prettyPrint) {
             foreach ($arr as $key => $value) {
                 $valueStr = self::stringify($value);
@@ -233,7 +233,6 @@ final class Stringify
 
             if ($allScalars) {
                 // Option 1: Format the list on one line, no trailing comma.
-
                 // Get the single-line result.
                 $singleLineList = '[' . implode(', ', $valueStrings) . ']';
 
@@ -254,46 +253,50 @@ final class Stringify
 
                 // Calculate the number of items per line.
                 $nItemsPerLine = (int)floor(($maxLineLen + 1 - $nSpacesItemIndent) / ($maxValueWidth + 2));
+                if ($nItemsPerLine > 1) {
+                    // Generate the grid.
+                    $gridList = "[\n";
+                    $itemCountThisLine = 0;
+                    foreach ($values as $i => $value) {
+                        // Indent the first item on the line.
+                        if ($itemCountThisLine === 0) {
+                            $gridList .= $itemIndent;
+                        }
 
-                // Generate the grid string.
-                $gridList = "[\n";
-                $itemCountThisLine = 0;
-                foreach ($values as $i => $value) {
-                    // Indent the first item on the line.
-                    if ($itemCountThisLine === 0) {
-                        $gridList .= $itemIndent;
+                        // Add the value and comma.
+                        $gridList .= mb_str_pad($valueStrings[$i] . ',', $maxValueWidth + 1);
+                        $itemCountThisLine++;
+
+                        // Add a newline or comma after the value, as needed.
+                        if ($itemCountThisLine === $nItemsPerLine || $i === $nItems - 1) {
+                            $gridList .= "\n";
+                            // Go to next line.
+                            $itemCountThisLine = 0;
+                        } else {
+                            $gridList .= ' ';
+                        }
                     }
-
-                    // Add the value and comma.
-                    $gridList .= mb_str_pad($valueStrings[$i] . ',', $maxValueWidth + 1);
-                    $itemCountThisLine++;
-
-                    // Add a newline or comma after the value, as needed.
-                    if ($itemCountThisLine === $nItemsPerLine || $i === $nItems - 1) {
-                        $gridList .= "\n";
-                        // Go to next line.
-                        $itemCountThisLine = 0;
-                    } else {
-                        $gridList .= ' ';
-                    }
+                    return $gridList . $bracketIndent . ']';
                 }
-                return $gridList . $bracketIndent . ']';
             } // if all scalars
 
             // Option 3: Format the list with one item per line. Use trailing comma.
             $multilineList = "[\n";
             foreach ($arr as $value) {
-                $multilineList .= $itemIndent . self::stringify($value, $prettyPrint, $indentLevel + 1) . ",\n";
+                $multilineList .= $itemIndent . self::stringify($value, $prettyPrint, $indentLevel + 1) .
+                    ",\n";
             }
             return $multilineList . $bracketIndent . ']';
         } // is list.
 
-        // Format an associative array with one pair per line.
-        // Get the maximum key width.
+        // Pretty-print associative array. One pair per line, indented, trailing comma.
+        // Convert keys to strings and get the maximum width.
+        $keys = array_keys($arr);
+        $keyStrings = [];
         $maxKeyWidth = 0;
-        foreach ($arr as $key => $value) {
-            $keyStr = self::stringify($key);
-            $keyStrLen = mb_strlen($keyStr);
+        foreach ($keys as $i => $key) {
+            $keyStrings[$i] = self::stringify($key);
+            $keyStrLen = mb_strlen($keyStrings[$i]);
             if ($keyStrLen > $maxKeyWidth) {
                 $maxKeyWidth = $keyStrLen;
             }
@@ -301,9 +304,9 @@ final class Stringify
 
         // Generate the result string.
         $result = "[\n";
-        foreach ($arr as $key => $value) {
-            $result .= $itemIndent . mb_str_pad(self::stringify($key), $maxKeyWidth) . ' => ' .
-                self::stringify($value, $prettyPrint, $indentLevel + 1) . ",\n";
+        foreach ($keys as $i => $key) {
+            $result .= $itemIndent . mb_str_pad($keyStrings[$i], $maxKeyWidth) . ' => ' .
+                self::stringify($values[$i], $prettyPrint, $indentLevel + 1) . ",\n";
         }
         return $result . $bracketIndent . ']';
     }
