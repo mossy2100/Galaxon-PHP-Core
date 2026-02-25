@@ -433,6 +433,7 @@ final class Floats
      *
      * @param float $value The float to convert.
      * @return string The hexadecimal string representation of the float.
+     * @throws RuntimeException If the system is not a 64-bit system.
      */
     public static function toHex(float $value): string
     {

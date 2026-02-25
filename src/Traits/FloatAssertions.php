@@ -58,17 +58,18 @@ trait FloatAssertions
     ): void {
         if (Floats::approxEqual($expected, $actual, $relTol, $absTol)) {
             // Use a dummy assertion to count it.
+            // @phpstan-ignore method.alreadyNarrowedType
             $this->assertTrue(true);
             return;
         }
 
         $diff = abs($expected - $actual);
-        $relDiff = $expected != 0.0 ? abs($diff / $expected) : INF;
+        $relDiff = $expected !== 0.0 ? abs($diff / $expected) : INF;
 
         $defaultMessage = sprintf(
             "Failed asserting that %.15g approximately equals %.15g.\n" .
             "Absolute difference: %.15g (tolerance: %.15g)\n" .
-            "Relative difference: %.15g (tolerance: %.15g)",
+            'Relative difference: %.15g (tolerance: %.15g)',
             $actual,
             $expected,
             $diff,

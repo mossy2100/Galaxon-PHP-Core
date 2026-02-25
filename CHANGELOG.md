@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-02-25
+
+### Changed
+
+- **Stringify** - Major overhaul of output formatting:
+  - Strings now use single quotes with backslash and single-quote escaping instead of `json_encode()` double quotes. Unicode characters are preserved as-is.
+  - Arrays use PHP square bracket syntax for both lists and associative arrays (`['key' => 'value']`) instead of JSON-style formatting with curly braces and colons.
+  - Objects use `ClassName {+prop => 'value'}` format instead of `<ClassName +prop: "value">`.
+  - Resources use `get_debug_type()` output (e.g. `resource (stream)`, `resource (closed)`) instead of custom format with type and id. Closed resources are now supported.
+  - `null`, `bool`, and `int` are now rendered inline instead of via `json_encode()`.
+  - `echo()` renamed to `print()` and now accepts a `$prettyPrint` parameter.
+  - `stringifyFloat()` uses `(string)` cast instead of `sprintf('%.16H')`, with early return for non-finite values. Suppresses PHP 8.5 NAN cast warning.
+  - `abbrev()` now uses `mb_strlen()`/`mb_substr()` for multibyte-safe truncation.
+  - `stringifyObject()` now detects enums via `instanceof UnitEnum` and delegates to `stringifyEnum()`. Property names are aligned in pretty-print mode.
+  - `stringifyArray()` now supports three pretty-print layout strategies for scalar lists: single-line, grid, and one-per-line. Associative arrays align keys. New `$maxLineLen` parameter.
+
+### Added
+
+- **Stringify** - New methods:
+  - `stringifyString()` - Single-quoted output with backslash/single-quote escaping and UTF-8 normalisation.
+  - `stringifyEnum()` - Renders enums as `Fully\Qualified\ClassName::CaseName`.
+  - `println()` - Like `print()` but appends a newline.
+  - Constants `NUM_SPACES_INDENT` (4) and `DEFAULT_MAX_LINE_LENGTH` (120).
+
+- **Arrays** - New methods:
+  - `toSerialList()` - Convert an array of strings to a serial list with Oxford comma (e.g. `'a, b, and c'`). Supports custom conjunctions.
+  - `removeValue()` - Remove all instances of a value from an array using strict comparison. Keys are preserved.
+
+### Fixed
+
+- **Floats::toHex()** - Added missing `@throws RuntimeException` to docblock for 64-bit requirement.
+
+### Documentation
+
+- **Stringify.md** - Completely rewritten for new output format, new methods, and updated examples.
+- **Arrays.md** - Added documentation for `toSerialList()` and `removeValue()`. Updated overview to include String Methods and Transformation Methods sections.
+
+### Tests
+
+- **StringifyTest** - Completely rewritten (36 tests, 100+ assertions) covering single-quoted strings, escaping, UTF-8 conversion, undetectable encoding, open/closed resources, enums, grid layout, and all other formatting changes.
+- **ArraysTest** - Added 15 tests for `toSerialList()` (empty, one/two/three/four items, custom conjunction, non-string validation) and `removeValue()` (existing/missing values, multiple instances, key preservation, strict comparison, null removal).
+
 ## [1.3.0] - 2026-01-30
 
 ### Added

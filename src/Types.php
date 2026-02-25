@@ -94,7 +94,7 @@ final class Types
                 return 's:' . strlen($value) . ":$value";
 
             case 'array':
-                /** @var list<mixed> $value */
+                /** @var array<array-key, mixed> $value */
                 return 'a:' . count($value) . ':' . Stringify::stringifyArray($value);
 
             case 'object':

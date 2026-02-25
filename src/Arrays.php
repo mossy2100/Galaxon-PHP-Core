@@ -49,7 +49,7 @@ final class Arrays
 
     // endregion
 
-    // region Transformation methods
+    // region String methods
 
     /**
      * Wrap each string value in the array with quotes.
@@ -79,6 +79,40 @@ final class Arrays
 
         // Apply the quotes. array_map() preserves the array keys.
         return array_map($quoteFn, $arr);
+    }
+
+    /**
+     * Convert an array of strings to a serial list, e.g. 'apples, oranges, and bananas'.
+     *
+     * The Oxford comma is always used if there are more than two items.
+     * This could be made an option later, but generally it's a good idea.
+     *
+     * The default conjunction is 'and'; a common alternative would be 'or'.
+     * Of course, you could use words from other languages, such as 'y' or 'o' (Spanish), or 'et' or 'ou' (French).
+     *
+     * @param list<string> $arr Array of strings.
+     * @param string $conjunction The conjunction to use between the last two items, e.g. 'and'.
+     * @return string Serial list of strings.
+     * @throws InvalidArgumentException If any array value is not a string.
+     */
+    public static function toSerialList(array $arr, string $conjunction = 'and'): string
+    {
+        // Ensure all the array values are strings.
+        foreach ($arr as $value) {
+            if (!is_string($value)) {
+                throw new InvalidArgumentException('The array values must be strings.');
+            }
+        }
+
+        $nItems = count($arr);
+
+        return match ($nItems) {
+            0 => '',
+            1 => $arr[0],
+            2 => $arr[0] . " $conjunction " . $arr[1],
+            default => implode(', ', array_slice($arr, 0, -1)) .
+                ", $conjunction " . $arr[$nItems - 1],
+        };
     }
 
     // endregion
@@ -121,6 +155,24 @@ final class Arrays
         }
 
         return $arr[array_key_last($arr)];
+    }
+
+    // endregion
+
+    // region Transformation methods
+
+    /**
+     * Remove all instances of a value from an array.
+     *
+     * Keys are preserved.
+     *
+     * @param array<array-key, mixed> $arr The original array.
+     * @param mixed $valueToRemove The value to remove.
+     * @return array<array-key, mixed> A new array without the given value, if it was there.
+     */
+    public static function removeValue(array $arr, mixed $valueToRemove): array
+    {
+        return array_filter($arr, static fn ($value) => $value !== $valueToRemove);
     }
 
     // endregion

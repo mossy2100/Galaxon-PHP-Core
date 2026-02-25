@@ -476,7 +476,9 @@ final class ArraysTest extends TestCase
     public function testFirstWithSingleElement(): void
     {
         $this->assertEquals(42, Arrays::first([42]));
-        $this->assertEquals('only', Arrays::first(['key' => 'only']));
+        $this->assertEquals('only', Arrays::first([
+            'key' => 'only',
+        ]));
     }
 
     /**
@@ -535,7 +537,9 @@ final class ArraysTest extends TestCase
     public function testLastWithSingleElement(): void
     {
         $this->assertEquals(42, Arrays::last([42]));
-        $this->assertEquals('only', Arrays::last(['key' => 'only']));
+        $this->assertEquals('only', Arrays::last([
+            'key' => 'only',
+        ]));
     }
 
     /**
@@ -567,8 +571,167 @@ final class ArraysTest extends TestCase
      */
     public function testFirstAndLastSameForSingleElement(): void
     {
-        $arr = ['only' => 'value'];
+        $arr = [
+            'only' => 'value',
+        ];
         $this->assertEquals(Arrays::first($arr), Arrays::last($arr));
+    }
+
+    // endregion
+
+    // region Tests for toSerialList()
+
+    /**
+     * Test toSerialList with empty array returns empty string.
+     */
+    public function testToSerialListEmpty(): void
+    {
+        $this->assertSame('', Arrays::toSerialList([]));
+    }
+
+    /**
+     * Test toSerialList with one item returns just that item.
+     */
+    public function testToSerialListOneItem(): void
+    {
+        $this->assertSame('apples', Arrays::toSerialList(['apples']));
+    }
+
+    /**
+     * Test toSerialList with two items uses conjunction without Oxford comma.
+     */
+    public function testToSerialListTwoItems(): void
+    {
+        $this->assertSame('apples and oranges', Arrays::toSerialList(['apples', 'oranges']));
+    }
+
+    /**
+     * Test toSerialList with three items uses Oxford comma.
+     */
+    public function testToSerialListThreeItems(): void
+    {
+        $this->assertSame('apples, oranges, and bananas', Arrays::toSerialList(['apples', 'oranges', 'bananas']));
+    }
+
+    /**
+     * Test toSerialList with four items.
+     */
+    public function testToSerialListFourItems(): void
+    {
+        $this->assertSame(
+            'apples, oranges, bananas, and grapes',
+            Arrays::toSerialList(['apples', 'oranges', 'bananas', 'grapes'])
+        );
+    }
+
+    /**
+     * Test toSerialList with custom conjunction.
+     */
+    public function testToSerialListCustomConjunction(): void
+    {
+        $this->assertSame('apples or oranges', Arrays::toSerialList(['apples', 'oranges'], 'or'));
+        $this->assertSame(
+            'apples, oranges, or bananas',
+            Arrays::toSerialList(['apples', 'oranges', 'bananas'], 'or')
+        );
+    }
+
+    /**
+     * Test toSerialList throws InvalidArgumentException for non-string values.
+     */
+    public function testToSerialListThrowsExceptionForNonStrings(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The array values must be strings.');
+        // @phpstan-ignore argument.type
+        Arrays::toSerialList(['foo', 42, 'bar']);
+    }
+
+    // endregion
+
+    // region Tests for removeValue()
+
+    /**
+     * Test removeValue removes a value that exists.
+     */
+    public function testRemoveValueExisting(): void
+    {
+        $this->assertSame([
+            0 => 1,
+            2 => 3,
+        ], Arrays::removeValue([1, 2, 3], 2));
+    }
+
+    /**
+     * Test removeValue removes all instances of a value.
+     */
+    public function testRemoveValueMultipleInstances(): void
+    {
+        $this->assertSame([
+            1 => 'b',
+            3 => 'b',
+        ], Arrays::removeValue(['a', 'b', 'a', 'b'], 'a'));
+    }
+
+    /**
+     * Test removeValue with value not present returns same array.
+     */
+    public function testRemoveValueNotPresent(): void
+    {
+        $this->assertSame([
+            0 => 1,
+            1 => 2,
+            2 => 3,
+        ], Arrays::removeValue([1, 2, 3], 99));
+    }
+
+    /**
+     * Test removeValue with empty array returns empty array.
+     */
+    public function testRemoveValueEmptyArray(): void
+    {
+        $this->assertSame([], Arrays::removeValue([], 'anything'));
+    }
+
+    /**
+     * Test removeValue preserves keys.
+     */
+    public function testRemoveValuePreservesKeys(): void
+    {
+        $input = [
+            'a' => 1,
+            'b' => 2,
+            'c' => 3,
+        ];
+        $this->assertSame([
+            'a' => 1,
+            'c' => 3,
+        ], Arrays::removeValue($input, 2));
+    }
+
+    /**
+     * Test removeValue uses strict comparison.
+     */
+    public function testRemoveValueStrictComparison(): void
+    {
+        // '0' (string) should not match 0 (int).
+        $result = Arrays::removeValue([0, '0', false, null], 0);
+        $this->assertSame([
+            1 => '0',
+            2 => false,
+            3 => null,
+        ], $result);
+    }
+
+    /**
+     * Test removeValue can remove null.
+     */
+    public function testRemoveValueNull(): void
+    {
+        $this->assertSame([
+            0 => 1,
+            2 => 3,
+        ], Arrays::removeValue([1, null, 3], null));
     }
 
     // endregion

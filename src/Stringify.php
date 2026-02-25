@@ -7,22 +7,44 @@ namespace Galaxon\Core;
 use DomainException;
 use InvalidArgumentException;
 use UnexpectedValueException;
+use UnitEnum;
 
 /**
  * This class provides a method of formatting any PHP value as a string, with a few differences from the default
  * options of var_dump(), var_export(), print_r(), json_encode(), and serialize().
  *
  * - Floats never look like integers.
- * - Arrays that are lists will not show keys and use square brackets, like JSON arrays (e.g. [1, 2, ...])
- * - Associative arrays show keys and use curly braces, like JSON objects (e.g. {"name": "Shaun", "age": 54, ...})
- * - Objects are rendered in a style similar to an HTML tag, with UML-style visibility modifiers.
- * - Resources are encoded like (resource id: <id>, type: <type>)
+ * - Strings are single-quoted.
+ * - Arrays are rendered as parseable PHP code using modern square bracket syntax.
+ * - Arrays that are lists will not show keys; associative arrays will show keys.
+ * - Objects are rendered like arrays but with a class name and curly braces instead of square brackets.
+ * - Object properties are shown with UML visibility modifiers: + (public), # (protected), and - (private).
+ * - Enums are rendered as Fully\Qualified\ClassName::CaseName
+ * - Resources have a unique encoding showing the type and id.
+ *
+ * The stringify results for objects and resources are not parseable by PHP, but they are for other types.
  *
  * The purpose of the class is to offer a somewhat more concise, readable, and informative alternative to the usual
  * options. It can be useful for exception, log, and debug messages.
  */
 final class Stringify
 {
+    // region Constants
+
+    /**
+     * The number of spaces to indent each level.
+     *
+     * @var int
+     */
+    public const int NUM_SPACES_INDENT = 4;
+
+    /**
+     * The default maximum line length for pretty-printed output.
+     */
+    public const int DEFAULT_MAX_LINE_LENGTH = 120;
+
+    // endregion
+
     // region Constructor
 
     /**
@@ -53,11 +75,19 @@ final class Stringify
         // Call the relevant method.
         switch (Types::getBasicType($value)) {
             case 'null':
+                return 'null';
+
             case 'bool':
+                /** @var bool $value */
+                return $value ? 'true' : 'false';
+
             case 'int':
+                /** @var int $value */
+                return (string)$value;
+
             case 'string':
-                // This function call should never error for these types.
-                return json_encode($value, JSON_THROW_ON_ERROR);
+                /** @var string $value */
+                return self::stringifyString($value);
 
             case 'float':
                 /** @var float $value */
@@ -91,13 +121,14 @@ final class Stringify
      */
     public static function stringifyFloat(float $value): string
     {
+        // Convert the float to a string. This will also work for ±INF and NAN.
+        // The @ suppresses PHP 8.5's warning when casting NAN to string.
+        $s = @(string)$value;
+
         // Handle non-finite values.
         if (!is_finite($value)) {
-            return @(string)$value;
+            return $s;
         }
-
-        // Convert the float to a string, showing maximum useful precision.
-        $s = sprintf('%.16H', $value);
 
         // If the string representation of the float value has no decimal point or exponent (i.e. nothing to distinguish
         // it from an integer), append a decimal point.
@@ -109,87 +140,214 @@ final class Stringify
     }
 
     /**
-     * Stringify a PHP array in a style similar to JSON arrays and objects.
+     * Convert a string to a parseable single-quoted string.
      *
-     * We're not simply using json_encode() here because values might not be stringified in the desired way, especially
-     * objects.
-     *
-     * A list (i.e. an array with sequential integer keys starting at 0) will use square brackets and show values only.
-     * An associative array will use curly brackets and show keys and values. String keys will be quoted.
-     *
-     * If pretty printing is enabled, the result will be formatted with new lines and indentation.
-     *
-     * @param array<array-key, mixed> $ary The array to encode.
-     * @param bool $prettyPrint Whether to use pretty printing (default false).
-     * @param int $indentLevel The level of indentation for this structure (default 0).
-     * @return string The string representation of the array.
-     * @throws DomainException If the array contains circular references.
+     * @param string $value The string value to encode.
+     * @return string The single-quoted, escaped string representation.
+     * @throws DomainException If the string is not UTF-8 and the encoding could not be detected.
      */
-    public static function stringifyArray(array $ary, bool $prettyPrint = false, int $indentLevel = 0): string
+    public static function stringifyString(string $value): string
     {
-        // Detect circular references.
-        if (Arrays::containsRecursion($ary)) {
-            throw new DomainException('Cannot stringify arrays containing circular references.');
-        }
+        // Get the string as UTF-8 if not already.
+        if (!mb_check_encoding($value, 'UTF-8')) {
+            // Try to detect the encoding.
+            $encoding = mb_detect_encoding($value, mb_detect_order(), true);
+            if ($encoding === false) {
+                throw new DomainException('String encoding is not UTF-8 and could not be detected.');
+            }
 
-        $pairs = [];
-        $indent = $prettyPrint ? str_repeat(' ', 4 * ($indentLevel + 1)) : '';
-        $isList = array_is_list($ary);
-
-        // Generate the pairs.
-        foreach ($ary as $key => $value) {
-            $valueStr = self::stringify($value, $prettyPrint, $indentLevel + 1);
-            // Encode a list without keys.
-            if ($isList) {
-                $pairs[] = "$indent$valueStr";
-            } else {
-                // Encode an associative array with keys.
-                $keyStr = self::stringify($key, $prettyPrint, $indentLevel + 1);
-                $pairs[] = "$indent$keyStr: $valueStr";
+            // Convert the string to UTF-8.
+            $value = mb_convert_encoding($value, 'UTF-8', $encoding);
+            if ($value === false) {
+                // @codeCoverageIgnoreStart
+                throw new DomainException('String was not UTF-8 and could not be converted to UTF-8.');
+                // @codeCoverageIgnoreEnd
             }
         }
 
-        // Determine the opening and closing brackets.
-        $openBracket = $isList ? '[' : '{';
-        $closeBracket = $isList ? ']' : '}';
+        // Escape backslashes and single quotes.
+        $value = str_replace('\\', '\\\\', $value);
+        $value = str_replace("'", "\\'", $value);
 
-        // If pretty print, return string formatted with new lines and indentation.
-        if ($prettyPrint) {
-            $bracketIndent = str_repeat(' ', 4 * $indentLevel);
-            return $openBracket . "\n" . implode(",\n", $pairs) . "\n$bracketIndent" . $closeBracket;
+        return "'$value'";
+    }
+
+    /**
+     * Stringify a PHP array as concise, parseable code.
+     *
+     * A list (i.e. an array with sequential integer keys starting at 0) will show values only.
+     * An associative array will show keys and values. String keys will be quoted.
+     *
+     * If pretty printing is enabled, the result will be formatted with new lines and indentation.
+     *
+     * @param array<array-key, mixed> $arr The array to encode.
+     * @param bool $prettyPrint Whether to use pretty printing (default false).
+     * @param int $indentLevel The level of indentation for this structure (default 0).
+     * @param int $maxLineLen The maximum length of the result string for a list when pretty printing is enabled.
+     * @return string The string representation of the array.
+     * @throws DomainException If the array contains circular references.
+     */
+    public static function stringifyArray(
+        array $arr,
+        bool $prettyPrint = false,
+        int $indentLevel = 0,
+        int $maxLineLen = self::DEFAULT_MAX_LINE_LENGTH
+    ): string {
+        // Detect circular references.
+        if (Arrays::containsRecursion($arr)) {
+            throw new DomainException('Cannot stringify arrays containing circular references.');
         }
 
-        // Otherwise, return the string in a single line.
-        return $openBracket . implode(', ', $pairs) . $closeBracket;
+        $isList = array_is_list($arr);
+        $items = [];
+
+        // Non-pretty format. No newlines or extra spaces.
+        if (!$prettyPrint) {
+            foreach ($arr as $key => $value) {
+                $valueStr = self::stringify($value);
+                $items[] = $isList ? $valueStr : self::stringify($key) . ' => ' . $valueStr;
+            }
+            return '[' . implode(', ', $items) . ']';
+        }
+
+        // Set up for pretty printing.
+        $nSpacesBracketIndent = $indentLevel * self::NUM_SPACES_INDENT;
+        $bracketIndent = str_repeat(' ', $nSpacesBracketIndent);
+        $nSpacesItemIndent = $nSpacesBracketIndent + self::NUM_SPACES_INDENT;
+        $itemIndent = str_repeat(' ', $nSpacesItemIndent);
+        $nItems = count($arr);
+        $values = array_values($arr);
+
+        // Grid format.
+        // If the array is a list and all values are nulls and/or scalars, use grid formatting.
+        if ($isList) {
+            // Convert the values to strings and check all are scalars.
+            $valueStrings = [];
+            $allScalars = true;
+            foreach ($values as $i => $value) {
+                $valueStrings[$i] = self::stringify($value);
+                if ($value !== null && !is_scalar($value)) {
+                    $allScalars = false;
+                }
+            }
+
+            if ($allScalars) {
+                // Option 1: Format the list on one line, no trailing comma.
+
+                // Get the single-line result.
+                $singleLineList = '[' . implode(', ', $valueStrings) . ']';
+
+                // Check if it will fit in one line, counting the indent.
+                if (mb_strlen($bracketIndent . $singleLineList) <= $maxLineLen) {
+                    return $singleLineList;
+                }
+
+                // Option 2: Format the list as a grid.
+                // Get the max item width.
+                $maxValueWidth = 0;
+                foreach ($values as $i => $value) {
+                    $len = mb_strlen($valueStrings[$i]);
+                    if ($len > $maxValueWidth) {
+                        $maxValueWidth = $len;
+                    }
+                }
+
+                // Calculate the number of items per line.
+                $nItemsPerLine = (int)floor(($maxLineLen + 1 - $nSpacesItemIndent) / ($maxValueWidth + 2));
+
+                // Generate the grid string.
+                $gridList = "[\n";
+                $itemCountThisLine = 0;
+                foreach ($values as $i => $value) {
+                    // Indent the first item on the line.
+                    if ($itemCountThisLine === 0) {
+                        $gridList .= $itemIndent;
+                    }
+
+                    // Add the value and comma.
+                    $gridList .= mb_str_pad($valueStrings[$i] . ',', $maxValueWidth + 1);
+                    $itemCountThisLine++;
+
+                    // Add a newline or comma after the value, as needed.
+                    if ($itemCountThisLine === $nItemsPerLine || $i === $nItems - 1) {
+                        $gridList .= "\n";
+                        // Go to next line.
+                        $itemCountThisLine = 0;
+                    } else {
+                        $gridList .= ' ';
+                    }
+                }
+                return $gridList . $bracketIndent . ']';
+            } // if all scalars
+
+            // Option 3: Format the list with one item per line. Use trailing comma.
+            $multilineList = "[\n";
+            foreach ($arr as $value) {
+                $multilineList .= $itemIndent . self::stringify($value, $prettyPrint, $indentLevel + 1) . ",\n";
+            }
+            return $multilineList . $bracketIndent . ']';
+        } // is list.
+
+        // Format an associative array with one pair per line.
+        // Get the maximum key width.
+        $maxKeyWidth = 0;
+        foreach ($arr as $key => $value) {
+            $keyStr = self::stringify($key);
+            $keyStrLen = mb_strlen($keyStr);
+            if ($keyStrLen > $maxKeyWidth) {
+                $maxKeyWidth = $keyStrLen;
+            }
+        }
+
+        // Generate the result string.
+        $result = "[\n";
+        foreach ($arr as $key => $value) {
+            $result .= $itemIndent . mb_str_pad(self::stringify($key), $maxKeyWidth) . ' => ' .
+                self::stringify($value, $prettyPrint, $indentLevel + 1) . ",\n";
+        }
+        return $result . $bracketIndent . ']';
     }
 
     /**
      * Stringify a resource.
      *
-     * @param mixed $value The resource to stringify.
-     * @return string The string representation of the resource.
-     * @throws InvalidArgumentException If the value is not a resource.
-     * @see stringifyObject()
+     * Uses get_debug_type() which returns 'resource (stream)', 'resource (closed)', etc.
      *
+     * @param mixed $value The resource to stringify.
+     * @return string The string representation of the resource, e.g. 'resource (stream)'.
+     * @throws InvalidArgumentException If the value is not a resource.
      */
     public static function stringifyResource(mixed $value): string
     {
-        // Can't type hint for resource, so check manually.
-        if (!is_resource($value)) {
+        // We can't type hint for resource, and is_resource() returns false for a closed resource.
+        // Check the debug type.
+        $type = get_debug_type($value);
+        if (!str_starts_with($type, 'resource (')) {
             throw new InvalidArgumentException('Value is not a resource.');
         }
 
-        return '(resource type: ' . get_resource_type($value) . ', id: ' . get_resource_id($value) . ')';
+        return $type;
+    }
+
+    /**
+     * Get a string representation of an enum case in the form "Fully\Qualified\ClassName::CaseName".
+     * The leading slash is removed.
+     *
+     * @param UnitEnum $value The enum case to stringify.
+     * @return string The string representation (e.g. "UnitSystem::Financial").
+     */
+    public static function stringifyEnum(UnitEnum $value): string
+    {
+        return ltrim($value::class, '\\') . '::' . $value->name;
     }
 
     /**
      * Stringify an object.
      *
-     * The resulting string borrows syntax from both JSON objects and HTML tags.
-     * - enclosed in angle brackets like an HTML or XML tag
-     * - the fully qualified class name is used (i.e. with the namespace) as the tag name
+     * The resulting string uses a custom format.
+     * - the fully qualified class name is used (i.e. with the namespace) before the opening brace
      * - property names are not quoted
-     * - key-value pairs use colons and are comma-separated (like JSON objects)
+     * - property-value pairs use fat arrows (=>) and are comma-separated
      * - the visibility of each property is shown using UML notation (+ for public, # for protected, - for private)
      *
      * If pretty printing is enabled, the result will be formatted with new lines and indentation.
@@ -201,7 +359,12 @@ final class Stringify
      */
     public static function stringifyObject(object $obj, bool $prettyPrint = false, int $indentLevel = 0): string
     {
-        // Get the tag name.
+        // Check for enum.
+        if ($obj instanceof UnitEnum) {
+            return self::stringifyEnum($obj);
+        }
+
+        // Get the object's class.
         $class = $obj::class;
 
         // Check for anonymous classes. We don't want null bytes in the result.
@@ -210,40 +373,69 @@ final class Stringify
         }
 
         // Convert the object to an array to get its properties.
-        $a = (array)$obj;
+        $arr = (array)$obj;
 
         // Early return if no properties.
-        if (count($a) === 0) {
-            return "<$class>";
+        if (count($arr) === 0) {
+            return $class . ' {}';
         }
 
         // Generate the strings for key-value pairs. Each will be on its own line if pretty printing is enabled.
-        $pairs = [];
-        $indent = $prettyPrint ? str_repeat(' ', 4 * ($indentLevel + 1)) : '';
+        $nSpacesBracketIndent = $indentLevel * self::NUM_SPACES_INDENT;
+        $bracketIndent = $prettyPrint ? str_repeat(' ', $nSpacesBracketIndent) : '';
+        $nSpacesItemIndent = $nSpacesBracketIndent + self::NUM_SPACES_INDENT;
+        $itemIndent = $prettyPrint ? str_repeat(' ', $nSpacesItemIndent) : '';
 
-        foreach ($a as $key => $value) {
-            // Split on null bytes to determine the property name and visibility.
+        $keys = array_keys($arr);
+        $values = array_values($arr);
+        $propNames = [];
+        $visibilitySymbols = [];
+        $maxPropNameLen = 0;
+
+        foreach ($values as $i => $value) {
+            // Split the array key on null bytes to get the property name.
+            $key = $keys[$i];
             $nameParts = explode("\0", $key);
+            $propNames[$i] = Arrays::last($nameParts);
+
+            // Get the property visibility symbol.
             if (count($nameParts) === 1) {
                 // Property is public.
-                $visSymbol = '+';
+                $visibilitySymbols[$i] = '+';
             } else {
                 // Property must be protected or private. If the second item in the $nameParts array is '*', the
                 // property is protected; otherwise, it's private.
-                $visSymbol = $nameParts[1] === '*' ? '#' : '-';
-                $key = $nameParts[array_key_last($nameParts)];
+                $visibilitySymbols[$i] = $nameParts[1] === '*' ? '#' : '-';
             }
 
-            $valueStr = self::stringify($value, $prettyPrint, $indentLevel + 1);
-            $pairs[] = "$indent$visSymbol$key: $valueStr";
+            // Track the maximum property name length.
+            assert(is_string($propNames[$i]));
+            $propNameLen = mb_strlen($propNames[$i]);
+            if ($propNameLen > $maxPropNameLen) {
+                $maxPropNameLen = $propNameLen;
+            }
+        }
+
+        // Generate the property => value pairs.
+        $pairs = [];
+        foreach ($propNames as $i => $propName) {
+            assert(is_string($propName));
+            $paddedPropName = $prettyPrint ? mb_str_pad($propName, $maxPropNameLen) : $propName;
+            $valueStr = self::stringify($values[$i], $prettyPrint, $indentLevel + 1);
+            $pairs[] = $visibilitySymbols[$i] . $paddedPropName . ' => ' . $valueStr;
         }
 
         // If pretty print, return string formatted with new lines and indentation.
         if ($prettyPrint) {
-            return "<$class\n" . implode(",\n", $pairs) . "\n>";
+            $result = "$class {\n";
+            foreach ($pairs as $pair) {
+                $result .= $itemIndent . $pair . ",\n";
+            }
+            return $result . $bracketIndent . '}';
         }
 
-        return "<$class " . implode(', ', $pairs) . '>';
+        // Return string without newlines or extra spaces.
+        return "$class {" . implode(', ', $pairs) . '}';
     }
 
     /**
@@ -253,7 +445,6 @@ final class Stringify
      * @param int $maxLen The maximum length of the result.
      * @return string The short string representation.
      * @throws DomainException If the maximum length is less than the minimum, or if the value cannot be stringified.
-     * @see stringify()
      */
     public static function abbrev(mixed $value, int $maxLen = 30): string
     {
@@ -267,8 +458,8 @@ final class Stringify
         $result = self::stringify($value);
 
         // Trim if necessary.
-        if (strlen($result) > $maxLen) {
-            $result = substr($result, 0, $maxLen - 3) . '...';
+        if (mb_strlen($result) > $maxLen) {
+            $result = mb_substr($result, 0, $maxLen - 3) . '...';
         }
 
         return $result;
@@ -277,16 +468,30 @@ final class Stringify
     /**
      * Output a stringified value directly to the output stream.
      *
-     * This is a convenience method that combines stringify() with echo,
-     * useful for debugging and quick output of complex values.
+     * This is a convenience method that combines stringify() with echo, useful for debugging and quick output of
+     * complex values.
      *
      * @param mixed $value The value to stringify and output.
+     * @param bool $prettyPrint If the result should be nicely formatted.
      * @throws DomainException If the value cannot be stringified.
-     * @see stringify()
      */
-    public static function echo(mixed $value): void
+    public static function print(mixed $value, bool $prettyPrint = false): void
     {
-        echo self::stringify($value);
+        echo self::stringify($value, $prettyPrint);
+    }
+
+    /**
+     * Output a stringified value directly to the output stream.
+     *
+     * Same as print(), but adds a new line.
+     *
+     * @param mixed $value The value to stringify and output.
+     * @param bool $prettyPrint If the result should be nicely formatted.
+     * @throws DomainException If the value cannot be stringified.
+     */
+    public static function println(mixed $value, bool $prettyPrint = false): void
+    {
+        echo self::stringify($value, $prettyPrint), "\n";
     }
 
     // endregion
