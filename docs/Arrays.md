@@ -143,11 +143,9 @@ throw new ValueError('Invalid unit. Expected ' . Arrays::toSerialList(Arrays::qu
 public static function first(array $arr): mixed
 ```
 
-Get the first value in an array. This method is only needed for PHP versions prior to 8.5, which provides the native `array_first()` function.
+Get the first value in an array.
 
-This method doesn't behave exactly the same as `array_first()`, as it will throw a `LengthException` instead of returning `null` for empty arrays.
-
-This allows distinguishing an empty array (no first value exists) from an array where the first value is actually null.
+This method is only needed for PHP versions prior to 8.5, which provides the native `array_first()` function. However, this method doesn't behave exactly the same as `array_first()`, as it will throw a `LengthException` instead of returning `null` for empty arrays. This allows distinguishing an empty array (no first value exists) from an array where the first value is actually null.
 
 **Parameters:**
 - `$arr` (non-empty-array) - The array to extract from.
@@ -175,11 +173,9 @@ Arrays::first([]);                            // throws LengthException
 public static function last(array $arr): mixed
 ```
 
-Get the last value in an array. This method is only needed for PHP versions prior to 8.5, which provides the native `array_last()` function.
+Get the last value in an array.
 
-This method doesn't behave exactly the same as `array_last()`, as it will throw a `LengthException` instead of returning `null` for empty arrays.
-
-This allows distinguishing an empty array (no last value exists) from an array where the last value is actually null.
+This method is only needed for PHP versions prior to 8.5, which provides the native `array_last()` function. This method doesn't behave exactly the same as `array_last()`, as it will throw a `LengthException` instead of returning `null` for empty arrays. This allows distinguishing an empty array (no last value exists) from an array where the last value is actually null.
 
 **Parameters:**
 - `$arr` (non-empty-array) - The array to extract from.
