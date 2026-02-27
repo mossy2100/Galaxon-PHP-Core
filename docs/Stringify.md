@@ -9,20 +9,20 @@ The `Stringify` class provides an alternative to PHP's built-in functions for co
 ### Key Features
 
 - **Single-quoted strings**: Strings are wrapped in single quotes with backslash and single-quote escaping. Unicode characters are preserved as-is.
-- **Clearer float representation**: Floats are always made distinguishable from integers by appending `.0` if no decimal point or 'e' is present (e.g., `5.0` instead of `5`). Special values (`NAN`, `INF`, `-INF`) are handled correctly.
+- **Clearer float representation**: Floats are always made distinguishable from integers by appending `.0` if no decimal point or `E` is present in the string (e.g., `5.0` instead of `5`). Special values (`NAN`, `INF`, `-INF`) are handled correctly.
 - **PHP-style array formatting**: Both lists and associative arrays use square brackets (`[...]`). Lists omit keys; associative arrays show keys with thick arrows (`=>`).
 - **Smart pretty printing**: Scalar lists use single-line, grid, or one-per-line layout depending on length. Associative arrays and objects align keys/property names.
 - **UML-style visibility notation**: Objects use `ClassName {...}` with visibility symbols (`+` public, `#` protected, `-` private).
 - **Enum support**: Enums are rendered as `Fully\Qualified\ClassName::CaseName`.
 - **Resource formatting**: Resources use `get_debug_type()` output, e.g. `resource (stream)` or `resource (closed)`.
 
-The output for scalars, strings, and arrays is parseable PHP code. Object and resource output is not parseable but is designed for readability.
+The output for scalars, strings, enums, and arrays is parseable PHP code. Object and resource output is not parseable, but is designed for readability.
 
 ## Constants
 
-| Constant | Value | Description |
-|---|---|---|
-| `NUM_SPACES_INDENT` | `4` | Number of spaces per indentation level in pretty-printed output. |
+| Constant                  | Value | Description                                                                       |
+| ------------------------- | ----- | --------------------------------------------------------------------------------- |
+| `NUM_SPACES_INDENT`       | `4`   | Number of spaces per indentation level in pretty-printed output.                  |
 | `DEFAULT_MAX_LINE_LENGTH` | `120` | Maximum line length before pretty-printed lists wrap to grid or multiline format. |
 
 ## Formatting Methods
