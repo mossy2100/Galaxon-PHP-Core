@@ -22,8 +22,72 @@ The output for scalars, strings, enums, and arrays is parseable PHP code. Object
 
 | Constant                  | Value | Description                                                                       |
 | ------------------------- | ----- | --------------------------------------------------------------------------------- |
-| `NUM_SPACES_INDENT`       | `4`   | Number of spaces per indentation level in pretty-printed output.                  |
-| `DEFAULT_MAX_LINE_LENGTH` | `120` | Maximum line length before pretty-printed lists wrap to grid or multiline format. |
+| `DEFAULT_INDENT`          | `4`   | Default number of spaces per indentation level in pretty-printed output.          |
+| `DEFAULT_MAX_LINE_LENGTH` | `120` | Default maximum line length before pretty-printed lists wrap to grid or multiline format. |
+
+## Configuration Methods
+
+The indent and max line length are configurable via static properties. Changes persist for the lifetime of the process and affect all subsequent calls.
+
+### setIndent() / getIndent()
+
+```php
+public static function setIndent(int $indent): void
+public static function getIndent(): int
+```
+
+Set or get the number of spaces used for each indentation level in pretty-printed output.
+
+**Throws:**
+- `InvalidArgumentException` - If the indent is not greater than 0.
+
+**Example:**
+
+```php
+Stringify::setIndent(2);
+Stringify::stringify(['a' => 1, 'b' => 2], true);
+// [
+//   'a' => 1,
+//   'b' => 2,
+// ]
+```
+
+### setMaxLineLength() / getMaxLineLength()
+
+```php
+public static function setMaxLineLength(int $maxLineLength): void
+public static function getMaxLineLength(): int
+```
+
+Set or get the maximum line length for pretty-printed output. This controls when scalar lists wrap from single-line to grid or one-per-line format.
+
+**Throws:**
+- `InvalidArgumentException` - If the max line length is not greater than 0.
+
+**Example:**
+
+```php
+Stringify::setMaxLineLength(60);
+Stringify::stringify(range(1, 20), true);
+// Grid layout will wrap earlier due to shorter max line length.
+```
+
+### resetDefaults()
+
+```php
+public static function resetDefaults(): void
+```
+
+Reset both indent and max line length to their default constant values. Useful in test teardown to avoid leaking state between tests.
+
+**Example:**
+
+```php
+Stringify::setIndent(2);
+Stringify::setMaxLineLength(80);
+// ... do work ...
+Stringify::resetDefaults(); // Back to 4 spaces and 120 chars.
+```
 
 ## Formatting Methods
 
@@ -45,7 +109,7 @@ Convert any PHP value to a readable string representation. This is the main entr
 
 **Throws:**
 - `DomainException` - If the value cannot be stringified (e.g., arrays with circular references).
-- `UnexpectedValueException` - If the value has an unknown type.
+- `UnexpectedValueException` - If the value has an unknown type (should never happen).
 
 **Examples:**
 
@@ -126,24 +190,24 @@ public static function stringifyArray(
     array $arr,
     bool $prettyPrint = false,
     int $indentLevel = 0,
-    int $maxLineLen = self::DEFAULT_MAX_LINE_LENGTH
 ): string
 ```
 
 Stringify a PHP array as concise, parseable code. Lists (sequential integer keys starting at 0) show values only. Associative arrays show keys and values with fat arrows (`=>`).
 
 When pretty printing is enabled, three layout strategies are used for lists of scalars:
-1. **Single line** - if the result fits within `$maxLineLen`.
+1. **Single line** - if the result fits within the configured max line length.
 2. **Grid** - items padded to equal width and arranged in columns.
 3. **One per line** - for lists containing non-scalar values.
 
 Associative arrays are always one pair per line with aligned keys when pretty printing.
 
+The max line length is controlled by `setMaxLineLength()` (default: `120`).
+
 **Parameters:**
 - `$arr` (array) - The array to encode.
 - `$prettyPrint` (bool) - Whether to use pretty printing (default: `false`).
 - `$indentLevel` (int) - The level of indentation (default: `0`).
-- `$maxLineLen` (int) - Maximum line length for pretty printing (default: `120`).
 
 **Returns:**
 - `string` - The string representation of the array.

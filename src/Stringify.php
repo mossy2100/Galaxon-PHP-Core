@@ -32,16 +32,85 @@ final class Stringify
     // region Constants
 
     /**
-     * The number of spaces to indent each level.
-     *
-     * @var int
+     * The default number of spaces to indent each level.
      */
-    public const int NUM_SPACES_INDENT = 4;
+    public const int DEFAULT_INDENT = 4;
 
     /**
      * The default maximum line length for pretty-printed output.
      */
     public const int DEFAULT_MAX_LINE_LENGTH = 120;
+
+    /**
+     * The current number of spaces to indent each level.
+     */
+    private static int $indent = self::DEFAULT_INDENT;
+
+    /**
+     * The current maximum line length for pretty-printed output.
+     */
+    private static int $maxLineLength = self::DEFAULT_MAX_LINE_LENGTH;
+
+    // endregion
+
+    // region Configuration
+
+    /**
+     * Set the number of spaces used for each indentation level.
+     *
+     * @param int $indent The number of spaces (must be > 0).
+     * @throws InvalidArgumentException If the indent is not positive.
+     */
+    public static function setIndent(int $indent): void
+    {
+        if ($indent <= 0) {
+            throw new InvalidArgumentException('Indent must be greater than 0.');
+        }
+        self::$indent = $indent;
+    }
+
+    /**
+     * Get the current number of spaces used for each indentation level.
+     *
+     * @return int The current indent value.
+     */
+    public static function getIndent(): int
+    {
+        return self::$indent;
+    }
+
+    /**
+     * Set the maximum line length for pretty-printed output.
+     *
+     * @param int $maxLineLength The maximum line length (must be > 0).
+     * @throws InvalidArgumentException If the max line length is not positive.
+     */
+    public static function setMaxLineLength(int $maxLineLength): void
+    {
+        if ($maxLineLength <= 0) {
+            throw new InvalidArgumentException('Max line length must be greater than 0.');
+        }
+        self::$maxLineLength = $maxLineLength;
+    }
+
+    /**
+     * Get the current maximum line length for pretty-printed output.
+     *
+     * @return int The current max line length value.
+     */
+    public static function getMaxLineLength(): int
+    {
+        return self::$maxLineLength;
+    }
+
+    /**
+     * Reset indent and max line length to their default values.
+     */
+    public static function resetDefaults(): void
+    {
+        self::$indent = self::DEFAULT_INDENT;
+        self::$maxLineLength = self::DEFAULT_MAX_LINE_LENGTH;
+    }
 
     // endregion
 
@@ -183,7 +252,6 @@ final class Stringify
      * @param array<array-key, mixed> $arr The array to encode.
      * @param bool $prettyPrint Whether to use pretty printing (default false).
      * @param int $indentLevel The level of indentation for this structure (default 0).
-     * @param int $maxLineLen The maximum length of the result string for a list when pretty printing is enabled.
      * @return string The string representation of the array.
      * @throws DomainException If the array contains circular references.
      */
@@ -191,7 +259,6 @@ final class Stringify
         array $arr,
         bool $prettyPrint = false,
         int $indentLevel = 0,
-        int $maxLineLen = self::DEFAULT_MAX_LINE_LENGTH
     ): string {
         // Detect circular references.
         if (Arrays::containsRecursion($arr)) {
@@ -199,7 +266,7 @@ final class Stringify
         }
 
         return array_is_list($arr)
-            ? self::stringifyList($arr, $prettyPrint, $indentLevel, $maxLineLen)
+            ? self::stringifyList($arr, $prettyPrint, $indentLevel)
             : self::stringifyAssociativeArray($arr, $prettyPrint, $indentLevel);
     }
 
@@ -212,15 +279,10 @@ final class Stringify
      * @param list<mixed> $arr The list to stringify.
      * @param bool $prettyPrint Whether to use pretty printing.
      * @param int $indentLevel The level of indentation for this structure.
-     * @param int $maxLineLen The maximum line length for pretty printing.
      * @return string The string representation of the list.
      */
-    private static function stringifyList(
-        array $arr,
-        bool $prettyPrint,
-        int $indentLevel,
-        int $maxLineLen
-    ): string {
+    private static function stringifyList(array $arr, bool $prettyPrint, int $indentLevel): string
+    {
         // Get the values as strings.
         $valueStrings = [];
         foreach ($arr as $value) {
@@ -233,9 +295,9 @@ final class Stringify
         }
 
         // Set up for pretty printing.
-        $nSpacesBracketIndent = $indentLevel * self::NUM_SPACES_INDENT;
+        $nSpacesBracketIndent = $indentLevel * self::$indent;
         $bracketIndent = str_repeat(' ', $nSpacesBracketIndent);
-        $nSpacesItemIndent = $nSpacesBracketIndent + self::NUM_SPACES_INDENT;
+        $nSpacesItemIndent = $nSpacesBracketIndent + self::$indent;
         $itemIndent = str_repeat(' ', $nSpacesItemIndent);
         $nItems = count($arr);
 
@@ -254,7 +316,7 @@ final class Stringify
             // Check if it will fit in one line, counting the indent.
             // Note, the bracket indent may not be where the list actually starts in the output, so this isn't
             // guaranteed to fit on one line.
-            if (mb_strlen($bracketIndent . $singleLineList) <= $maxLineLen) {
+            if (mb_strlen($bracketIndent . $singleLineList) <= self::$maxLineLength) {
                 return $singleLineList;
             }
 
@@ -269,7 +331,7 @@ final class Stringify
             }
 
             // Calculate the number of items per line.
-            $nItemsPerLine = (int)floor(($maxLineLen + 1 - $nSpacesItemIndent) / ($maxValueWidth + 2));
+            $nItemsPerLine = (int)floor((self::$maxLineLength + 1 - $nSpacesItemIndent) / ($maxValueWidth + 2));
             if ($nItemsPerLine > 1) {
                 // Generate the grid.
                 $gridList = "[\n";
@@ -280,16 +342,16 @@ final class Stringify
                         $gridList .= $itemIndent;
                     }
 
-                    // Add the value and comma.
-                    $gridList .= mb_str_pad($valueString . ',', $maxValueWidth + 1);
                     $itemCountThisLine++;
+                    $isLastOnRow = ($itemCountThisLine === $nItemsPerLine || $i === $nItems - 1);
 
-                    // Add a newline or space after the value, as needed.
-                    if ($itemCountThisLine === $nItemsPerLine || $i === $nItems - 1) {
-                        $gridList .= "\n";
+                    if ($isLastOnRow) {
+                        // Last item on row: no padding to avoid trailing whitespace.
+                        $gridList .= $valueString . ",\n";
                         $itemCountThisLine = 0;
                     } else {
-                        $gridList .= ' ';
+                        // Non-last item: pad to uniform width, then space.
+                        $gridList .= mb_str_pad($valueString . ',', $maxValueWidth + 1) . ' ';
                     }
                 }
                 return $gridList . $bracketIndent . ']';
@@ -316,12 +378,10 @@ final class Stringify
      * @param int $indentLevel The level of indentation for this structure.
      * @return string The string representation of the associative array.
      */
-    private static function stringifyAssociativeArray(
-        array $arr,
-        bool $prettyPrint,
-        int $indentLevel
-    ): string {
+    private static function stringifyAssociativeArray(array $arr, bool $prettyPrint, int $indentLevel): string
+    {
         // Get keys as strings.
+        $keyStrings = [];
         foreach ($arr as $key => $value) {
             $keyStrings[] = self::stringify($key);
         }
@@ -339,9 +399,9 @@ final class Stringify
         }
 
         // Set up for pretty printing.
-        $nSpacesBracketIndent = $indentLevel * self::NUM_SPACES_INDENT;
+        $nSpacesBracketIndent = $indentLevel * self::$indent;
         $bracketIndent = str_repeat(' ', $nSpacesBracketIndent);
-        $nSpacesItemIndent = $nSpacesBracketIndent + self::NUM_SPACES_INDENT;
+        $nSpacesItemIndent = $nSpacesBracketIndent + self::$indent;
         $itemIndent = str_repeat(' ', $nSpacesItemIndent);
 
         // Get the maximum key width.
@@ -435,9 +495,9 @@ final class Stringify
         }
 
         // Generate the strings for key-value pairs. Each will be on its own line if pretty printing is enabled.
-        $nSpacesBracketIndent = $indentLevel * self::NUM_SPACES_INDENT;
+        $nSpacesBracketIndent = $indentLevel * self::$indent;
         $bracketIndent = $prettyPrint ? str_repeat(' ', $nSpacesBracketIndent) : '';
-        $nSpacesItemIndent = $nSpacesBracketIndent + self::NUM_SPACES_INDENT;
+        $nSpacesItemIndent = $nSpacesBracketIndent + self::$indent;
         $itemIndent = $prettyPrint ? str_repeat(' ', $nSpacesItemIndent) : '';
 
         $keys = array_keys($arr);

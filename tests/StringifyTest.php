@@ -245,7 +245,7 @@ final class StringifyTest extends TestCase
      */
     public function testStringifyArrayPrettyPrintGrid(): void
     {
-        $maxLineLength = Stringify::DEFAULT_MAX_LINE_LENGTH;
+        $maxLineLength = Stringify::getMaxLineLength();
 
         // Create a list long enough to exceed 120 chars and trigger grid format.
         $list = range(1, 50);
@@ -304,18 +304,23 @@ final class StringifyTest extends TestCase
         $uuids = [
             'c9e35c00-0f1e-4804-b5fe-6c4c9718db60',
             'd2aee4c5-a7f7-4018-a635-c3f4c317033e',
-            'd266963a-c4e0-4255-a97d-f070e51fcb5e',
+            'd266963a-c4e0-4255-a97d-f070e51fcb5e'
         ];
 
-        // maxLineLen of 40 — items are too wide for 2 per line, so grid is skipped.
-        $result = Stringify::stringifyArray($uuids, true, 0, 40);
+        // maxLineLength of 40 — items are too wide for 2 per line, so grid is skipped.
+        Stringify::setMaxLineLength(40);
+        try {
+            $result = Stringify::stringifyArray($uuids, true);
 
-        $expected = "[\n"
-            . "    'c9e35c00-0f1e-4804-b5fe-6c4c9718db60',\n"
-            . "    'd2aee4c5-a7f7-4018-a635-c3f4c317033e',\n"
-            . "    'd266963a-c4e0-4255-a97d-f070e51fcb5e',\n"
-            . ']';
-        $this->assertSame($expected, $result);
+            $expected = "[\n"
+                . "    'c9e35c00-0f1e-4804-b5fe-6c4c9718db60',\n"
+                . "    'd2aee4c5-a7f7-4018-a635-c3f4c317033e',\n"
+                . "    'd266963a-c4e0-4255-a97d-f070e51fcb5e',\n"
+                . ']';
+            $this->assertSame($expected, $result);
+        } finally {
+            Stringify::resetDefaults();
+        }
     }
 
     /**
@@ -548,6 +553,110 @@ final class StringifyTest extends TestCase
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('The maximum string length must be at least 10.');
         Stringify::abbrev(123, 9);
+    }
+
+    // endregion
+
+    // region Configuration
+
+    /**
+     * Test getIndent() returns the default value initially.
+     */
+    public function testGetIndentDefault(): void
+    {
+        $this->assertSame(Stringify::DEFAULT_INDENT, Stringify::getIndent());
+    }
+
+    /**
+     * Test setIndent() changes the indent value.
+     */
+    public function testSetIndent(): void
+    {
+        Stringify::setIndent(2);
+        try {
+            $this->assertSame(2, Stringify::getIndent());
+
+            // Verify it affects pretty-printed output.
+            $result = Stringify::stringify(['a' => 1, 'b' => 2], true);
+            $expected = "[\n  'a' => 1,\n  'b' => 2,\n]";
+            $this->assertSame($expected, $result);
+        } finally {
+            Stringify::resetDefaults();
+        }
+    }
+
+    /**
+     * Test setIndent() throws for zero.
+     */
+    public function testSetIndentZeroThrows(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Indent must be greater than 0.');
+        Stringify::setIndent(0);
+    }
+
+    /**
+     * Test setIndent() throws for negative value.
+     */
+    public function testSetIndentNegativeThrows(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Indent must be greater than 0.');
+        Stringify::setIndent(-1);
+    }
+
+    /**
+     * Test getMaxLineLength() returns the default value initially.
+     */
+    public function testGetMaxLineLengthDefault(): void
+    {
+        $this->assertSame(Stringify::DEFAULT_MAX_LINE_LENGTH, Stringify::getMaxLineLength());
+    }
+
+    /**
+     * Test setMaxLineLength() changes the max line length.
+     */
+    public function testSetMaxLineLength(): void
+    {
+        Stringify::setMaxLineLength(60);
+        try {
+            $this->assertSame(60, Stringify::getMaxLineLength());
+        } finally {
+            Stringify::resetDefaults();
+        }
+    }
+
+    /**
+     * Test setMaxLineLength() throws for zero.
+     */
+    public function testSetMaxLineLengthZeroThrows(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Max line length must be greater than 0.');
+        Stringify::setMaxLineLength(0);
+    }
+
+    /**
+     * Test setMaxLineLength() throws for negative value.
+     */
+    public function testSetMaxLineLengthNegativeThrows(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Max line length must be greater than 0.');
+        Stringify::setMaxLineLength(-10);
+    }
+
+    /**
+     * Test resetDefaults() restores both values.
+     */
+    public function testResetDefaults(): void
+    {
+        Stringify::setIndent(8);
+        Stringify::setMaxLineLength(40);
+        Stringify::resetDefaults();
+
+        $this->assertSame(Stringify::DEFAULT_INDENT, Stringify::getIndent());
+        $this->assertSame(Stringify::DEFAULT_MAX_LINE_LENGTH, Stringify::getMaxLineLength());
     }
 
     // endregion
