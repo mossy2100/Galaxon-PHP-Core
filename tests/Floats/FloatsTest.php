@@ -621,6 +621,26 @@ final class FloatsTest extends TestCase
     }
 
     /**
+     * Test tryConvertToInt with PHP_INT_MAX and PHP_INT_MIN boundary values.
+     */
+    public function testTryConvertToIntWithIntBoundaries(): void
+    {
+        // (float)PHP_INT_MAX rounds up to 2^63, which overflows int.
+        // This must return null without triggering a PHP warning.
+        $this->assertNull(Floats::tryConvertToInt((float)PHP_INT_MAX));
+
+        // PHP_INT_MIN is -2^63, exactly representable as a float.
+        $this->assertSame(PHP_INT_MIN, Floats::tryConvertToInt((float)PHP_INT_MIN));
+
+        // Largest float that fits in an int: 2^63 - 1024 = 9223372036854774784.
+        $largest = 9223372036854774784.0;
+        $this->assertSame(9223372036854774784, Floats::tryConvertToInt($largest));
+
+        // One float step above that is 2^63, which should fail.
+        $this->assertNull(Floats::tryConvertToInt($largest + 1024.0));
+    }
+
+    /**
      * Test tryConvertToInt with various representable integers.
      */
     public function testTryConvertToIntWithVariousIntegers(): void

@@ -138,48 +138,23 @@ final class Stringify
      * @return string The string representation of the value.
      * @throws DomainException If the value cannot be stringified.
      * @throws UnexpectedValueException If the value has an unknown type.
+     * @throws InvalidArgumentException
      */
     public static function stringify(mixed $value, bool $prettyPrint = false, int $indentLevel = 0): string
     {
         // Call the relevant method.
-        switch (Types::getBasicType($value)) {
-            case 'null':
-                return 'null';
-
-            case 'bool':
-                /** @var bool $value */
-                return $value ? 'true' : 'false';
-
-            case 'int':
-                /** @var int $value */
-                return (string)$value;
-
-            case 'string':
-                /** @var string $value */
-                return self::stringifyString($value);
-
-            case 'float':
-                /** @var float $value */
-                return self::stringifyFloat($value);
-
-            case 'array':
-                /** @var list<mixed> $value */
-                return self::stringifyArray($value, $prettyPrint, $indentLevel);
-
-            case 'resource':
-                return self::stringifyResource($value);
-
-            case 'object':
-                /** @var object $value */
-                return self::stringifyObject($value, $prettyPrint, $indentLevel);
-
-            // @codeCoverageIgnoreStart
-            // This should never happen, but we'll include it for completeness/robustness.
-            // We can't test this, so get phpunit to ignore it for code coverage purposes.
-            default:
-                throw new UnexpectedValueException('Unknown type.');
-            // @codeCoverageIgnoreEnd
-        }
+        return match (Types::getBasicType($value)) {
+            'null' => 'null',
+            'bool' => $value ? 'true' : 'false',
+            'int' => (string)$value,
+            'float' => self::stringifyFloat($value),
+            'string' => self::stringifyString($value),
+            'array' => self::stringifyArray($value, $prettyPrint, $indentLevel),
+            'enum' => self::stringifyEnum($value),
+            'object' => self::stringifyObject($value, $prettyPrint, $indentLevel),
+            'resource' => self::stringifyResource($value),
+            default => throw new UnexpectedValueException('Unknown type.'),
+        };
     }
 
     /**
@@ -255,11 +230,8 @@ final class Stringify
      * @return string The string representation of the array.
      * @throws DomainException If the array contains circular references.
      */
-    public static function stringifyArray(
-        array $arr,
-        bool $prettyPrint = false,
-        int $indentLevel = 0,
-    ): string {
+    public static function stringifyArray(array $arr, bool $prettyPrint = false, int $indentLevel = 0): string
+    {
         // Detect circular references.
         if (Arrays::containsRecursion($arr)) {
             throw new DomainException('Cannot stringify arrays containing circular references.');
@@ -280,18 +252,20 @@ final class Stringify
      * @param bool $prettyPrint Whether to use pretty printing.
      * @param int $indentLevel The level of indentation for this structure.
      * @return string The string representation of the list.
+     * @throws DomainException If a value cannot be stringified.
      */
     private static function stringifyList(array $arr, bool $prettyPrint, int $indentLevel): string
     {
         // Get the values as strings.
-        $valueStrings = [];
-        foreach ($arr as $value) {
-            $valueStrings[] = self::stringify($value);
-        }
+        $values = array_values($arr);
+        $valueStrings = array_map(static fn ($value) => self::stringify($value), $values);
 
-        // Unpretty format. No newlines or extra spaces.
+        // Get the compact (single-line) format.
+        $compactList = '[' . implode(', ', $valueStrings) . ']';
+
+        // If we don't want pretty printing, return the single-line format.
         if (!$prettyPrint) {
-            return '[' . implode(', ', $valueStrings) . ']';
+            return $compactList;
         }
 
         // Set up for pretty printing.
@@ -301,23 +275,18 @@ final class Stringify
         $itemIndent = str_repeat(' ', $nSpacesItemIndent);
         $nItems = count($arr);
 
-        // Check if all items are either null, bool, int, float, or string.
-        $allScalars = true;
-        foreach ($arr as $value) {
-            if ($value !== null && !is_scalar($value)) {
-                $allScalars = false;
-            }
-        }
+        // Check if all items are null, scalar, or an enum value.
+        // Everything else - arrays, objects, resources  - will be formatted as one item per line.
+        $isSimple = static fn ($value) => $value === null || is_scalar($value) || $value instanceof UnitEnum;
+        $allSimple = array_all($values, $isSimple);
 
-        if ($allScalars) {
-            // Option 1: Format the list on one line, no trailing comma.
-            $singleLineList = '[' . implode(', ', $valueStrings) . ']';
-
-            // Check if it will fit in one line, counting the indent.
+        if ($allSimple) {
+            // Option 1: Format the list on one line.
+            // Check if the single-line format will fit in one line, counting the indent.
             // Note, the bracket indent may not be where the list actually starts in the output, so this isn't
-            // guaranteed to fit on one line.
-            if (mb_strlen($bracketIndent . $singleLineList) <= self::$maxLineLength) {
-                return $singleLineList;
+            // guaranteed to fit on one line. It's a compromise.
+            if (mb_strlen($bracketIndent . $compactList) <= self::$maxLineLength) {
+                return $compactList;
             }
 
             // Option 2: Format the list as a grid.
@@ -343,7 +312,7 @@ final class Stringify
                     }
 
                     $itemCountThisLine++;
-                    $isLastOnRow = ($itemCountThisLine === $nItemsPerLine || $i === $nItems - 1);
+                    $isLastOnRow = $itemCountThisLine === $nItemsPerLine || $i === $nItems - 1;
 
                     if ($isLastOnRow) {
                         // Last item on row: no padding to avoid trailing whitespace.
@@ -360,9 +329,8 @@ final class Stringify
 
         // Option 3: Format the list with one item per line. Pretty print each value. Include trailing comma.
         $multilineList = "[\n";
-        foreach ($arr as $value) {
-            $multilineList .= $itemIndent . self::stringify($value, true, $indentLevel + 1) .
-                ",\n";
+        foreach ($values as $value) {
+            $multilineList .= $itemIndent . self::stringify($value, true, $indentLevel + 1) . ",\n";
         }
         return $multilineList . $bracketIndent . ']';
     }
@@ -423,27 +391,6 @@ final class Stringify
     }
 
     /**
-     * Stringify a resource.
-     *
-     * Uses get_debug_type() which returns 'resource (stream)', 'resource (closed)', etc.
-     *
-     * @param mixed $value The resource to stringify.
-     * @return string The string representation of the resource, e.g. 'resource (stream)'.
-     * @throws InvalidArgumentException If the value is not a resource.
-     */
-    public static function stringifyResource(mixed $value): string
-    {
-        // We can't type hint for resource, and is_resource() returns false for a closed resource.
-        // Check the debug type.
-        $type = get_debug_type($value);
-        if (!str_starts_with($type, 'resource (')) {
-            throw new InvalidArgumentException('Value is not a resource.');
-        }
-
-        return $type;
-    }
-
-    /**
      * Get a string representation of an enum case in the form "Fully\Qualified\ClassName::CaseName".
      * The leading slash is removed.
      *
@@ -470,14 +417,10 @@ final class Stringify
      * @param bool $prettyPrint Whether to use pretty printing (default false).
      * @param int $indentLevel The level of indentation for this structure (default 0).
      * @return string The string representation of the object.
+     * @throws UnexpectedValueException
      */
     public static function stringifyObject(object $obj, bool $prettyPrint = false, int $indentLevel = 0): string
     {
-        // Check for enum.
-        if ($obj instanceof UnitEnum) {
-            return self::stringifyEnum($obj);
-        }
-
         // Get the object's class.
         $class = $obj::class;
 
@@ -553,12 +496,34 @@ final class Stringify
     }
 
     /**
+     * Stringify a resource.
+     *
+     * Uses get_debug_type() which returns 'resource (stream)', 'resource (closed)', etc.
+     *
+     * @param mixed $value The resource to stringify.
+     * @return string The string representation of the resource, e.g. 'resource (stream)'.
+     * @throws InvalidArgumentException If the value is not a resource.
+     */
+    public static function stringifyResource(mixed $value): string
+    {
+        // We can't type hint for resource, and is_resource() returns false for a closed resource.
+        // Check the debug type.
+        $type = get_debug_type($value);
+        if (!str_starts_with($type, 'resource (')) {
+            throw new InvalidArgumentException('Value is not a resource.');
+        }
+
+        return $type;
+    }
+
+    /**
      * Get a short string representation of the given value for use in error messages, log messages, and the like.
      *
      * @param mixed $value The value to get the string representation for.
      * @param int $maxLen The maximum length of the result.
      * @return string The short string representation.
      * @throws DomainException If the maximum length is less than the minimum, or if the value cannot be stringified.
+     * @throws UnexpectedValueException
      */
     public static function abbrev(mixed $value, int $maxLen = 30): string
     {
@@ -588,6 +553,7 @@ final class Stringify
      * @param mixed $value The value to stringify and output.
      * @param bool $prettyPrint If the result should be nicely formatted.
      * @throws DomainException If the value cannot be stringified.
+     * @throws UnexpectedValueException
      */
     public static function print(mixed $value, bool $prettyPrint = false): void
     {
@@ -602,6 +568,7 @@ final class Stringify
      * @param mixed $value The value to stringify and output.
      * @param bool $prettyPrint If the result should be nicely formatted.
      * @throws DomainException If the value cannot be stringified.
+     * @throws UnexpectedValueException
      */
     public static function println(mixed $value, bool $prettyPrint = false): void
     {

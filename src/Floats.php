@@ -409,7 +409,15 @@ final class Floats
 
         // Check if the argument is a float that can be converted losslessly to an integer.
         if ($f >= PHP_INT_MIN && $f <= PHP_INT_MAX) {
-            $i = (int)$f;
+            // Try to cast the float to an integer. Suppress overflow warning.
+            $i = @(int)$f;
+
+            // If overflow occurred (value close to PHP_INT_MAX), return null.
+            if ($f > 0 && $i === PHP_INT_MIN) {
+                return null;
+            }
+
+            // Cast the integer back to a float and compare with the original float.
             if ($f === (float)$i) {
                 return $i;
             }

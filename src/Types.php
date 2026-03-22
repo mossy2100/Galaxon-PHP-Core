@@ -6,6 +6,7 @@ namespace Galaxon\Core;
 
 use DomainException;
 use UnexpectedValueException;
+use UnitEnum;
 
 /**
  * Convenience methods for working with types.
@@ -37,6 +38,7 @@ final class Types
      * - float
      * - string
      * - array
+     * - enum
      * - object
      * - resource
      * - unknown
@@ -50,6 +52,11 @@ final class Types
         $type = get_debug_type($value);
         if (in_array($type, ['null', 'bool', 'int', 'float', 'string', 'array'], true)) {
             return $type;
+        }
+
+        // Check for enum.
+        if ($value instanceof UnitEnum) {
+            return 'enum';
         }
 
         // Call gettype() and return the first word, which should be "object", "resource", or "unknown".

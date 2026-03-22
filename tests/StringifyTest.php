@@ -577,7 +577,10 @@ final class StringifyTest extends TestCase
             $this->assertSame(2, Stringify::getIndent());
 
             // Verify it affects pretty-printed output.
-            $result = Stringify::stringify(['a' => 1, 'b' => 2], true);
+            $result = Stringify::stringify([
+                'a' => 1,
+                'b' => 2,
+            ], true);
             $expected = "[\n  'a' => 1,\n  'b' => 2,\n]";
             $this->assertSame($expected, $result);
         } finally {
