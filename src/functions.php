@@ -30,12 +30,3 @@ function is_number(mixed $value): bool
 {
     return is_int($value) || is_float($value);
 }
-
-/**
- * Dump a value to the output, typically for debugging purposes.
- *
- * @param mixed $value The value to dump.
- */
-function dump(mixed $value): void {
-    Stringify::println($value, true);
-}

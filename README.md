@@ -52,6 +52,12 @@ Type checking and inspection utilities with methods for identifying numbers, uns
 
 Advanced value-to-string conversion with pretty printing, supporting all PHP types with improved readability.
 
+## Functions
+
+### [Functions](docs/Functions.md)
+
+Convenience functions in the `Galaxon\Core` namespace, including `println()` for output with newlines and `is_number()` for strict numeric type checking.
+
 ## Traits
 
 **See [Traits Overview](docs/Traits/Traits.md) for how these traits work together.**
