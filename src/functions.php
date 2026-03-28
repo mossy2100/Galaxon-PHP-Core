@@ -9,13 +9,25 @@ declare(strict_types=1);
 namespace Galaxon\Core;
 
 /**
- * Echo a value and append a newline character.
+ * Print a value and append a newline character.
+ *
+ * Strings are output as-is.
+ * Objects with a __toString() method are converted to strings via that method.
+ * Otherwise, the value is converted to a string using Stringify::stringify().
+ *
+ * This method makes it easier to distinguish null, bool, int, float, and string values, and provides a nice output
+ * for arrays, objects, and resources.
  *
  * @param mixed $value The value to echo.
  */
-function println(mixed $value): void
+function println(mixed $value = ''): void
 {
-    echo $value, PHP_EOL;
+    $str = is_string($value)
+        ? $value
+        : (is_object($value) && method_exists($value, '__toString')
+            ? (string)$value
+            : Stringify::stringify($value));
+    echo $str . PHP_EOL;
 }
 
 /**

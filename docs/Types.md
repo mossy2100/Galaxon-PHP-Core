@@ -27,7 +27,7 @@ Get the basic type of a value as a canonical string name.
 - `$value` (mixed) - The value to get the type of
 
 **Returns:**
-- `string` - One of: `null`, `bool`, `int`, `float`, `string`, `array`, `object`, `resource`, or `unknown`
+- `string` - One of: `null`, `bool`, `int`, `float`, `string`, `array`, `enum`, `object`, `resource`, or `unknown`
 
 **Examples:**
 
@@ -38,6 +38,7 @@ Types::getBasicType(42);             // "int"
 Types::getBasicType(3.14);           // "float"
 Types::getBasicType("hello");        // "string"
 Types::getBasicType([1, 2, 3]);      // "array"
+Types::getBasicType(Suit::Hearts);   // "enum"
 Types::getBasicType(new stdClass()); // "object"
 ```
 
@@ -60,7 +61,7 @@ Convert any PHP value into a unique string suitable for use as a key in collecti
 - `string` - A unique string representation of the value
 
 **Throws:**
-- `TypeError` - If the value has an unknown type
+- `UnexpectedValueException` - If the value has an unknown type
 
 **String Format (by type):**
 - `null`: `"n"`
@@ -69,6 +70,7 @@ Convert any PHP value into a unique string suitable for use as a key in collecti
 - `float`: `"f:{hex}"` (hex representation for uniqueness)
 - `string`: `"s:{length}:{content}"` (e.g., `"s:5:hello"`)
 - `array`: `"a:{count}:{stringified}"` (e.g., `"a:3:[1, 2, 3]"`)
+- `enum`: `"e:{ClassName}::{CaseName}"` (e.g., `"e:App\Enums\Suit::Hearts"`)
 - `object`: `"o:{object_id}"` (e.g., `"o:1"`)
 - `resource`: `"r:{resource_id}"` (e.g., `"r:5"`)
 
@@ -86,6 +88,9 @@ Types::getUniqueString([1, 2, 3]);         // "a:3:[1, 2, 3]"
 // Distinguishes between -0.0 and +0.0
 Types::getUniqueString(0.0);               // "f:0000000000000000"
 Types::getUniqueString(-0.0);              // "f:8000000000000000" (different!)
+
+// Enums use class name and case name
+Types::getUniqueString(Suit::Hearts);      // "e:App\Enums\Suit::Hearts"
 
 // Objects use object ID
 $obj = new stdClass();

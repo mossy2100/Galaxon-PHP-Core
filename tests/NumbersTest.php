@@ -16,43 +16,6 @@ use stdClass;
 #[CoversClass(Numbers::class)]
 final class NumbersTest extends TestCase
 {
-    // region Type detection tests
-
-    /**
-     * Test detection of numeric types.
-     */
-    public function testIsNum(): void
-    {
-        // Test that integers are identified as numbers.
-        $this->assertTrue(Numbers::isNumber(0));
-        $this->assertTrue(Numbers::isNumber(42));
-        $this->assertTrue(Numbers::isNumber(-17));
-
-        // Test that floats are identified as numbers.
-        $this->assertTrue(Numbers::isNumber(0.0));
-        $this->assertTrue(Numbers::isNumber(3.14));
-        $this->assertTrue(Numbers::isNumber(-2.5));
-
-        // Test that special float values are identified as numbers.
-        $this->assertTrue(Numbers::isNumber(INF));
-        $this->assertTrue(Numbers::isNumber(-INF));
-        $this->assertTrue(Numbers::isNumber(NAN));
-
-        // Test that numeric strings are NOT identified as numbers.
-        $this->assertFalse(Numbers::isNumber('42'));
-        $this->assertFalse(Numbers::isNumber('3.14'));
-
-        // Test that other types are not identified as numbers.
-        $this->assertFalse(Numbers::isNumber('hello'));
-        $this->assertFalse(Numbers::isNumber(true));
-        $this->assertFalse(Numbers::isNumber(false));
-        $this->assertFalse(Numbers::isNumber(null));
-        $this->assertFalse(Numbers::isNumber([]));
-        $this->assertFalse(Numbers::isNumber(new stdClass()));
-    }
-
-    // endregion
-
     // region Sign tests
 
     /**

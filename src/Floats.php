@@ -606,16 +606,8 @@ final class Floats
     {
         Environment::require64Bit();
 
-        $packed = pack('d', $f);
-        /** @var list<int> $bytes */
-        $bytes = unpack('C*', $packed);
-
-        $bits = 0;
-        for ($i = 8; $i >= 1; $i--) {
-            $bits = ($bits << 8) | $bytes[$i];
-        }
-
-        return $bits;
+        // Pack as little-endian double, unpack as little-endian unsigned 64-bit int.
+        return unpack('P', pack('e', $f))[1];
     }
 
     /**
@@ -639,10 +631,8 @@ final class Floats
     {
         Environment::require64Bit();
 
-        $packed = pack('Q', $bits);
-        /** @var list<float> $result */
-        $result = unpack('d', $packed);
-        return $result[1];
+        // Pack as an unsigned 64-bit little-endian int, unpack as a little-endian double.
+        return unpack('e', pack('P', $bits))[1];
     }
 
     /**

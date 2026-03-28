@@ -1110,11 +1110,11 @@ Converts a 64-bit integer to a float by reinterpreting its bit pattern. This is 
 **Examples:**
 
 ```php
-// Construct 1.0 from its bit pattern
-$f = Floats::bitsToFloat(0x3FF0000000000000);  // 1.0
+// Construct 1.0 from its bit pattern (0x3FF0000000000000)
+$f = Floats::bitsToFloat(4607182418800017408);  // 1.0
 
-// Construct negative zero
-$f = Floats::bitsToFloat(0x8000000000000000);  // -0.0
+// Construct negative zero (0x8000000000000000 = PHP_INT_MIN as signed int)
+$f = Floats::bitsToFloat(PHP_INT_MIN);  // -0.0
 
 // Round-trip with floatToBits()
 $original = -273.15;
@@ -1122,6 +1122,8 @@ $bits = Floats::floatToBits($original);
 $restored = Floats::bitsToFloat($bits);
 $original === $restored;  // true
 ```
+
+**Note:** Hex literals with the high bit set (e.g. `0x8000000000000000`) overflow to `float` in PHP because integers are signed 64-bit. Use the signed int equivalents or `PHP_INT_MIN` for the sign-bit-only pattern.
 
 **Use Cases:**
 - Constructing specific float values for testing

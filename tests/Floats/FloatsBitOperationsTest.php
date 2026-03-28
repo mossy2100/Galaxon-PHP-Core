@@ -279,7 +279,163 @@ final class FloatsBitOperationsTest extends TestCase
 
     // endregion
 
-    // region Bit-manipulation methods tests
+    // region floatToBits and bitsToFloat tests
+
+    /**
+     * Test floatToBits with positive zero.
+     */
+    public function testFloatToBitsPositiveZero(): void
+    {
+        $this->assertSame(0, Floats::floatToBits(0.0));
+    }
+
+    /**
+     * Test floatToBits with negative zero.
+     */
+    public function testFloatToBitsNegativeZero(): void
+    {
+        // Sign bit set, everything else zero (0x8000000000000000 as signed int).
+        $this->assertSame(PHP_INT_MIN, Floats::floatToBits(-0.0));
+    }
+
+    /**
+     * Test floatToBits with positive one.
+     */
+    public function testFloatToBitsPositiveOne(): void
+    {
+        // 1.0 = sign 0, exponent 1023 (0x3FF), fraction 0.
+        $this->assertSame(4607182418800017408, Floats::floatToBits(1.0));
+    }
+
+    /**
+     * Test floatToBits with negative one.
+     */
+    public function testFloatToBitsNegativeOne(): void
+    {
+        // -1.0 = 0xBFF0000000000000 as signed int.
+        $this->assertSame(-4616189618054758400, Floats::floatToBits(-1.0));
+    }
+
+    /**
+     * Test floatToBits with positive infinity.
+     */
+    public function testFloatToBitsInfinity(): void
+    {
+        // INF = sign 0, exponent 2047 (0x7FF), fraction 0.
+        $this->assertSame(9218868437227405312, Floats::floatToBits(INF));
+    }
+
+    /**
+     * Test floatToBits with negative infinity.
+     */
+    public function testFloatToBitsNegativeInfinity(): void
+    {
+        // -INF = 0xFFF0000000000000 as signed int.
+        $this->assertSame(-4503599627370496, Floats::floatToBits(-INF));
+    }
+
+    /**
+     * Test floatToBits with NAN has exponent all ones and non-zero fraction.
+     */
+    public function testFloatToBitsNan(): void
+    {
+        $bits = Floats::floatToBits(NAN);
+
+        // Disassemble to check components. Exponent should be 2047 (all ones), fraction non-zero.
+        $parts = Floats::disassemble(NAN);
+        $this->assertSame(2047, $parts['exponent']);
+        $this->assertGreaterThan(0, $parts['fraction']);
+
+        // Verify floatToBits is consistent with disassemble.
+        $this->assertSame($bits, Floats::floatToBits(Floats::bitsToFloat($bits)));
+    }
+
+    /**
+     * Test floatToBits with 1.5.
+     */
+    public function testFloatToBitsOnePointFive(): void
+    {
+        // 1.5 = 1.1 in binary = sign 0, exponent 1023, fraction MSB set.
+        $this->assertSame(4609434218613702656, Floats::floatToBits(1.5));
+    }
+
+    /**
+     * Test bitsToFloat with zero bits returns positive zero.
+     */
+    public function testBitsToFloatZero(): void
+    {
+        $result = Floats::bitsToFloat(0);
+        $this->assertSame(0.0, $result);
+        $this->assertTrue(Floats::isPositiveZero($result));
+    }
+
+    /**
+     * Test bitsToFloat with sign bit set returns negative zero.
+     */
+    public function testBitsToFloatNegativeZero(): void
+    {
+        $result = Floats::bitsToFloat(PHP_INT_MIN);
+        $this->assertTrue(Floats::isNegativeZero($result));
+    }
+
+    /**
+     * Test bitsToFloat with known bit patterns.
+     */
+    public function testBitsToFloatKnownValues(): void
+    {
+        $this->assertSame(1.0, Floats::bitsToFloat(4607182418800017408));
+        $this->assertSame(-1.0, Floats::bitsToFloat(-4616189618054758400));
+        $this->assertSame(2.0, Floats::bitsToFloat(4611686018427387904));
+        $this->assertSame(1.5, Floats::bitsToFloat(4609434218613702656));
+        $this->assertSame(INF, Floats::bitsToFloat(9218868437227405312));
+        $this->assertSame(-INF, Floats::bitsToFloat(-4503599627370496));
+    }
+
+    /**
+     * Test bitsToFloat with NAN bit pattern.
+     */
+    public function testBitsToFloatNan(): void
+    {
+        // Use a known NAN bit pattern from floatToBits.
+        $nanBits = Floats::floatToBits(NAN);
+        $this->assertTrue(is_nan(Floats::bitsToFloat($nanBits)));
+    }
+
+    /**
+     * Test floatToBits and bitsToFloat round-trip.
+     */
+    public function testFloatToBitsBitsToFloatRoundTrip(): void
+    {
+        $testValues = [0.0, 1.0, -1.0, 2.0, 0.5, 1.5, -42.25, 1e10, 1e-10, PHP_FLOAT_MAX, INF, -INF];
+
+        foreach ($testValues as $value) {
+            $result = Floats::bitsToFloat(Floats::floatToBits($value));
+            $this->assertSame($value, $result, "Round trip failed for $value");
+        }
+    }
+
+    /**
+     * Test floatToBits and bitsToFloat round-trip with negative zero.
+     */
+    public function testFloatToBitsBitsToFloatRoundTripNegativeZero(): void
+    {
+        $result = Floats::bitsToFloat(Floats::floatToBits(-0.0));
+        $this->assertTrue(Floats::isNegativeZero($result));
+    }
+
+    /**
+     * Test floatToBits and bitsToFloat round-trip with NAN.
+     */
+    public function testFloatToBitsBitsToFloatRoundTripNan(): void
+    {
+        $bits = Floats::floatToBits(NAN);
+        $result = Floats::bitsToFloat($bits);
+        $this->assertTrue(is_nan($result));
+    }
+
+    // endregion
+
+    // region disassemble and assemble tests
 
     /**
      * Test disassemble with positive one.

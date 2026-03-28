@@ -12,6 +12,27 @@ use PHPUnit\Framework\TestCase;
 use stdClass;
 
 /**
+ * Test enum for getBasicType() tests.
+ */
+enum TestSuit
+{
+    case Hearts;
+    case Diamonds;
+    case Clubs;
+    case Spades;
+}
+
+/**
+ * Test backed enum for getBasicType() tests.
+ */
+enum TestColor: string
+{
+    case Red = 'red';
+    case Green = 'green';
+    case Blue = 'blue';
+}
+
+/**
  * Test class for Types utility class.
  */
 #[CoversClass(Types::class)]
@@ -85,6 +106,18 @@ final class TypesTest extends TestCase
         $this->assertSame('array', Types::getBasicType([
             'key' => 'value',
         ]));
+    }
+
+    /**
+     * Test getBasicType with enums.
+     */
+    public function testGetBasicTypeEnum(): void
+    {
+        // Test with a unit enum.
+        $this->assertSame('enum', Types::getBasicType(TestSuit::Hearts));
+
+        // Test with a backed enum.
+        $this->assertSame('enum', Types::getBasicType(TestColor::Red));
     }
 
     /**
@@ -209,6 +242,31 @@ final class TypesTest extends TestCase
             'key' => 'value',
         ]);
         $this->assertStringStartsWith('a:1:', $key3);
+    }
+
+    /**
+     * Test getStringKey with enums.
+     */
+    public function testGetStringKeyEnum(): void
+    {
+        // Test that unit enums produce keys with class and case name.
+        $key = Types::getUniqueString(TestSuit::Hearts);
+        $this->assertSame('e:Galaxon\Core\Tests\TestSuit::Hearts', $key);
+
+        // Test that different cases produce different keys.
+        $key2 = Types::getUniqueString(TestSuit::Diamonds);
+        $this->assertNotSame($key, $key2);
+
+        // Test that same case produces same key.
+        $key3 = Types::getUniqueString(TestSuit::Hearts);
+        $this->assertSame($key, $key3);
+
+        // Test with a backed enum.
+        $key4 = Types::getUniqueString(TestColor::Red);
+        $this->assertSame('e:Galaxon\Core\Tests\TestColor::Red', $key4);
+
+        // Test that enums from different classes are distinct.
+        $this->assertNotSame($key, $key4);
     }
 
     /**

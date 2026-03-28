@@ -12,37 +12,6 @@ The `Numbers` class provides utilities for working with numbers (both integers a
 - Equality comparison that correctly handles mixed int/float types
 - Sign operations with support for IEEE-754 signed zeros (-0.0 vs +0.0)
 
-## Inspection Methods
-
-### isNumber()
-
-```php
-public static function isNumber(mixed $value): bool
-```
-
-Check if a value is a number (int or float). This differs from PHP's `is_numeric()` function, which also returns `true` for numeric strings.
-
-**Parameters:**
-- `$value` (mixed) - The value to check
-
-**Returns:**
-- `bool` - Returns `true` if the value is an int or float, `false` otherwise
-
-**Examples:**
-
-```php
-Numbers::isNumber(42);         // true
-Numbers::isNumber(3.14);       // true
-Numbers::isNumber(INF);        // true
-Numbers::isNumber(NAN);        // true
-Numbers::isNumber("42");       // false (numeric string)
-Numbers::isNumber("3.14");     // false (numeric string)
-Numbers::isNumber(true);       // false
-Numbers::isNumber(null);       // false
-```
-
-**Use Case:** When you need strict type checking that distinguishes actual numbers from numeric strings.
-
 ## Comparison Methods
 
 ### equal()

@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **functions.php** - New namespaced convenience functions with `files` autoload entry:
+  - `println()` - Print a value with a newline. Strings output as-is, `Stringable` objects use `__toString()`, all other types go through `Stringify::stringify()`.
+  - `is_number()` - Strict type check for `int` or `float` (rejects numeric strings unlike `is_numeric()`).
+- **Types::getBasicType()** - Now returns `'enum'` for `UnitEnum` instances (previously returned `'object'`).
+- **Types::getUniqueString()** - Now supports enums with format `"e:{ClassName}::{CaseName}"`.
+
+### Changed
+
+- **Stringify** - Indent and max line length are now configurable:
+  - `setIndent()` / `getIndent()` - Configure spaces per indentation level.
+  - `setMaxLineLength()` / `getMaxLineLength()` - Configure pretty-print line wrapping.
+  - `resetDefaults()` - Reset both to defaults.
+  - Renamed constant `NUM_SPACES_INDENT` → `DEFAULT_INDENT`.
+  - Skip grid format when items are too wide for 2 per line.
+- **Floats::floatToBits()** - Simplified from byte-array loop to single `pack`/`unpack` call.
+- **Floats::bitsToFloat()** - Same simplification.
+
+### Fixed
+
+- **Floats::tryConvertToInt()** - Fixed overflow bug where floats near `PHP_INT_MAX` could silently overflow to `PHP_INT_MIN` during `(int)` cast. Now detects and returns `null`.
+
+### Removed
+
+- **`dump()`** function removed from `functions.php`.
+- **`_dev/`** directory removed from version control.
+
+### Documentation
+
+- **Functions.md** - New documentation page for `println()` and `is_number()`, including autoloading setup.
+- **README.md** - Added Functions section linking to new docs.
+- **Types.md** - Added `enum` to `getBasicType()` return values and examples. Added `enum` format to `getUniqueString()`. Fixed `throws` annotation (`TypeError` → `UnexpectedValueException`).
+- **Floats.md** - Fixed `bitsToFloat()` examples that used overflowing hex literals. Added note about PHP signed int overflow.
+- **Stringify.md** - Updated for configurable indent/max line length, new constant name.
+
+### Tests
+
+- **FunctionsTest** - 14 tests for `println()` (strings, ints, floats, booleans, null, empty, stringable objects) and `is_number()` (ints, floats, special floats, numeric strings, non-numeric types).
+- **FloatsBitOperationsTest** - 15 new tests for `floatToBits()` and `bitsToFloat()` covering known bit patterns, special values (±0, ±INF, NAN), and round-trip verification.
+- **TypesTest** - Added `testGetBasicTypeEnum` (unit and backed enums) and `testGetStringKeyEnum` (unique string format, different cases, different enum classes).
+- **StringifyTest** - Additional tests for configurable indent and max line length.
+
 ## [1.4.0] - 2026-02-25
 
 ### Changed

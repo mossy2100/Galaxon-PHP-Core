@@ -33,23 +33,6 @@ final class Numbers
 
     // endregion
 
-    // region Inspection methods
-
-    /**
-     * Check if a value is a number, i.e. an integer or a float.
-     * This varies from is_numeric(), which also returns true for numeric strings.
-     *
-     * @param mixed $value The value to check.
-     * @return bool True if the value is a number, false otherwise.
-     * @phpstan-assert-if-true int|float $value
-     */
-    public static function isNumber(mixed $value): bool
-    {
-        return is_int($value) || is_float($value);
-    }
-
-    // endregion
-
     // region Comparison methods
 
     /**

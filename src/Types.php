@@ -76,7 +76,7 @@ final class Types
      *
      * @param mixed $value The value to convert.
      * @return string The unique string key.
-     * @throws DomainException If an array could not be stringified.
+     * @throws DomainException If an array could not be converted into a unique string.
      * @throws UnexpectedValueException If the value has an unknown type.
      */
     public static function getUniqueString(mixed $value): string
@@ -103,6 +103,10 @@ final class Types
             case 'array':
                 /** @var array<array-key, mixed> $value */
                 return 'a:' . count($value) . ':' . Stringify::stringifyArray($value);
+
+            case 'enum':
+                /** @var UnitEnum $value */
+                return 'e:' . $value::class . '::' . $value->name;
 
             case 'object':
                 /** @var object $value */
