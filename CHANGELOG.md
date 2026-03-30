@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+---
+
 ## [Unreleased]
+
+---
 
 ## [1.5.0] - 2026-03-30
 
@@ -13,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **functions.php** - New namespaced convenience functions with `files` autoload entry:
   - `println()` - Print a value with a newline. Strings output as-is, `Stringable` objects use `__toString()`, all other types go through `Stringify::stringify()`.
-- **Numbers::isNumber()** - Strict type check for `int` or `float` (rejects numeric strings unlike `is_numeric()`). Also available as `is_number()` in `functions.php`.
+- **Numbers::isNumber()** - Strict type check for `int` or `float` (rejects numeric strings unlike `is_numeric()`).
 - **Numbers::isZero()** - Check if a number is zero (`0`, `0.0`, or `-0.0`).
 - **Types::getBasicType()** - Now returns `'enum'` for `UnitEnum` instances (previously returned `'object'`).
 - **Types::getUniqueString()** - Now supports enums with format `"e:{ClassName}::{CaseName}"`.
@@ -55,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **FloatsBitOperationsTest** - 15 new tests for `floatToBits()` and `bitsToFloat()` covering known bit patterns, special values (±0, ±INF, NAN), and round-trip verification.
 - **TypesTest** - Added `testGetBasicTypeEnum` (unit and backed enums) and `testGetStringKeyEnum` (unique string format, different cases, different enum classes).
 - **StringifyTest** - Additional tests for configurable indent and max line length.
+
+---
 
 ## [1.4.0] - 2026-02-25
 
@@ -98,6 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **StringifyTest** - Completely rewritten (36 tests, 100+ assertions) covering single-quoted strings, escaping, UTF-8 conversion, undetectable encoding, open/closed resources, enums, grid layout, and all other formatting changes.
 - **ArraysTest** - Added 15 tests for `toSerialList()` (empty, one/two/three/four items, custom conjunction, non-string validation) and `removeValue()` (existing/missing values, multiple instances, key preservation, strict comparison, null removal).
 
+---
+
 ## [1.3.0] - 2026-01-30
 
 ### Added
@@ -117,6 +125,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Tests
 
 - Added 12 tests for FloatAssertions trait covering passing/failing assertions, error messages, infinity handling, and assertApproxZero
+
+---
 
 ## [1.2.0] - 2026-01-27
 
@@ -147,6 +157,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Arrays.md** - Added "Extraction Methods" section with `first()` and `last()` documentation
 - **Integers.md** - Renamed "Conversion Methods" to "Subscript/Superscript Methods", added documentation for validation and parsing methods
 
+---
+
 ## [1.1.0] - 2026-01-18
 
 ### Added
@@ -176,6 +188,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added 7 tests for `isApproxInt()` covering exact integers, near-integers, fractions, logarithms, custom tolerance, and non-finite values
 - Added 6 tests for `trunc()` and `frac()` covering positive/negative values, zero, non-finite values, and the identity property
 
+---
+
 ## [1.0.1] - 2026-01-05
 
 ### Added
@@ -190,6 +204,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed GitHub URLs in README.md (`PHP-Core` → `Galaxon-PHP-Core`)
 - Removed `Types::createError()` from documentation (method was removed)
+
+---
 
 ## [1.0.0] - 2026-01-04
 
@@ -225,6 +241,8 @@ This is the first stable release of Galaxon Core, ready for publication on Packa
 ### Documentation
 
 - Updated all class documentation to reflect new exception types
+
+---
 
 ## [0.6.0] - 2025-12-27
 
@@ -264,6 +282,8 @@ This is the first stable release of Galaxon Core, ready for publication on Packa
 - **Integers.md** - Added documentation for formatting methods
 - **Various docs** - Minor updates to Numbers.md, Stringify.md, Types.md, and trait documentation
 
+---
+
 ## [0.5.0] - 2025-12-10
 
 ### Breaking Changes
@@ -295,6 +315,8 @@ This is the first stable release of Galaxon Core, ready for publication on Packa
 
 - Updated trait documentation to reflect new type checking approach
 - README.md minor fixes
+
+---
 
 ## [0.4.0] - 2025-02-08
 
@@ -393,6 +415,8 @@ This is the first stable release of Galaxon Core, ready for publication on Packa
 - **TypesTest** - Added tests for `same()`
 
 
+---
+
 ## [0.3.0] - 2025-01-15
 
 ### Added
@@ -430,6 +454,8 @@ This is the first stable release of Galaxon Core, ready for publication on Packa
 
 - **Arrays.md** - Added documentation for `quoteValues()`
 - **Floats.md** - Added documentation for `ulp()` and `isExactInt()`
+
+---
 
 ## [0.2.0] - 2025-01-29
 
@@ -479,6 +505,8 @@ This is the first stable release of Galaxon Core, ready for publication on Packa
 - Added comprehensive tests for new Floats methods (approxEqualAbsolute, approxEqualRelative, compare, wrap)
 - Added comprehensive tests for Numbers methods (equal, approxEqual)
 - All tests passing with 100% code coverage maintained
+
+---
 
 ## [0.1.0] - 2025-01-16
 

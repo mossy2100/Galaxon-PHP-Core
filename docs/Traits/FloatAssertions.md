@@ -2,6 +2,8 @@
 
 Trait providing PHPUnit assertions for approximate floating-point equality with informative error messages.
 
+---
+
 ## Overview
 
 The `FloatAssertions` trait adds custom assertions to PHPUnit test cases for comparing floating-point values with configurable tolerances. Unlike using `assertTrue(Floats::approxEqual(...))`, which only reports "Failed asserting that false is true", these assertions show the expected value, actual value, and the differences when they fail.
@@ -9,6 +11,8 @@ The `FloatAssertions` trait adds custom assertions to PHPUnit test cases for com
 The trait provides:
 - `assertApproxEqual()` - Assert two floats are approximately equal
 - `assertApproxZero()` - Assert a float is approximately zero
+
+---
 
 ## Methods
 
@@ -59,6 +63,8 @@ Asserts that a floating-point value is approximately zero within specified absol
 - `$actual` (float) - The actual value to compare
 - `$absTol` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON)
 - `$message` (string) - Optional custom failure message prefix
+
+---
 
 ## Examples
 
@@ -135,6 +141,8 @@ Absolute difference: 0.05665 (tolerance: 0.0001)
 Relative difference: 0.00577706070688632 (tolerance: 1.0e-9)
 ```
 
+---
+
 ## Comparison with assertTrue
 
 **Before (uninformative):**
@@ -150,6 +158,8 @@ $this->assertApproxEqual(3.14159, $result);
 //          Absolute difference: 0.42331 (tolerance: 2.22044604925031e-16)
 //          Relative difference: 0.134802795673498 (tolerance: 1.0e-9)"
 ```
+
+---
 
 ## See Also
 

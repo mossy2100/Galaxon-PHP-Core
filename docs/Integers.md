@@ -2,6 +2,8 @@
 
 Static utility class for integer arithmetic with overflow detection and number formatting.
 
+---
+
 ## Overview
 
 The `Integers` class provides integer arithmetic methods with overflow detection, number theory functions, and subscript/superscript conversion utilities. This is a static utility class and cannot be instantiated.
@@ -15,6 +17,8 @@ PHP_INT_MAX + 1;  // Returns a float, not an integer
 ```
 
 The arithmetic methods in this class detect overflow and throw `OverflowException` instead of silently converting to float. This is useful when you need to ensure results remain within the integer range or handle overflow explicitly.
+
+---
 
 ## Constants
 
@@ -33,6 +37,8 @@ public const array SUPERSCRIPT_CHARACTERS
 ```
 
 Unicode superscript characters for digits 0-9 and minus sign. Maps ASCII characters to their Unicode superscript equivalents.
+
+---
 
 ## Arithmetic Methods
 
@@ -147,6 +153,8 @@ Integers::pow(10, 100); // throws OverflowException
 
 **Note:** Negative exponents are not allowed except for bases ±1 (which return valid integer results: 1⁻¹ = 1 and (-1)⁻¹ = -1). A `DomainException` is thrown for other bases with negative exponents.
 
+---
+
 ## Number Theory Methods
 
 ### gcd()
@@ -183,6 +191,8 @@ Integers::gcd(0, 0);        // 0
 - The GCD of 0 and any number n is |n|
 - The GCD of 0 and 0 is 0
 - `PHP_INT_MIN` is not allowed because `abs(PHP_INT_MIN)` overflows
+
+---
 
 ## Subscript/Superscript Methods
 
@@ -350,6 +360,8 @@ Integers::fromSuperscript('₁₂₃');   // throws DomainException
 ```
 
 **Note:** Use `isSuperscript()` to validate input before calling this method if you need to handle invalid input gracefully.
+
+---
 
 ## See Also
 

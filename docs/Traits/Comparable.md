@@ -2,6 +2,8 @@
 
 Trait providing comparison operations for objects with natural ordering.
 
+---
+
 ## Overview
 
 The `Comparable` trait provides a complete set of comparison methods based on a single `compare()` method that you implement. It uses the `Equatable` trait and adds ordering methods.
@@ -15,6 +17,8 @@ The trait provides:
 - `lessThanOrEqual()` - Check if less than or equal to (provided)
 - `greaterThan()` - Check if greater than (provided)
 - `greaterThanOrEqual()` - Check if greater than or equal to (provided)
+
+---
 
 ## Abstract Methods
 
@@ -38,6 +42,8 @@ abstract public function compare(mixed $other): int
 **Implementation Guidelines:**
 - Must return **exactly** -1, 0, or 1 (not just negative/zero/positive). The convenience methods use strict equality checks.
 - Should throw `IncomparableTypesException` for incompatible types (this is expected behavior).
+
+---
 
 ## Concrete Methods
 
@@ -127,6 +133,8 @@ Check if this object is greater than or equal to another.
 
 **Throws:**
 - `IncomparableTypesException` - If `$other` is not a compatible type
+
+---
 
 ## Examples
 
@@ -254,6 +262,8 @@ var_dump($p->lessThan(new Priority(10)));  // true
 var_dump($p->equal(5));                     // true
 ```
 
+---
+
 ## Relationship with Other Traits
 
 Comparable extends Equatable and adds ordering operations. It automatically provides `equal()` based on `compare()`.
@@ -262,9 +272,13 @@ For approximate comparison with ordering, use **ApproxComparable** instead.
 
 See [Traits.md](Traits.md) for complete hierarchy and usage guide.
 
+---
+
 ## Classes Using Comparable
 
 - `Galaxon\Quantities\Quantity` - Physical quantities with unit-aware ordering.
+
+---
 
 ## Best Practices
 
@@ -276,10 +290,14 @@ See [Traits.md](Traits.md) for complete hierarchy and usage guide.
 6. **Don't Override equal()**: Unless you have a very specific reason, let the trait provide `equal()` based on `compare()`
 7. **Use Trait Composition**: The Comparable trait already includes Equatable via trait composition - don't separately use Equatable
 
+---
+
 ## See Also
 
 - [Traits.md](Traits.md) - Trait hierarchy overview
 - [IncomparableTypesException.md](../Exceptions/IncomparableTypesException.md) - Exception for type mismatches
+
+---
 
 ## Common Patterns
 

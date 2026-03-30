@@ -6,9 +6,13 @@ A general purpose library containing core utility classes and methods for use by
 
 ![PHP 8.4](docs/logo_php8_4.png)
 
+---
+
 ## Description
 
 This package provides a comprehensive set of utility classes for working with various PHP types and common operations. All utility classes are final with static methods and cannot be instantiated.
+
+---
 
 ## Development and Quality Assurance / AI Disclosure
 
@@ -16,15 +20,21 @@ This package provides a comprehensive set of utility classes for working with va
 
 ![Code Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 
+---
+
 ## Requirements
 
 - PHP ^8.4
+
+---
 
 ## Installation
 
 ```bash
 composer require galaxon/core
 ```
+
+---
 
 ## Classes
 
@@ -52,11 +62,15 @@ Type checking and inspection utilities with methods for identifying numbers, uns
 
 Advanced value-to-string conversion with pretty printing, supporting all PHP types with improved readability.
 
+---
+
 ## Functions
 
 ### [Functions](docs/Functions.md)
 
-Convenience functions in the `Galaxon\Core` namespace, including `println()` for output with newlines and `is_number()` for strict numeric type checking.
+Convenience functions in the `Galaxon\Core` namespace, including `println()` for outputting strings and other values.
+
+---
 
 ## Traits
 
@@ -82,6 +96,8 @@ Trait combining Comparable and ApproxEquatable for complete comparison support. 
 
 Trait for PHPUnit test cases providing `assertApproxEqual()` and `assertApproxZero()` methods. Produces informative failure messages showing expected/actual values and differences.
 
+---
+
 ## Exceptions
 
 ### [IncomparableTypesException](docs/Exceptions/IncomparableTypesException.md)
@@ -91,6 +107,8 @@ Exception thrown when attempting to compare values of incompatible types. Used b
 ### [FormatException](docs/Exceptions/FormatException.md)
 
 Exception thrown when a string has an invalid format for the desired operation. Extends `DomainException`. Useful for parse methods or constructors that accept string arguments.
+
+---
 
 ## Testing
 
@@ -107,9 +125,13 @@ vendor/bin/phpunit tests/NumbersTest.php
 composer test
 ```
 
+---
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details
+
+---
 
 ## Contributing
 
@@ -123,11 +145,15 @@ Contributions are welcome! Please:
 
 For questions or suggestions, please [open an issue](https://github.com/mossy2100/Galaxon-PHP-Core/issues).
 
+---
+
 ## Support
 
 - **Issues**: https://github.com/mossy2100/Galaxon-PHP-Core/issues
 - **Documentation**: See [docs/](docs/) directory for detailed class documentation
 - **Examples**: See test files for comprehensive usage examples
+
+---
 
 ## Changelog
 

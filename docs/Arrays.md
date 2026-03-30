@@ -2,6 +2,8 @@
 
 Static utility class containing useful array-related methods.
 
+---
+
 ## Overview
 
 The `Arrays` class provides helper methods for working with PHP arrays. This is a static utility class and cannot be instantiated.
@@ -11,6 +13,8 @@ Methods are organized into:
 - **String methods** - Convert arrays to or format arrays as strings (e.g., quote values, serial lists).
 - **Extraction methods** - Extract values from arrays (e.g., first/last element).
 - **Transformation methods** - Transform arrays (e.g., remove values).
+
+---
 
 ## Inspection Methods
 
@@ -53,6 +57,8 @@ Arrays::containsRecursion($arr); // false
 ```
 
 **Note:** This method uses `json_encode()` internally to detect recursion, as circular references cannot be JSON-encoded.
+
+---
 
 ## String Methods
 
@@ -135,6 +141,8 @@ throw new ValueError('Invalid unit. Expected ' . Arrays::toSerialList(Arrays::qu
 // "Invalid unit. Expected 'kg', 'g', or 'mg'."
 ```
 
+---
+
 ## Extraction Methods
 
 ### first()
@@ -197,6 +205,8 @@ Arrays::last([]);                            // throws LengthException
 
 **Note:** Unlike `end()`, this method does not modify the array's internal pointer and throws an exception for empty arrays rather than returning `false`.
 
+---
+
 ## Transformation Methods
 
 ### removeValue()
@@ -232,6 +242,8 @@ With associative arrays:
 ```php
 Arrays::removeValue(['a' => 1, 'b' => 2, 'c' => 3], 2); // ['a' => 1, 'c' => 3]
 ```
+
+---
 
 ## See Also
 

@@ -2,9 +2,13 @@
 
 Static utility class for detecting runtime environment characteristics.
 
+---
+
 ## Overview
 
 The `Environment` class provides methods for querying properties of the runtime environment, such as whether the system is 64-bit. This is a static utility class and cannot be instantiated.
+
+---
 
 ## Methods
 
@@ -67,6 +71,8 @@ Environment::require64Bit();  // throws RuntimeException
 - Guard clause at the start of methods that require 64-bit operations
 - Validating environment before performing IEEE-754 bit manipulation
 - Early failure with a clear error message on unsupported systems
+
+---
 
 ## See Also
 

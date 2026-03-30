@@ -29,7 +29,6 @@ This means the functions are loaded automatically in any project that requires `
 
 ```php
 use function Galaxon\Core\println;
-use function Galaxon\Core\is_number;
 ```
 
 ---
@@ -42,10 +41,10 @@ use function Galaxon\Core\is_number;
 function println(mixed $value): void
 ```
 
-Echo a value and append a newline character.
+Print a value and append a newline character. Strings are output as-is, `Stringable` objects use `__toString()`, and all other types go through `Stringify::stringify()`.
 
 **Parameters:**
-- `$value` (mixed) - The value to echo.
+- `$value` (mixed) - The value to print.
 
 **Examples:**
 
@@ -54,58 +53,17 @@ use function Galaxon\Core\println;
 
 println('Hello, world!');  // Outputs: Hello, world!\n
 println(42);               // Outputs: 42\n
-println(3.14);             // Outputs: 3.14\n
+println(true);             // Outputs: true\n
+println(null);             // Outputs: null\n
 ```
 
 **Notes:**
 - Uses `PHP_EOL` for the newline, so the line ending is platform-appropriate.
-- The value is output using `echo`, so it follows PHP's standard string conversion rules.
-
-### is_number()
-
-```php
-function is_number(mixed $value): bool
-```
-
-Check if a value is a number (int or float).
-
-This differs from PHP's built-in `is_numeric()`, which also returns `true` for numeric strings like `"42"` or `"3.14"`.
-
-**Parameters:**
-- `$value` (mixed) - The value to check.
-
-**Returns:**
-- `bool` - `true` if the value is an `int` or `float`, `false` otherwise.
-
-**Examples:**
-
-```php
-use function Galaxon\Core\is_number;
-
-is_number(42);        // true
-is_number(3.14);      // true
-is_number('42');      // false (numeric string)
-is_number('hello');   // false
-is_number(true);      // false
-is_number(null);      // false
-is_number([1, 2]);    // false
-```
-
-**Comparison with `is_numeric()`:**
-
-| Value | `is_number()` | `is_numeric()` |
-|-------|---------------|-----------------|
-| `42` | `true` | `true` |
-| `3.14` | `true` | `true` |
-| `'42'` | `false` | `true` |
-| `'3.14'` | `false` | `true` |
-| `'0x1A'` | `false` | `true` |
-| `true` | `false` | `false` |
-| `null` | `false` | `false` |
 
 ---
 
 ## See Also
 
+- **[Numbers](Numbers.md)** - General number-related utility methods, including `isNumber()`
 - **[Types](Types.md)** - Static utility class for type checking and inspection
-- **[Numbers](Numbers.md)** - General number-related utility methods
+- **[Stringify](Stringify.md)** - Value-to-string conversion used by `println()`

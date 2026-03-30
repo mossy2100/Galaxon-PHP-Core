@@ -2,11 +2,15 @@
 
 Exception thrown when attempting to compare values of incompatible types.
 
+---
+
 ## Overview
 
 `IncomparableTypesException` is used by the `Comparable` and `ApproxComparable` traits when a comparison is attempted between objects of different types that cannot be meaningfully compared.
 
 The exception extends `InvalidArgumentException` and automatically generates a descriptive error message based on the types of the values being compared.
+
+---
 
 ## Class Definition
 
@@ -15,6 +19,8 @@ namespace Galaxon\Core\Exceptions;
 
 class IncomparableTypesException extends InvalidArgumentException
 ```
+
+---
 
 ## Constructor
 
@@ -34,6 +40,8 @@ Cannot compare {typeA} with {typeB}.
 ```
 
 Where `{typeA}` and `{typeB}` are the types returned by `get_debug_type()`.
+
+---
 
 ## Usage Example
 
@@ -66,6 +74,8 @@ try {
 }
 ```
 
+---
+
 ## When to Use
 
 Throw this exception in your `compare()` or `approxCompare()` implementations when:
@@ -73,6 +83,8 @@ Throw this exception in your `compare()` or `approxCompare()` implementations wh
 - The `$other` value is not an instance of the expected class
 - The types cannot be meaningfully compared
 - You want a consistent, descriptive error message for type mismatches
+
+---
 
 ## See Also
 

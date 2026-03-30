@@ -2,6 +2,8 @@
 
 Static utility class for type checking, inspection, and trait introspection.
 
+---
+
 ## Overview
 
 The `Types` class provides utilities for working with PHP's type system, offering enhanced type checking beyond PHP's built-in functions, methods for generating unique string keys from any value, and comprehensive trait introspection. This is a static utility class and cannot be instantiated.
@@ -12,6 +14,8 @@ The `Types` class provides utilities for working with PHP's type system, offerin
 - **Unique string keys**: Convert any PHP value to a unique string for use as collection keys
 - **Type comparison**: Check if two values have the same type
 - **Trait introspection**: Detect trait usage including inherited and nested traits
+
+---
 
 ## Inspection Methods
 
@@ -43,6 +47,8 @@ Types::getBasicType(new stdClass()); // "object"
 ```
 
 **Use Case:** Getting consistent type names for logging, error messages, or switch statements.
+
+---
 
 ## Formatting Methods
 
@@ -99,6 +105,8 @@ Types::getUniqueString($obj);              // "o:1" (based on object ID)
 
 **Use Case:** Implementing collections that can use any PHP value as a key, or generating unique identifiers for values.
 
+---
+
 ## Type Checking Methods
 
 ### same()
@@ -127,6 +135,8 @@ Types::same(new Foo(), new Bar());    // false (different classes)
 ```
 
 **Use Case:** Type comparison for equality checks or conditional logic based on type matching.
+
+---
 
 ## Trait-related Methods
 
@@ -237,6 +247,8 @@ Types::getTraits(TraitC::class);   // ['TraitA']
 
 **Use Case:** Introspection, reflection, dependency analysis, or documentation generation.
 
+---
+
 ## Usage Examples
 
 ### Using Types with Collections
@@ -292,6 +304,8 @@ function sortIfComparable(array $items): array
     return $items;
 }
 ```
+
+---
 
 ## See Also
 

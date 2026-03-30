@@ -2,6 +2,8 @@
 
 Static utility class for converting PHP values to readable string representations.
 
+---
+
 ## Overview
 
 The `Stringify` class provides an alternative to PHP's built-in functions for converting values to strings (viz. `var_dump()`, `var_export()`, `print_r()`, `json_encode()`, and `serialize()`). This is a static utility class and cannot be instantiated.
@@ -18,12 +20,16 @@ The `Stringify` class provides an alternative to PHP's built-in functions for co
 
 The output for scalars, strings, enums, and arrays is parseable PHP code. Object and resource output is not parseable, but is designed for readability.
 
+---
+
 ## Constants
 
 | Constant                  | Value | Description                                                                       |
 | ------------------------- | ----- | --------------------------------------------------------------------------------- |
 | `DEFAULT_INDENT`          | `4`   | Default number of spaces per indentation level in pretty-printed output.          |
 | `DEFAULT_MAX_LINE_LENGTH` | `120` | Default maximum line length before pretty-printed lists wrap to grid or multiline format. |
+
+---
 
 ## Configuration Methods
 
@@ -88,6 +94,8 @@ Stringify::setMaxLineLength(80);
 // ... do work ...
 Stringify::resetDefaults(); // Back to 4 spaces and 120 chars.
 ```
+
+---
 
 ## Formatting Methods
 
@@ -411,6 +419,8 @@ Same as `print()`, but appends a trailing newline.
 
 **Throws:**
 - `DomainException` - If the value cannot be stringified.
+
+---
 
 ## See Also
 

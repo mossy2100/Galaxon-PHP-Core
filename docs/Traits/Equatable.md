@@ -2,6 +2,8 @@
 
 Trait providing equality comparison functionality for objects.
 
+---
+
 ## Overview
 
 The `Equatable` trait provides a foundation for objects that support equality comparison. It defines an abstract `equal()` method that must be implemented by classes using the trait.
@@ -10,6 +12,8 @@ This trait is designed to be composed with other traits in a hierarchy. It's sep
 
 The trait provides:
 - `equal()` - Abstract method for exact equality comparison
+
+---
 
 ## Abstract Methods
 
@@ -32,6 +36,8 @@ abstract public function equal(mixed $other): bool
 - Should handle type checking gracefully
 - May use epsilon-based comparison for floating-point types
 - Should be consistent with the object's equality semantics
+
+---
 
 ## Examples
 
@@ -69,6 +75,8 @@ var_dump($p1->equal($p3)); // false
 var_dump($p1->equal("string")); // false (gracefully handles wrong type)
 ```
 
+---
+
 ## Relationship with Other Traits
 
 Equatable is the base trait in the comparison hierarchy. Other traits extend it:
@@ -78,10 +86,14 @@ Equatable is the base trait in the comparison hierarchy. Other traits extend it:
 
 See [Traits.md](Traits.md) for complete hierarchy and usage guide.
 
+---
+
 ## Classes Using Equatable
 
 - `Galaxon\Collections\Collection` - Base class for type-safe collections.
 - `Galaxon\Color\Color` - Encapsulates a CSS color.
+
+---
 
 ## Best Practices
 

@@ -2,6 +2,8 @@
 
 Static utility class for working with floating-point numbers in PHP.
 
+---
+
 ## Overview
 
 The `Floats` class provides tools for comparison, conversion, navigation, random generation, and handling of IEEE-754 special values. This is a static utility class and cannot be instantiated.
@@ -48,6 +50,8 @@ Two methods provide direct access to IEEE-754 double-precision components:
 - `disassemble()` extracts sign, exponent, and fraction from a float
 - `assemble()` constructs a float from sign, exponent, and fraction components
 
+---
+
 ## Constants
 
 ### DEFAULT_RELATIVE_TOLERANCE
@@ -81,6 +85,8 @@ public const float TAU = 2 * M_PI;
 ```
 
 The circle constant τ (tau), equal to 2π ≈ 6.283185307179586, which is the number of radians in one turn. Apart from circles and angles, TAU appears throughout mathematics in areas such as complex analysis, Fourier transforms, the normal distribution, and many integral formulas.
+
+---
 
 ## Inspection Methods
 
@@ -368,6 +374,8 @@ Floats::isApproxInt(NAN);      // false
 - `isExactInt()` - For exact integer check without tolerance
 - `approxEqual()` - For comparing two floats with tolerance
 
+---
+
 ## Comparison Methods
 
 ### approxEqual()
@@ -560,6 +568,8 @@ usort($values, function($a, $b) {
 
 **See Also:**
 - `approxEqual()` - Two-way approximate equality check
+
+---
 
 ## Transformation Methods
 
@@ -815,6 +825,8 @@ Floats::wrap(50.0, 24.0, signed: false);   // 2.0
 - `TAU` - The circle constant τ = 2π, default period for radians
 - `normalizeZero()` - Used internally to handle negative zero
 
+---
+
 ## Conversion Methods
 
 ### tryConvertToInt()
@@ -911,6 +923,8 @@ Floats::toHex($a) !== Floats::toHex($b);  // true
 - **Uniqueness**: Unlike casting to string or using `sprintf()`, every distinct float value (including -0.0 vs +0.0) produces a unique hex string
 - **Consistency**: Always produces exactly 16 characters
 - **Precision**: Preserves the exact binary representation of the float
+
+---
 
 ## Random Methods
 
@@ -1037,6 +1051,8 @@ $f = Floats::randUniform(5.0, 5.0);  // 5.0
 **See Also:**
 - `rand()` - For non-uniform distribution with full float coverage
 - `ulp()` - Underlying calculation for step size
+
+---
 
 ## Bit Operations
 
@@ -1435,6 +1451,8 @@ Floats::ulp(1e12);  // 0.0001220703125
 - `previous()` - Get the previous representable float
 - `randUniform()` - Uses ULP for collision-free random generation
 - [FloatWithError](https://github.com/mossy2100/Galaxon-PHP-Units/blob/main/docs/FloatWithError.md) - Uses ULP for the estimated increase in error resulting from arithmetic operations with floats
+
+---
 
 ## See Also
 

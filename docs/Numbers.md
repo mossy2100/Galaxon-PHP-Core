@@ -2,6 +2,8 @@
 
 Static utility class for general number-related operations.
 
+---
+
 ## Overview
 
 The `Numbers` class provides utilities for working with numbers (both integers and floats), including type checking, equality comparison, and sign operations. This is a static utility class and cannot be instantiated.
@@ -11,6 +13,79 @@ The `Numbers` class provides utilities for working with numbers (both integers a
 - Type checking that distinguishes actual numbers from numeric strings
 - Equality comparison that correctly handles mixed int/float types
 - Sign operations with support for IEEE-754 signed zeros (-0.0 vs +0.0)
+
+---
+
+## Inspection Methods
+
+### isNumber()
+
+```php
+public static function isNumber(mixed $value): bool
+```
+
+Check if a value is a number (int or float). This differs from PHP's built-in `is_numeric()`, which also returns `true` for numeric strings like `"42"` or `"3.14"`.
+
+Also available as a plain function: `Galaxon\Core\is_number()`.
+
+**Parameters:**
+- `$value` (mixed) - The value to check.
+
+**Returns:**
+- `bool` - `true` if the value is an `int` or `float`, `false` otherwise.
+
+**Examples:**
+
+```php
+Numbers::isNumber(42);        // true
+Numbers::isNumber(3.14);      // true
+Numbers::isNumber(INF);       // true
+Numbers::isNumber(NAN);       // true
+Numbers::isNumber('42');      // false (numeric string)
+Numbers::isNumber('hello');   // false
+Numbers::isNumber(true);      // false
+Numbers::isNumber(null);      // false
+```
+
+**Comparison with `is_numeric()`:**
+
+| Value | `isNumber()` | `is_numeric()` |
+|-------|--------------|-----------------|
+| `42` | `true` | `true` |
+| `3.14` | `true` | `true` |
+| `'42'` | `false` | `true` |
+| `'3.14'` | `false` | `true` |
+| `'0x1A'` | `false` | `true` |
+| `true` | `false` | `false` |
+| `null` | `false` | `false` |
+
+### isZero()
+
+```php
+public static function isZero(int|float $value): bool
+```
+
+Check if a number is zero. Returns `true` for integer `0` and float `±0.0`.
+
+**Parameters:**
+- `$value` (int|float) - The number to check.
+
+**Returns:**
+- `bool` - `true` if the value is zero, `false` otherwise.
+
+**Examples:**
+
+```php
+Numbers::isZero(0);       // true
+Numbers::isZero(0.0);     // true
+Numbers::isZero(-0.0);    // true
+Numbers::isZero(1);       // false
+Numbers::isZero(0.1);     // false
+Numbers::isZero(INF);     // false
+Numbers::isZero(NAN);     // false
+```
+
+---
 
 ## Comparison Methods
 
@@ -75,6 +150,8 @@ Numbers::equal(0.0, -0.0);   // true
 - Checking for specific values like zero or infinity
 
 **Note:** For float comparisons where precision issues may occur, use `Floats::approxEqual()` instead.
+
+---
 
 ## Sign Methods
 
@@ -175,8 +252,11 @@ Numbers::copySign(5, NAN);     // throws DomainException
 
 **Note:** Similar to C's `copysign()` function, but with explicit NAN rejection for clarity.
 
+---
+
 ## See Also
 
 - **[Floats](Floats.md)** - Float-specific utility methods including `approxEqual()` for approximate comparisons
 - **[Integers](Integers.md)** - Integer-specific utility methods
+- **[Functions](Functions.md)** - `is_number()` convenience function (alias for `Numbers::isNumber()`)
 - **[Types](Types.md)** - Type checking and comparison utilities

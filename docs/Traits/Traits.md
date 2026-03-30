@@ -2,6 +2,8 @@
 
 A hierarchical set of traits providing equality and ordering comparison operations for custom types.
 
+---
+
 ## Trait Hierarchy
 
 ```
@@ -16,6 +18,8 @@ Comparable   ApproxEquatable
 - `→` indicates trait composition (`use`)
 - ApproxComparable uses both Comparable and ApproxEquatable
 
+---
+
 ## Quick Reference
 
 | Trait | Uses                         | Must Implement | Provides | Use When |
@@ -24,6 +28,8 @@ Comparable   ApproxEquatable
 | **[Comparable](Comparable.md)** | Equatable                    | `compare()` | `equal()`, `lessThan()`, `greaterThan()`, etc. | Need exact equality + ordering |
 | **[ApproxEquatable](ApproxEquatable.md)** | Equatable                    | `equal()`, `approxEqual()` | - | Need exact + approximate equality, no ordering |
 | **[ApproxComparable](ApproxComparable.md)** | Comparable + ApproxEquatable | `compare()`, `approxEqual()` | All comparison methods + `approxCompare()` | Need full comparison suite |
+
+---
 
 ## How They Work Together
 
@@ -94,6 +100,8 @@ trait ApproxComparable
 **You get:** All methods from both Comparable and ApproxEquatable, plus `approxCompare()`
 
 **Note:** You don't implement `equal()` - Comparable provides it via `compare()`
+
+---
 
 ## Usage Examples
 
@@ -216,6 +224,8 @@ class Rational
 }
 ```
 
+---
+
 ## Method Override Rules
 
 You can override any provided method if needed, but this is rarely necessary:
@@ -240,6 +250,8 @@ class CustomComparable
 
 **Best Practice:** Don't override provided methods unless you have a specific reason. The default implementations are well-tested and consistent.
 
+---
+
 ## Choosing the Right Trait
 
 **Use Equatable when:**
@@ -260,6 +272,8 @@ class CustomComparable
 - Your type has a natural ordering
 - You need both exact and approximate comparison
 - Mixed integer/float types (e.g., rational numbers converted to float)
+
+---
 
 ## Testing Trait
 
@@ -290,6 +304,8 @@ class MyTest extends TestCase
     }
 }
 ```
+
+---
 
 ## See Also
 

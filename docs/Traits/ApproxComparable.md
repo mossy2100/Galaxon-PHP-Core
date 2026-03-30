@@ -2,6 +2,8 @@
 
 Trait providing complete comparison operations with both exact and approximate equality for objects with natural ordering and floating-point precision concerns.
 
+---
+
 ## Overview
 
 The `ApproxComparable` trait combines `Comparable` and `ApproxEquatable` to provide a complete set of comparison operations including approximate equality. This is ideal for types with natural ordering that contain floating-point values (e.g., Rational numbers).
@@ -15,6 +17,8 @@ The trait provides:
 - `lessThanOrEqual()` - Check if less than or equal to (provided by Comparable)
 - `greaterThan()` - Check if greater than (provided by Comparable)
 - `greaterThanOrEqual()` - Check if greater than or equal to (provided by Comparable)
+
+---
 
 ## Abstract Methods
 
@@ -37,6 +41,8 @@ abstract public function approxEqual(
 ```
 
 **You must implement this method.** See [ApproxEquatable.md](ApproxEquatable.md) for full documentation.
+
+---
 
 ## Concrete Methods
 
@@ -68,6 +74,8 @@ Compare with approximate equality awareness. Returns 0 if values are approximate
 - Sorting with approximate equality "buckets"
 - Implementing approximate ordering algorithms
 - Range queries with tolerance
+
+---
 
 ## Examples
 
@@ -185,15 +193,21 @@ var_dump($v1->lessThan($v3));     // true (5.0 < 6.0 by magnitude)
 var_dump($v1->approxCompare($v2)); // 0 (approximately equal)
 ```
 
+---
+
 ## Relationship with Other Traits
 
 ApproxComparable combines Comparable and ApproxEquatable, providing the complete comparison suite for ordered types with floating-point components.
 
 See [Traits.md](Traits.md) for complete hierarchy and usage guide.
 
+---
+
 ## Classes Using ApproxComparable
 
 - `Galaxon\Math\Rational` - Rational numbers, require approximate equality and less/greater than comparisons.
+
+---
 
 ## Best Practices
 
@@ -205,6 +219,8 @@ See [Traits.md](Traits.md) for complete hierarchy and usage guide.
 6. **Use Floats Utilities**: Leverage `Floats::approxEqual()` and `Floats::compare()` for float comparisons
 7. **Sensible Defaults**: Choose default tolerances appropriate for your type's typical use cases
 8. **Test Thoroughly**: Test edge cases like zero, very large values, and very small values
+
+---
 
 ## When to Use Each Method
 
@@ -227,6 +243,8 @@ See [Traits.md](Traits.md) for complete hierarchy and usage guide.
 - Sorting with tolerance "buckets"
 - Finding approximate min/max
 - Range queries with tolerance
+
+---
 
 ## Common Patterns
 
@@ -286,6 +304,8 @@ public function approxEqual(
         && Floats::approxEqual($this->z, $other->z, $relTol, $absTol);
 }
 ```
+
+---
 
 ## See Also
 

@@ -2,6 +2,8 @@
 
 Trait providing approximate equality comparison for objects with floating-point precision concerns.
 
+---
+
 ## Overview
 
 The `ApproxEquatable` trait extends `Equatable` by adding an `approxEqual()` method for tolerance-based comparison. This is essential for types containing floating-point values where exact equality is unreliable due to precision limitations.
@@ -9,6 +11,8 @@ The `ApproxEquatable` trait extends `Equatable` by adding an `approxEqual()` met
 The trait provides:
 - `equal()` - Exact equality (from Equatable trait)
 - `approxEqual()` - Approximate equality with configurable tolerances
+
+---
 
 ## Abstract Methods
 
@@ -38,6 +42,8 @@ abstract public function approxEqual(
 - Relative tolerance matters for large values
 - Absolute tolerance matters for values near zero
 - Consider using `Floats::approxEqual()` for float comparisons
+
+---
 
 ## Examples
 
@@ -141,6 +147,8 @@ $m2 = new Measurement(100.0001, 'kg');
 var_dump($m1->approxEqual($m2));  // true (within custom tolerance)
 ```
 
+---
+
 ## Relationship with Other Traits
 
 ApproxEquatable extends Equatable and adds approximate equality for types with floating-point components.
@@ -149,9 +157,13 @@ Use this for types without natural ordering (e.g., Complex numbers). For types w
 
 See [Traits.md](Traits.md) for complete hierarchy and usage guide.
 
+---
+
 ## Classes Using ApproxEquatable
 
 - `Galaxon\Math\Complex` - Complex numbers (no natural ordering, needs approximate equality).
+
+---
 
 ## Best Practices
 
@@ -163,6 +175,8 @@ See [Traits.md](Traits.md) for complete hierarchy and usage guide.
 6. **Consistency**: Ensure approximate equality is reflexive, symmetric, and as transitive as floating-point allows
 7. **Document Precision**: If your type uses custom default tolerances, document why
 8. **Component-Wise**: For composite types, check each component separately with the same tolerances
+
+---
 
 ## Tolerance Guidelines
 
@@ -201,6 +215,8 @@ Floats::approxEqual($a, $b, 0.0, 1e-10);  // true
 The standard formula uses both: `|a - b| ≤ max(relTol * max(|a|, |b|), absTol)`
 
 This ensures robust comparison across all value ranges.
+
+---
 
 ## Common Pitfalls
 
