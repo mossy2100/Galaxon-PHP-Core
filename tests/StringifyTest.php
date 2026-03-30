@@ -177,11 +177,11 @@ final class StringifyTest extends TestCase
     }
 
     /**
-     * Test stringifying associative arrays without pretty print.
+     * Test stringifying dictionaries without pretty print.
      */
-    public function testStringifyAssociativeArray(): void
+    public function testStringifyDictionary(): void
     {
-        // Simple associative array.
+        // Simple dictionary.
         $this->assertSame("['name' => 'John', 'age' => 30]", Stringify::stringify([
             'name' => 'John',
             'age'  => 30,
@@ -212,7 +212,7 @@ final class StringifyTest extends TestCase
             [3, 4],
         ]));
 
-        // Nested associative array.
+        // Nested dictionary.
         $this->assertSame("['user' => ['name' => 'John', 'age' => 30]]", Stringify::stringify([
             'user' => [
                 'name' => 'John',
@@ -267,9 +267,9 @@ final class StringifyTest extends TestCase
     }
 
     /**
-     * Test pretty-printed associative array with aligned keys.
+     * Test pretty-printed dictionary with aligned keys.
      */
-    public function testStringifyArrayPrettyPrintAssociative(): void
+    public function testStringifyArrayPrettyPrintDictionary(): void
     {
         $result = Stringify::stringify([
             'name' => 'John',
@@ -302,9 +302,8 @@ final class StringifyTest extends TestCase
     public function testStringifyArrayPrettyPrintLongItems(): void
     {
         $uuids = [
-            'c9e35c00-0f1e-4804-b5fe-6c4c9718db60',
-            'd2aee4c5-a7f7-4018-a635-c3f4c317033e',
-            'd266963a-c4e0-4255-a97d-f070e51fcb5e'
+            'c9e35c00-0f1e-4804-b5fe-6c4c9718db60', 'd2aee4c5-a7f7-4018-a635-c3f4c317033e',
+            'd266963a-c4e0-4255-a97d-f070e51fcb5e',
         ];
 
         // maxLineLength of 40 — items are too wide for 2 per line, so grid is skipped.
@@ -551,7 +550,7 @@ final class StringifyTest extends TestCase
     public function testAbbrevMaxLenTooSmall(): void
     {
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('The maximum string length must be at least 10.');
+        $this->expectExceptionMessage('Invalid maximum string length: 9. Must be at least 10.');
         Stringify::abbrev(123, 9);
     }
 
@@ -594,7 +593,7 @@ final class StringifyTest extends TestCase
     public function testSetIndentZeroThrows(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Indent must be greater than 0.');
+        $this->expectExceptionMessage('Invalid indent:');
         Stringify::setIndent(0);
     }
 
@@ -604,7 +603,7 @@ final class StringifyTest extends TestCase
     public function testSetIndentNegativeThrows(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Indent must be greater than 0.');
+        $this->expectExceptionMessage('Invalid indent:');
         Stringify::setIndent(-1);
     }
 
@@ -635,7 +634,7 @@ final class StringifyTest extends TestCase
     public function testSetMaxLineLengthZeroThrows(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Max line length must be greater than 0.');
+        $this->expectExceptionMessage('Invalid max line length:');
         Stringify::setMaxLineLength(0);
     }
 
@@ -645,7 +644,7 @@ final class StringifyTest extends TestCase
     public function testSetMaxLineLengthNegativeThrows(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Max line length must be greater than 0.');
+        $this->expectExceptionMessage('Invalid max line length:');
         Stringify::setMaxLineLength(-10);
     }
 

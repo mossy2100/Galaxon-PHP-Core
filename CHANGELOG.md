@@ -7,11 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-03-30
+
 ### Added
 
 - **functions.php** - New namespaced convenience functions with `files` autoload entry:
   - `println()` - Print a value with a newline. Strings output as-is, `Stringable` objects use `__toString()`, all other types go through `Stringify::stringify()`.
-  - `is_number()` - Strict type check for `int` or `float` (rejects numeric strings unlike `is_numeric()`).
+- **Numbers::isNumber()** - Strict type check for `int` or `float` (rejects numeric strings unlike `is_numeric()`). Also available as `is_number()` in `functions.php`.
+- **Numbers::isZero()** - Check if a number is zero (`0`, `0.0`, or `-0.0`).
 - **Types::getBasicType()** - Now returns `'enum'` for `UnitEnum` instances (previously returned `'object'`).
 - **Types::getUniqueString()** - Now supports enums with format `"e:{ClassName}::{CaseName}"`.
 
@@ -25,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Skip grid format when items are too wide for 2 per line.
 - **Floats::floatToBits()** - Simplified from byte-array loop to single `pack`/`unpack` call.
 - **Floats::bitsToFloat()** - Same simplification.
+- **Exception messages** - Standardised across all classes to follow the guidelines in `EXCEPTIONS.md`: "state what went wrong" format with offending values and concise constraints where useful.
+- **composer.json** - Updated `galaxon/coding-standard` dependency to `^1.0`.
 
 ### Fixed
 
@@ -45,7 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Tests
 
-- **FunctionsTest** - 14 tests for `println()` (strings, ints, floats, booleans, null, empty, stringable objects) and `is_number()` (ints, floats, special floats, numeric strings, non-numeric types).
+- **FunctionsTest** - Tests for `println()` (strings, ints, floats, booleans, null, empty, stringable objects).
+- **NumbersTest** - Tests for `isNumber()` and `isZero()`.
 - **FloatsBitOperationsTest** - 15 new tests for `floatToBits()` and `bitsToFloat()` covering known bit patterns, special values (±0, ±INF, NAN), and round-trip verification.
 - **TypesTest** - Added `testGetBasicTypeEnum` (unit and backed enums) and `testGetStringKeyEnum` (unique string format, different cases, different enum classes).
 - **StringifyTest** - Additional tests for configurable indent and max line length.

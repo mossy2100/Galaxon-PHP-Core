@@ -50,7 +50,7 @@ final class FloatsTest extends TestCase
     public function testApproxEqualWithNegativeTolerancesThrows(): void
     {
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Tolerances must be non-negative');
+        $this->expectExceptionMessage('Cannot use negative tolerances');
         Floats::approxEqual(1.0, 1.0, -0.1, 0.0);
     }
 
@@ -179,7 +179,7 @@ final class FloatsTest extends TestCase
     public function testApproxCompareWithNegativeToleranceThrows(): void
     {
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Tolerances must be non-negative');
+        $this->expectExceptionMessage('Cannot use negative tolerances');
         Floats::approxCompare(1.0, 1.0, -0.1, 0.0);
     }
 
@@ -799,12 +799,12 @@ final class FloatsTest extends TestCase
             [-1.0, true],
             [100.0, true],
             [-100.0, true],
-            [(float)(1 << 52), true], // 2^52 is within range
-            [(float)(1 << 53), true], // 2^53 is the boundary
-            [(float)(1 << 54), false], // 2^54 is beyond range
-            [0.5, false], // Fractional
-            [1.1, false], // Fractional
-            [1e20, false], // Too large
+            [(float)(1 << 52), true],
+            [(float)(1 << 53), true],
+            [(float)(1 << 54), false],
+            [0.5, false],
+            [1.1, false],
+            [1e20, false],
         ];
 
         foreach ($testValues as [$value, $expected]) {

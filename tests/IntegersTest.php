@@ -202,7 +202,7 @@ final class IntegersTest extends TestCase
     {
         // Test that negative exponents throw DomainException.
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Exponents must be non-negative.');
+        $this->expectExceptionMessage('Invalid exponent: -1. Must not be negative.');
         Integers::pow(2, -1);
     }
 
@@ -324,7 +324,7 @@ final class IntegersTest extends TestCase
     public function testGcdWithPhpIntMinFirstArgThrows(): void
     {
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Arguments must be greater than PHP_INT_MIN');
+        $this->expectExceptionMessage('Cannot compute GCD with PHP_INT_MIN');
         Integers::gcd(PHP_INT_MIN, 5);
     }
 
@@ -334,7 +334,7 @@ final class IntegersTest extends TestCase
     public function testGcdWithPhpIntMinSecondArgThrows(): void
     {
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Arguments must be greater than PHP_INT_MIN');
+        $this->expectExceptionMessage('Cannot compute GCD with PHP_INT_MIN');
         Integers::gcd(5, PHP_INT_MIN);
     }
 
@@ -344,7 +344,7 @@ final class IntegersTest extends TestCase
     public function testGcdWithPhpIntMinSingleArgThrows(): void
     {
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Arguments must be greater than PHP_INT_MIN');
+        $this->expectExceptionMessage('Cannot compute GCD with PHP_INT_MIN');
         Integers::gcd(PHP_INT_MIN);
     }
 

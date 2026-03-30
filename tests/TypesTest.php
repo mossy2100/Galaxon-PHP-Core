@@ -17,8 +17,11 @@ use stdClass;
 enum TestSuit
 {
     case Hearts;
+
     case Diamonds;
+
     case Clubs;
+
     case Spades;
 }
 
@@ -28,7 +31,9 @@ enum TestSuit
 enum TestColor: string
 {
     case Red = 'red';
+
     case Green = 'green';
+
     case Blue = 'blue';
 }
 
@@ -324,7 +329,7 @@ final class TypesTest extends TestCase
             Types::getUniqueString(0.0),
             Types::getUniqueString(''),
             Types::getUniqueString([]),
-            Types::getUniqueString(new stdClass())
+            Types::getUniqueString(new stdClass()),
         ];
 
         // Verify all keys are unique.
@@ -538,7 +543,7 @@ final class TypesTest extends TestCase
     {
         // Test that passing a non-existent class name throws DomainException.
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Invalid class name: NonExistentClass');
+        $this->expectExceptionMessage("Invalid class name: 'NonExistentClass'.");
         Types::usesTrait('NonExistentClass', TestTrait::class);
     }
 
@@ -606,7 +611,7 @@ final class TypesTest extends TestCase
     public function testGetTraitsThrowsExceptionForNonExistentClass(): void
     {
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Invalid class name: NonExistentClassName');
+        $this->expectExceptionMessage("Invalid class name: 'NonExistentClassName'.");
         Types::getTraits('NonExistentClassName');
     }
 }

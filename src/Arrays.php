@@ -70,7 +70,7 @@ final class Arrays
         $quoteFn = static function ($value) use ($quoteChar) {
             // Type check.
             if (!is_string($value)) {
-                throw new InvalidArgumentException('The array values must be strings.');
+                throw new InvalidArgumentException('Cannot process non-string array values.');
             }
 
             // Wrap the value in quotes.
@@ -100,7 +100,7 @@ final class Arrays
         // Ensure all the array values are strings.
         foreach ($arr as $value) {
             if (!is_string($value)) {
-                throw new InvalidArgumentException('The array values must be strings.');
+                throw new InvalidArgumentException('Cannot process non-string array values.');
             }
         }
 

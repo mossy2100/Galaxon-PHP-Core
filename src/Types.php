@@ -176,7 +176,7 @@ final class Types
         } elseif (class_exists($objOrClass) || interface_exists($objOrClass) || trait_exists($objOrClass)) {
             $class = (string)$objOrClass;
         } else {
-            throw new DomainException("Invalid class name: $objOrClass");
+            throw new DomainException("Invalid class name: '$objOrClass'.");
         }
 
         return self::getTraitsRecursive($class);

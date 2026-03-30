@@ -649,7 +649,7 @@ final class FloatsBitOperationsTest extends TestCase
     public function testAssembleInvalidSignThrows(): void
     {
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Sign must be 0 or 1');
+        $this->expectExceptionMessage('Invalid sign:');
         Floats::assemble(2, 1023, 0);
     }
 
@@ -659,7 +659,7 @@ final class FloatsBitOperationsTest extends TestCase
     public function testAssembleNegativeSignThrows(): void
     {
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Sign must be 0 or 1');
+        $this->expectExceptionMessage('Invalid sign:');
         Floats::assemble(-1, 1023, 0);
     }
 
@@ -669,7 +669,7 @@ final class FloatsBitOperationsTest extends TestCase
     public function testAssembleInvalidExponentThrows(): void
     {
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Exponent must be in the range [0, 2047]');
+        $this->expectExceptionMessage('Invalid exponent:');
         Floats::assemble(0, 2048, 0);
     }
 
@@ -679,7 +679,7 @@ final class FloatsBitOperationsTest extends TestCase
     public function testAssembleNegativeExponentThrows(): void
     {
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Exponent must be in the range [0, 2047]');
+        $this->expectExceptionMessage('Invalid exponent:');
         Floats::assemble(0, -1, 0);
     }
 
@@ -689,7 +689,7 @@ final class FloatsBitOperationsTest extends TestCase
     public function testAssembleInvalidFractionThrows(): void
     {
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Fraction must be in the range');
+        $this->expectExceptionMessage('Invalid fraction:');
         Floats::assemble(0, 1023, 0x10000000000000); // 2^52, one too large
     }
 
@@ -699,7 +699,7 @@ final class FloatsBitOperationsTest extends TestCase
     public function testAssembleNegativeFractionThrows(): void
     {
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Fraction must be in the range');
+        $this->expectExceptionMessage('Invalid fraction:');
         Floats::assemble(0, 1023, -1);
     }
 

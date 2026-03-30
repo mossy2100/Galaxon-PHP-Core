@@ -188,9 +188,6 @@ final class FloatsRandomTest extends TestCase
             $counts[Floats::toHex($f)]++;
         }
 
-//        echo Floats::toHex($min) . ' - ' . Floats::toHex($max) . "\n";
-//        var_dump($counts);
-
         // Check we got the right number of results.
         $this->assertEquals($nValues, count($counts));
 
@@ -332,7 +329,6 @@ final class FloatsRandomTest extends TestCase
 
         for ($i = 0; $i < 20; $i++) {
             $f = Floats::rand($min, $max);
-//            echo Stringify::stringifyFloat($f), PHP_EOL;
             $this->assertGreaterThanOrEqual($min, $f);
             $this->assertLessThanOrEqual($max, $f);
         }

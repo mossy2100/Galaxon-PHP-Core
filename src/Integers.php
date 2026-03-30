@@ -160,7 +160,7 @@ final class Integers
         // If the exponent is negative, throw an exception.
         // We know the result will be a float, so there's no need to do the operation.
         if ($b < 0) {
-            throw new DomainException('Exponents must be non-negative.');
+            throw new DomainException("Invalid exponent: $b. Must not be negative.");
         }
 
         // Do the exponentiation.
@@ -195,7 +195,7 @@ final class Integers
         }
 
         // Check none of the values equal PHP_INT_MIN because otherwise abs() will not work properly.
-        $err = 'Arguments must be greater than PHP_INT_MIN (' . PHP_INT_MIN . ').';
+        $err = 'Cannot compute GCD with PHP_INT_MIN (' . PHP_INT_MIN . ').';
         if ($nums[0] === PHP_INT_MIN) {
             throw new DomainException($err);
         }

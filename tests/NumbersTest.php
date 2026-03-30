@@ -157,7 +157,7 @@ final class NumbersTest extends TestCase
     {
         // Test that NAN as first parameter throws DomainException.
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('NAN is not allowed for either parameter.');
+        $this->expectExceptionMessage('Cannot copy sign from or to NAN.');
         Numbers::copySign(NAN, 5);
     }
 
@@ -168,7 +168,7 @@ final class NumbersTest extends TestCase
     {
         // Test that NAN as second parameter throws DomainException.
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('NAN is not allowed for either parameter.');
+        $this->expectExceptionMessage('Cannot copy sign from or to NAN.');
         Numbers::copySign(5, NAN);
     }
 
@@ -179,7 +179,7 @@ final class NumbersTest extends TestCase
     {
         // Test that NAN as both parameters throws DomainException.
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('NAN is not allowed for either parameter.');
+        $this->expectExceptionMessage('Cannot copy sign from or to NAN.');
         Numbers::copySign(NAN, NAN);
     }
 
@@ -306,6 +306,134 @@ final class NumbersTest extends TestCase
         // NAN (NAN !== NAN by IEEE 754)
         $this->assertFalse(Numbers::equal(NAN, NAN));
         $this->assertFalse(Numbers::equal(NAN, 1.0));
+    }
+
+    // endregion
+
+    // region isNumber() tests
+
+    /**
+     * Test Numbers::isNumber returns true for integers.
+     */
+    public function testIsNumberWithIntegers(): void
+    {
+        $this->assertTrue(Numbers::isNumber(0));
+        $this->assertTrue(Numbers::isNumber(42));
+        $this->assertTrue(Numbers::isNumber(-99));
+        $this->assertTrue(Numbers::isNumber(PHP_INT_MAX));
+        $this->assertTrue(Numbers::isNumber(PHP_INT_MIN));
+    }
+
+    /**
+     * Test Numbers::isNumber returns true for floats.
+     */
+    public function testIsNumberWithFloats(): void
+    {
+        $this->assertTrue(Numbers::isNumber(0.0));
+        $this->assertTrue(Numbers::isNumber(3.14));
+        $this->assertTrue(Numbers::isNumber(-2.5));
+        $this->assertTrue(Numbers::isNumber(1e10));
+        $this->assertTrue(Numbers::isNumber(PHP_FLOAT_MAX));
+        $this->assertTrue(Numbers::isNumber(PHP_FLOAT_MIN));
+        $this->assertTrue(Numbers::isNumber(PHP_FLOAT_EPSILON));
+    }
+
+    /**
+     * Test Numbers::isNumber returns true for special float values.
+     */
+    public function testIsNumberWithSpecialFloats(): void
+    {
+        $this->assertTrue(Numbers::isNumber(INF));
+        $this->assertTrue(Numbers::isNumber(-INF));
+        $this->assertTrue(Numbers::isNumber(NAN));
+        $this->assertTrue(Numbers::isNumber(-0.0));
+    }
+
+    /**
+     * Test Numbers::isNumber returns false for numeric strings.
+     */
+    public function testIsNumberWithNumericStrings(): void
+    {
+        $this->assertFalse(Numbers::isNumber('42'));
+        $this->assertFalse(Numbers::isNumber('3.14'));
+        $this->assertFalse(Numbers::isNumber('-99'));
+        $this->assertFalse(Numbers::isNumber('1e10'));
+        $this->assertFalse(Numbers::isNumber('0x1A'));
+    }
+
+    /**
+     * Test Numbers::isNumber returns false for non-numeric types.
+     */
+    public function testIsNumberWithNonNumericTypes(): void
+    {
+        $this->assertFalse(Numbers::isNumber('hello'));
+        $this->assertFalse(Numbers::isNumber(''));
+        $this->assertFalse(Numbers::isNumber(true));
+        $this->assertFalse(Numbers::isNumber(false));
+        $this->assertFalse(Numbers::isNumber(null));
+        $this->assertFalse(Numbers::isNumber([]));
+        $this->assertFalse(Numbers::isNumber([1, 2]));
+        $this->assertFalse(Numbers::isNumber(new stdClass()));
+    }
+
+    // endregion
+
+    // region isZero() tests
+
+    /**
+     * Test isZero() with integer zero.
+     */
+    public function testIsZeroWithIntegerZero(): void
+    {
+        $this->assertTrue(Numbers::isZero(0));
+    }
+
+    /**
+     * Test isZero() with positive float zero.
+     */
+    public function testIsZeroWithPositiveFloatZero(): void
+    {
+        $this->assertTrue(Numbers::isZero(0.0));
+    }
+
+    /**
+     * Test isZero() with negative float zero.
+     */
+    public function testIsZeroWithNegativeFloatZero(): void
+    {
+        $this->assertTrue(Numbers::isZero(-0.0));
+    }
+
+    /**
+     * Test isZero() with non-zero integers.
+     */
+    public function testIsZeroWithNonZeroIntegers(): void
+    {
+        $this->assertFalse(Numbers::isZero(1));
+        $this->assertFalse(Numbers::isZero(-1));
+        $this->assertFalse(Numbers::isZero(PHP_INT_MAX));
+        $this->assertFalse(Numbers::isZero(PHP_INT_MIN));
+    }
+
+    /**
+     * Test isZero() with non-zero floats.
+     */
+    public function testIsZeroWithNonZeroFloats(): void
+    {
+        $this->assertFalse(Numbers::isZero(0.1));
+        $this->assertFalse(Numbers::isZero(-0.1));
+        $this->assertFalse(Numbers::isZero(PHP_FLOAT_EPSILON));
+        $this->assertFalse(Numbers::isZero(PHP_FLOAT_MIN));
+    }
+
+    /**
+     * Test isZero() with special float values.
+     */
+    public function testIsZeroWithSpecialFloats(): void
+    {
+        $this->assertFalse(Numbers::isZero(INF));
+        $this->assertFalse(Numbers::isZero(-INF));
+        $this->assertFalse(Numbers::isZero(NAN));
     }
 
     // endregion

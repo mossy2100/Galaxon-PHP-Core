@@ -7,6 +7,7 @@ namespace Galaxon\Core;
 use DomainException;
 use Random\RandomException;
 use RuntimeException;
+use UnexpectedValueException;
 
 /**
  * Container for useful float-related methods.
@@ -216,7 +217,7 @@ final class Floats
     ): bool {
         // Check tolerances are valid.
         if ($relTol < 0 || $absTol < 0) {
-            throw new DomainException('Tolerances must be non-negative.');
+            throw new DomainException('Cannot use negative tolerances.');
         }
 
         // Handle NAN. NAN != anything, even itself.
@@ -607,7 +608,15 @@ final class Floats
         Environment::require64Bit();
 
         // Pack as little-endian double, unpack as little-endian unsigned 64-bit int.
-        return unpack('P', pack('e', $f))[1];
+        $values = unpack('P', pack('e', $f));
+
+        if ($values === false) {
+            // @codeCoverageIgnoreStart
+            throw new UnexpectedValueException('Error unpacking int.');
+            // @codeCoverageIgnoreEnd
+        }
+
+        return $values[1];
     }
 
     /**
@@ -632,7 +641,15 @@ final class Floats
         Environment::require64Bit();
 
         // Pack as an unsigned 64-bit little-endian int, unpack as a little-endian double.
-        return unpack('e', pack('P', $bits))[1];
+        $values = unpack('e', pack('P', $bits));
+
+        if ($values === false) {
+            // @codeCoverageIgnoreStart
+            throw new UnexpectedValueException('Error unpacking float.');
+            // @codeCoverageIgnoreEnd
+        }
+
+        return $values[1];
     }
 
     /**
@@ -679,13 +696,13 @@ final class Floats
 
         // Validate components.
         if ($sign < 0 || $sign > 1) {
-            throw new DomainException('Sign must be 0 or 1.');
+            throw new DomainException("Invalid sign: $sign. Must be 0 or 1.");
         }
         if ($exponent < 0 || $exponent > 2047) {
-            throw new DomainException('Exponent must be in the range [0, 2047].');
+            throw new DomainException("Invalid exponent: $exponent. Must be in the range [0, 2047].");
         }
         if ($fraction < 0 || $fraction > 0xFFFFFFFFFFFFF) {
-            throw new DomainException('Fraction must be in the range [0, 2^52 - 1].');
+            throw new DomainException("Invalid fraction: $fraction. Must be in the range [0, 2^52 - 1].");
         }
 
         // Assemble the float: sign (1 bit) | exponent (11 bits) | fraction (52 bits)

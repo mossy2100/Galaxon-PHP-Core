@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Galaxon\Core\Tests;
 
 use PHPUnit\Framework\TestCase;
-use stdClass;
 
-use function Galaxon\Core\is_number;
 use function Galaxon\Core\println;
 
 /**
@@ -103,74 +101,6 @@ final class FunctionsTest extends TestCase
 
         $this->expectOutputString('stringable object' . PHP_EOL);
         println($obj);
-    }
-
-    // endregion
-
-    // region is_number() tests
-
-    /**
-     * Test is_number returns true for integers.
-     */
-    public function testIsNumberWithIntegers(): void
-    {
-        $this->assertTrue(is_number(0));
-        $this->assertTrue(is_number(42));
-        $this->assertTrue(is_number(-99));
-        $this->assertTrue(is_number(PHP_INT_MAX));
-        $this->assertTrue(is_number(PHP_INT_MIN));
-    }
-
-    /**
-     * Test is_number returns true for floats.
-     */
-    public function testIsNumberWithFloats(): void
-    {
-        $this->assertTrue(is_number(0.0));
-        $this->assertTrue(is_number(3.14));
-        $this->assertTrue(is_number(-2.5));
-        $this->assertTrue(is_number(1e10));
-        $this->assertTrue(is_number(PHP_FLOAT_MAX));
-        $this->assertTrue(is_number(PHP_FLOAT_MIN));
-        $this->assertTrue(is_number(PHP_FLOAT_EPSILON));
-    }
-
-    /**
-     * Test is_number returns true for special float values.
-     */
-    public function testIsNumberWithSpecialFloats(): void
-    {
-        $this->assertTrue(is_number(INF));
-        $this->assertTrue(is_number(-INF));
-        $this->assertTrue(is_number(NAN));
-        $this->assertTrue(is_number(-0.0));
-    }
-
-    /**
-     * Test is_number returns false for numeric strings.
-     */
-    public function testIsNumberWithNumericStrings(): void
-    {
-        $this->assertFalse(is_number('42'));
-        $this->assertFalse(is_number('3.14'));
-        $this->assertFalse(is_number('-99'));
-        $this->assertFalse(is_number('1e10'));
-        $this->assertFalse(is_number('0x1A'));
-    }
-
-    /**
-     * Test is_number returns false for non-numeric types.
-     */
-    public function testIsNumberWithNonNumericTypes(): void
-    {
-        $this->assertFalse(is_number('hello'));
-        $this->assertFalse(is_number(''));
-        $this->assertFalse(is_number(true));
-        $this->assertFalse(is_number(false));
-        $this->assertFalse(is_number(null));
-        $this->assertFalse(is_number([]));
-        $this->assertFalse(is_number([1, 2]));
-        $this->assertFalse(is_number(new stdClass()));
     }
 
     // endregion

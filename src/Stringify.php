@@ -64,7 +64,7 @@ final class Stringify
     public static function setIndent(int $indent): void
     {
         if ($indent <= 0) {
-            throw new InvalidArgumentException('Indent must be greater than 0.');
+            throw new InvalidArgumentException("Invalid indent: $indent. Must be positive.");
         }
         self::$indent = $indent;
     }
@@ -88,7 +88,7 @@ final class Stringify
     public static function setMaxLineLength(int $maxLineLength): void
     {
         if ($maxLineLength <= 0) {
-            throw new InvalidArgumentException('Max line length must be greater than 0.');
+            throw new InvalidArgumentException("Invalid max line length: $maxLineLength. Must be positive.");
         }
         self::$maxLineLength = $maxLineLength;
     }
@@ -143,18 +143,47 @@ final class Stringify
     public static function stringify(mixed $value, bool $prettyPrint = false, int $indentLevel = 0): string
     {
         // Call the relevant method.
-        return match (Types::getBasicType($value)) {
-            'null' => 'null',
-            'bool' => $value ? 'true' : 'false',
-            'int' => (string)$value,
-            'float' => self::stringifyFloat($value),
-            'string' => self::stringifyString($value),
-            'array' => self::stringifyArray($value, $prettyPrint, $indentLevel),
-            'enum' => self::stringifyEnum($value),
-            'object' => self::stringifyObject($value, $prettyPrint, $indentLevel),
-            'resource' => self::stringifyResource($value),
-            default => throw new UnexpectedValueException('Unknown type.'),
-        };
+        switch (Types::getBasicType($value)) {
+            case 'null':
+                assert($value === null);
+                return 'null';
+
+            case 'bool':
+                assert(is_bool($value));
+                return $value ? 'true' : 'false';
+
+            case 'int':
+                assert(is_int($value));
+                return (string)$value;
+
+            case 'float':
+                assert(is_float($value));
+                return self::stringifyFloat($value);
+
+            case 'string':
+                assert(is_string($value));
+                return self::stringifyString($value);
+
+            case 'array':
+                assert(is_array($value));
+                return self::stringifyArray($value, $prettyPrint, $indentLevel);
+
+            case 'enum':
+                assert($value instanceof UnitEnum);
+                return self::stringifyEnum($value);
+
+            case 'object':
+                assert(is_object($value));
+                return self::stringifyObject($value, $prettyPrint, $indentLevel);
+
+            case 'resource':
+                return self::stringifyResource($value);
+
+            default:
+                // @codeCoverageIgnoreStart
+                throw new UnexpectedValueException('Unknown type.');
+                // @codeCoverageIgnoreEnd
+        }
     }
 
     /**
@@ -239,7 +268,7 @@ final class Stringify
 
         return array_is_list($arr)
             ? self::stringifyList($arr, $prettyPrint, $indentLevel)
-            : self::stringifyAssociativeArray($arr, $prettyPrint, $indentLevel);
+            : self::stringifyDictionary($arr, $prettyPrint, $indentLevel);
     }
 
     /**
@@ -260,36 +289,28 @@ final class Stringify
         $values = array_values($arr);
         $valueStrings = array_map(static fn ($value) => self::stringify($value), $values);
 
-        // Get the compact (single-line) format.
+        // Generate the compact (single-line) format. No trailing comma.
         $compactList = '[' . implode(', ', $valueStrings) . ']';
 
-        // If we don't want pretty printing, return the single-line format.
+        // If we don't want pretty printing, return the compact format.
         if (!$prettyPrint) {
             return $compactList;
         }
 
-        // Set up for pretty printing.
+        // Set up for multi-line pretty printing.
         $nSpacesBracketIndent = $indentLevel * self::$indent;
         $bracketIndent = str_repeat(' ', $nSpacesBracketIndent);
         $nSpacesItemIndent = $nSpacesBracketIndent + self::$indent;
         $itemIndent = str_repeat(' ', $nSpacesItemIndent);
         $nItems = count($arr);
 
-        // Check if all items are null, scalar, or an enum value.
-        // Everything else - arrays, objects, resources  - will be formatted as one item per line.
-        $isSimple = static fn ($value) => $value === null || is_scalar($value) || $value instanceof UnitEnum;
-        $allSimple = array_all($values, $isSimple);
-
-        if ($allSimple) {
-            // Option 1: Format the list on one line.
-            // Check if the single-line format will fit in one line, counting the indent.
-            // Note, the bracket indent may not be where the list actually starts in the output, so this isn't
-            // guaranteed to fit on one line. It's a compromise.
-            if (mb_strlen($bracketIndent . $compactList) <= self::$maxLineLength) {
+        // Check if all items are null or scalar.
+        if (array_all($values, static fn ($value) => $value === null || is_scalar($value))) {
+            // If the compact format fits on one line, return it.
+            if (mb_strlen($compactList) <= self::$maxLineLength - $nSpacesBracketIndent) {
                 return $compactList;
             }
 
-            // Option 2: Format the list as a grid.
             // Get the max item width.
             $maxValueWidth = 0;
             foreach ($valueStrings as $valueString) {
@@ -301,52 +322,55 @@ final class Stringify
 
             // Calculate the number of items per line.
             $nItemsPerLine = (int)floor((self::$maxLineLength + 1 - $nSpacesItemIndent) / ($maxValueWidth + 2));
-            if ($nItemsPerLine > 1) {
-                // Generate the grid.
-                $gridList = "[\n";
-                $itemCountThisLine = 0;
-                foreach ($valueStrings as $i => $valueString) {
-                    // Indent the first item on the line.
-                    if ($itemCountThisLine === 0) {
-                        $gridList .= $itemIndent;
-                    }
-
-                    $itemCountThisLine++;
-                    $isLastOnRow = $itemCountThisLine === $nItemsPerLine || $i === $nItems - 1;
-
-                    if ($isLastOnRow) {
-                        // Last item on row: no padding to avoid trailing whitespace.
-                        $gridList .= $valueString . ",\n";
-                        $itemCountThisLine = 0;
-                    } else {
-                        // Non-last item: pad to uniform width, then space.
-                        $gridList .= mb_str_pad($valueString . ',', $maxValueWidth + 1) . ' ';
-                    }
-                }
-                return $gridList . $bracketIndent . ']';
+            if ($nItemsPerLine === 0) {
+                $nItemsPerLine = 1;
             }
+
+            // Generate the grid.
+            $gridList = "[\n";
+            $itemCountThisLine = 0;
+            foreach ($valueStrings as $i => $valueString) {
+                // Indent the first item on the line.
+                if ($itemCountThisLine === 0) {
+                    $gridList .= $itemIndent;
+                }
+
+                $itemCountThisLine++;
+                $isLastOnRow = $itemCountThisLine === $nItemsPerLine || $i === $nItems - 1;
+
+                if ($isLastOnRow) {
+                    // Last item on row: no padding to avoid trailing whitespace.
+                    $gridList .= $valueString . ",\n";
+                    $itemCountThisLine = 0;
+                } else {
+                    // Non-last item: pad to uniform width, then space.
+                    $gridList .= mb_str_pad($valueString . ',', $maxValueWidth + 1) . ' ';
+                }
+            }
+            return $gridList . $bracketIndent . ']';
         }
 
-        // Option 3: Format the list with one item per line. Pretty print each value. Include trailing comma.
+        // At least one item is neither null nor a scalar. Format the list with one item per line.
         $multilineList = "[\n";
         foreach ($values as $value) {
+            // Pretty print each value. Include trailing comma.
             $multilineList .= $itemIndent . self::stringify($value, true, $indentLevel + 1) . ",\n";
         }
         return $multilineList . $bracketIndent . ']';
     }
 
     /**
-     * Stringify an associative array (non-sequential or string keys).
+     * Stringify a dictionary (non-sequential or string keys).
      *
      * Without pretty printing, key-value pairs are comma-separated on one line.
      * With pretty printing, uses one pair per line with aligned keys.
      *
-     * @param array<array-key, mixed> $arr The associative array to stringify.
+     * @param array<array-key, mixed> $arr The dictionary to stringify.
      * @param bool $prettyPrint Whether to use pretty printing.
      * @param int $indentLevel The level of indentation for this structure.
      * @return string The string representation of the associative array.
      */
-    private static function stringifyAssociativeArray(array $arr, bool $prettyPrint, int $indentLevel): string
+    private static function stringifyDictionary(array $arr, bool $prettyPrint, int $indentLevel): string
     {
         // Get keys as strings.
         $keyStrings = [];
@@ -498,7 +522,7 @@ final class Stringify
     /**
      * Stringify a resource.
      *
-     * Uses get_debug_type() which returns 'resource (stream)', 'resource (closed)', etc.
+     * Uses get_debug_type() result, which is like 'resource (stream)', 'resource (closed)', etc.
      *
      * @param mixed $value The resource to stringify.
      * @return string The string representation of the resource, e.g. 'resource (stream)'.
@@ -530,7 +554,7 @@ final class Stringify
         // Check the max length is reasonable.
         $minMaxLen = 10;
         if ($maxLen < $minMaxLen) {
-            throw new DomainException("The maximum string length must be at least $minMaxLen.");
+            throw new DomainException("Invalid maximum string length: $maxLen. Must be at least $minMaxLen.");
         }
 
         // Get the value as a string without newlines or indentation.

@@ -346,9 +346,9 @@ final class ArraysTest extends TestCase
         $input = ['foo', 123, 'bar'];
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('The array values must be strings.');
-        // @phpstan-ignore argument.type
-        Arrays::quoteValues($input);
+        $this->expectExceptionMessage('Cannot process non-string array values.');
+
+        Arrays::quoteValues($input); // @phpstan-ignore argument.type
     }
 
     /**
@@ -359,9 +359,9 @@ final class ArraysTest extends TestCase
         $input = ['foo', 3.14, 'bar'];
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('The array values must be strings.');
-        // @phpstan-ignore argument.type
-        Arrays::quoteValues($input);
+        $this->expectExceptionMessage('Cannot process non-string array values.');
+
+        Arrays::quoteValues($input); // @phpstan-ignore argument.type
     }
 
     /**
@@ -372,9 +372,9 @@ final class ArraysTest extends TestCase
         $input = ['foo', true, 'bar'];
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('The array values must be strings.');
-        // @phpstan-ignore argument.type
-        Arrays::quoteValues($input);
+        $this->expectExceptionMessage('Cannot process non-string array values.');
+
+        Arrays::quoteValues($input); // @phpstan-ignore argument.type
     }
 
     /**
@@ -385,9 +385,9 @@ final class ArraysTest extends TestCase
         $input = ['foo', null, 'bar'];
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('The array values must be strings.');
-        // @phpstan-ignore argument.type
-        Arrays::quoteValues($input);
+        $this->expectExceptionMessage('Cannot process non-string array values.');
+
+        Arrays::quoteValues($input); // @phpstan-ignore argument.type
     }
 
     /**
@@ -402,9 +402,9 @@ final class ArraysTest extends TestCase
         ];
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('The array values must be strings.');
-        // @phpstan-ignore argument.type
-        Arrays::quoteValues($input);
+        $this->expectExceptionMessage('Cannot process non-string array values.');
+
+        Arrays::quoteValues($input); // @phpstan-ignore argument.type
     }
 
     /**
@@ -415,9 +415,9 @@ final class ArraysTest extends TestCase
         $input = ['foo', new stdClass(), 'bar'];
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('The array values must be strings.');
-        // @phpstan-ignore argument.type
-        Arrays::quoteValues($input);
+        $this->expectExceptionMessage('Cannot process non-string array values.');
+
+        Arrays::quoteValues($input); // @phpstan-ignore argument.type
     }
 
     /**
@@ -501,8 +501,8 @@ final class ArraysTest extends TestCase
     {
         $this->expectException(LengthException::class);
         $this->expectExceptionMessage('Cannot get the first element of an empty array.');
-        // @phpstan-ignore argument.type
-        Arrays::first([]);
+
+        Arrays::first([]); // @phpstan-ignore argument.type
     }
 
     // endregion
@@ -562,8 +562,8 @@ final class ArraysTest extends TestCase
     {
         $this->expectException(LengthException::class);
         $this->expectExceptionMessage('Cannot get the last element of an empty array.');
-        // @phpstan-ignore argument.type
-        Arrays::last([]);
+
+        Arrays::last([]); // @phpstan-ignore argument.type
     }
 
     /**
@@ -642,9 +642,9 @@ final class ArraysTest extends TestCase
     public function testToSerialListThrowsExceptionForNonStrings(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('The array values must be strings.');
-        // @phpstan-ignore argument.type
-        Arrays::toSerialList(['foo', 42, 'bar']);
+        $this->expectExceptionMessage('Cannot process non-string array values.');
+
+        Arrays::toSerialList(['foo', 42, 'bar']); // @phpstan-ignore argument.type
     }
 
     // endregion
