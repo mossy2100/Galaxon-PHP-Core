@@ -133,25 +133,13 @@ MIT License - see [LICENSE](LICENSE) for details
 
 ---
 
-## Contributing
-
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Ensure all tests pass
-5. Submit a pull request
-
-For questions or suggestions, please [open an issue](https://github.com/mossy2100/Galaxon-PHP-Core/issues).
-
----
-
 ## Support
 
 - **Issues**: https://github.com/mossy2100/Galaxon-PHP-Core/issues
 - **Documentation**: See [docs/](docs/) directory for detailed class documentation
 - **Examples**: See test files for comprehensive usage examples
+
+For questions or suggestions, please [open an issue](https://github.com/mossy2100/Galaxon-PHP-Core/issues).
 
 ---
 
