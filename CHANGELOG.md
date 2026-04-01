@@ -11,6 +11,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.1] - 2026-04-02
+
+### Added
+
+- **Strings** — New static utility class for string conversion and output:
+  - `toString()` — Convert any value to a string. Strings pass through, Stringable objects use `__toString()`, all other types go through `Stringify::stringify()`.
+  - `print()` — Print a value to stdout via `toString()`.
+  - `println()` — Print a value to stdout with a newline via `toString()`.
+- **docs/Strings.md** — Documentation for the new Strings class.
+- **StringsTest** — 12 tests covering toString, print, and println.
+
+### Changed
+
+- **functions.php** — `println()` now delegates to `Strings::println()`.
+
+### Removed
+
+- **Stringify::print()** and **Stringify::println()** — replaced by `Strings::print()` and `Strings::println()`.
+
+### Documentation
+
+- Added Strings to README Classes section.
+- Removed print/println from Stringify.md.
+
+---
+
 ## [1.5.0] - 2026-03-30
 
 ### Added

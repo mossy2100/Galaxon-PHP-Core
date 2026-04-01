@@ -568,36 +568,5 @@ final class Stringify
         return $result;
     }
 
-    /**
-     * Output a stringified value directly to the output stream.
-     *
-     * This is a convenience method that combines stringify() with echo, useful for debugging and quick output of
-     * complex values.
-     *
-     * @param mixed $value The value to stringify and output.
-     * @param bool $prettyPrint If the result should be nicely formatted.
-     * @throws DomainException If the value cannot be stringified.
-     * @throws UnexpectedValueException
-     */
-    public static function print(mixed $value, bool $prettyPrint = false): void
-    {
-        echo self::stringify($value, $prettyPrint);
-    }
-
-    /**
-     * Output a stringified value directly to the output stream.
-     *
-     * Same as print(), but adds a new line.
-     *
-     * @param mixed $value The value to stringify and output.
-     * @param bool $prettyPrint If the result should be nicely formatted.
-     * @throws DomainException If the value cannot be stringified.
-     * @throws UnexpectedValueException
-     */
-    public static function println(mixed $value, bool $prettyPrint = false): void
-    {
-        echo self::stringify($value, $prettyPrint), "\n";
-    }
-
     // endregion
 }

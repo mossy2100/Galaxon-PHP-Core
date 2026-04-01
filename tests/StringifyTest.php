@@ -663,46 +663,6 @@ final class StringifyTest extends TestCase
 
     // endregion
 
-    // region print and println
-
-    /**
-     * Test print method outputs stringified value.
-     */
-    public function testPrint(): void
-    {
-        ob_start();
-        Stringify::print('hello');
-        $output = ob_get_clean();
-        $this->assertSame("'hello'", $output);
-
-        ob_start();
-        Stringify::print([1, 2, 3]);
-        $output = ob_get_clean();
-        $this->assertSame('[1, 2, 3]', $output);
-
-        ob_start();
-        Stringify::print(42);
-        $output = ob_get_clean();
-        $this->assertSame('42', $output);
-    }
-
-    /**
-     * Test println method outputs stringified value with trailing newline.
-     */
-    public function testPrintln(): void
-    {
-        ob_start();
-        Stringify::println('hello');
-        $output = ob_get_clean();
-        $this->assertSame("'hello'\n", $output);
-
-        ob_start();
-        Stringify::println(42);
-        $output = ob_get_clean();
-        $this->assertSame("42\n", $output);
-    }
-
-    // endregion
 }
 
 /**

@@ -390,36 +390,6 @@ Stringify::abbrev('this is a very long string', 15); // "'this is a v..."
 Stringify::abbrev([1, 2, 3, 4, 5, 6, 7], 15);       // '[1, 2, 3, 4,...'
 ```
 
-### print()
-
-```php
-public static function print(mixed $value, bool $prettyPrint = false): void
-```
-
-Output a stringified value directly to the output stream. A convenience method that combines `stringify()` with `echo`.
-
-**Parameters:**
-- `$value` (mixed) - The value to stringify and output.
-- `$prettyPrint` (bool) - Whether to use pretty printing (default: `false`).
-
-**Throws:**
-- `DomainException` - If the value cannot be stringified.
-
-### println()
-
-```php
-public static function println(mixed $value, bool $prettyPrint = false): void
-```
-
-Same as `print()`, but appends a trailing newline.
-
-**Parameters:**
-- `$value` (mixed) - The value to stringify and output.
-- `$prettyPrint` (bool) - Whether to use pretty printing (default: `false`).
-
-**Throws:**
-- `DomainException` - If the value cannot be stringified.
-
 ---
 
 ## See Also

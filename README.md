@@ -58,6 +58,10 @@ Array utility methods including circular reference detection, value quoting, and
 
 Type checking and inspection utilities with methods for identifying numbers, unsigned integers, traits, and generating unique string keys.
 
+### [Strings](docs/Strings.md)
+
+String conversion and output utilities. Converts any value to a string, passing strings through as-is and using `__toString()` for Stringable objects.
+
 ### [Stringify](docs/Stringify.md)
 
 Advanced value-to-string conversion with pretty printing, supporting all PHP types with improved readability.

@@ -24,5 +24,5 @@ use Stringable;
  */
 function println(mixed $value = ''): void
 {
-    echo is_string($value) || $value instanceof Stringable ? (string)$value : Stringify::stringify($value), PHP_EOL;
+    Strings::println($value);
 }
