@@ -321,15 +321,15 @@ final class Floats
     /**
      * Return the fractional part of a float.
      *
-     * This method satisfies the identity: x = trunc(x) + frac(x)
+     * This method satisfies the identity x = trunc(x) + frac(x), even for infinities.
      *
-     * For negative values, the result is also negative:
+     * For result will have the same sign as the input value. For example:
      * - frac(3.7) → 0.7
      * - frac(-3.7) → -0.7
      *
      * Special cases:
      * - frac(NAN) returns NAN
-     * - frac(±INF) returns NAN (fractional part is undefined)
+     * - frac(±INF) returns 0.0 (infinity has no fractional part)
      *
      * @param float $value The value to get the fractional part of.
      * @return float The fractional part.
@@ -338,8 +338,11 @@ final class Floats
      */
     public static function frac(float $value): float
     {
-        if (!is_finite($value)) {
+        if (is_nan($value)) {
             return NAN;
+        }
+        if (is_infinite($value)) {
+            return 0.0;
         }
         return $value - self::trunc($value);
     }

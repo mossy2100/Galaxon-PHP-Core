@@ -76,4 +76,4 @@ Use other exceptions when:
 ## See Also
 
 - **[DomainException](https://www.php.net/manual/en/class.domainexception.php)** - Parent class
-- **[Integers](../Integers.md)** - Uses FormatException for invalid subscript/superscript strings
+- **[Integers](../Integers.md)** - Uses `FormatException` for invalid subscript/superscript strings

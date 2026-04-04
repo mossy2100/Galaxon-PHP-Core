@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Floats::frac()** — Returns `0.0` for ±INF instead of `NAN`, so the identity `x = trunc(x) + frac(x)` now holds for all values.
+
 ---
 
 ## [1.5.1] - 2026-04-02

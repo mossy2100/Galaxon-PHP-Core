@@ -678,7 +678,7 @@ Return the fractional part of a float. This method satisfies the identity: `x = 
 - `$value` (float) - The value to get the fractional part of
 
 **Returns:**
-- `float` - The fractional part. Returns `NAN` for non-finite inputs.
+- `float` - The fractional part. Returns `0.0` for ±INF (infinity has no fractional part). Returns `NAN` for NAN input.
 
 **Examples:**
 
@@ -700,9 +700,9 @@ Floats::frac(-0.9);     // -0.9
 Floats::frac(0.0);      // 0.0
 Floats::frac(-0.0);     // 0.0
 
-// Non-finite values return NAN
-Floats::frac(INF);      // NAN
-Floats::frac(-INF);     // NAN
+// Infinity has no fractional part
+Floats::frac(INF);      // 0.0
+Floats::frac(-INF);     // 0.0
 Floats::frac(NAN);      // NAN
 ```
 

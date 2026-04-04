@@ -328,8 +328,10 @@ final class FloatsTest extends TestCase
      */
     public function testFracNonFinite(): void
     {
-        $this->assertTrue(is_nan(Floats::frac(INF)));
-        $this->assertTrue(is_nan(Floats::frac(-INF)));
+        // Infinity has no fractional part.
+        $this->assertSame(0.0, Floats::frac(INF));
+        $this->assertSame(0.0, Floats::frac(-INF));
+        // NAN is still NAN.
         $this->assertTrue(is_nan(Floats::frac(NAN)));
     }
 
