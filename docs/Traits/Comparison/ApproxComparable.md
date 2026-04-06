@@ -84,7 +84,7 @@ Compare with approximate equality awareness. Returns 0 if values are approximate
 ```php
 use Galaxon\Core\Exceptions\IncomparableTypesException;
 use Galaxon\Core\Floats;
-use Galaxon\Core\Traits\ApproxComparable;
+use Galaxon\Core\Traits\Comparison\ApproxComparable;
 
 class Score
 {
@@ -142,7 +142,7 @@ usort($scores, fn($a, $b) => $a->approxCompare($b, 0.01));
 use Galaxon\Core\Exceptions\IncomparableTypesException;
 use Galaxon\Core\Floats;
 use Galaxon\Core\Numbers;
-use Galaxon\Core\Traits\ApproxComparable;
+use Galaxon\Core\Traits\Comparison\ApproxComparable;
 
 class Vector2D
 {
@@ -199,7 +199,7 @@ var_dump($v1->approxCompare($v2)); // 0 (approximately equal)
 
 ApproxComparable combines Comparable and ApproxEquatable, providing the complete comparison suite for ordered types with floating-point components.
 
-See [Traits.md](Traits.md) for complete hierarchy and usage guide.
+See [ComparisonTraits.md](ComparisonTraits.md) for complete hierarchy and usage guide.
 
 ---
 
@@ -309,7 +309,7 @@ public function approxEqual(
 
 ## See Also
 
-- [Traits.md](Traits.md) - Trait hierarchy overview
+- [ComparisonTraits.md](ComparisonTraits.md) - Trait hierarchy overview
 - [Comparable.md](Comparable.md) - Base ordering trait
 - [ApproxEquatable.md](ApproxEquatable.md) - Approximate equality trait
-- [IncomparableTypesException.md](../Exceptions/IncomparableTypesException.md) - Exception for type mismatches
+- [IncomparableTypesException.md](../../Exceptions/IncomparableTypesException.md) - Exception for type mismatches

@@ -453,6 +453,106 @@ final class Floats
         return sprintf('%016x', self::floatToBits($value));
     }
 
+    /**
+     * Format a float as a string with control over precision and notation.
+     *
+     * Format specifiers:
+     *   - 'e': Scientific notation with lowercase 'e'.
+     *   - 'E': Scientific notation with uppercase 'E'.
+     *   - 'f': Fixed-point notation (locale-aware).
+     *   - 'F': Fixed-point notation (non-locale-aware, always uses '.' as decimal separator).
+     *   - 'g': Shortest of 'e' or 'f' (lower-case 'e'/locale-aware). [default]
+     *   - 'G': Shortest of 'E' or 'f' (upper-case 'E'/locale-aware).
+     *   - 'h': Shortest of 'e' or 'F' (lower-case 'e'/non-locale-aware).
+     *   - 'H': Shortest of 'E' or 'F' (upper-case 'E'/non-locale-aware).
+     * For more information, see https://www.php.net/manual/en/function.sprintf.php
+     *
+     * The meaning of the precision argument depends on the format specifier.
+     *   - For e/E/f/F, precision means the number of digits after the decimal point.
+     *   - For g/G/h/H, precision means the number of significant digits.
+     *
+     * If $trimZeros is true, trailing zeros (and if necessary, a trailing decimal point) are automatically
+     * removed. For a value string with an exponent, this applies only to the mantissa (the part before the 'e').
+     * If $trimZeros is false, all digits are preserved.
+     * If $trimZeros is null (default), the behavior will depend on whether precision was specified or not.
+     * If $precision is null, zeros will be trimmed; if the $precision is specified, zeros will not be trimmed.
+     *
+     * When $ascii is false and scientific notation is used, the exponent is rendered as ×10 with
+     * superscript digits (e.g. 1.50×10³) instead of e+3.
+     *
+     * @param float $value The numeric value to format.
+     * @param string $specifier The format specifier (default 'g').
+     * @param ?int $precision Number of decimal places for e/f, or significant digits for g/h (default null = 6).
+     * @param ?bool $trimZeros If trailing zeros should be trimmed (default null for auto).
+     * @param bool $ascii If true, use ASCII e notation. If false (default), use ×10 with superscript exponents.
+     * @return string The formatted value string.
+     * @throws DomainException If the specifier or precision is invalid.
+     */
+    public static function format(
+        float $value,
+        string $specifier = 'g',
+        ?int $precision = null,
+        ?bool $trimZeros = null,
+        bool $ascii = false
+    ): string {
+        // Validate the specifier.
+        $validFormats = ['e', 'E', 'f', 'F', 'g', 'G', 'h', 'H'];
+        if (!in_array($specifier, $validFormats, true)) {
+            $formatsString = Arrays::toSerialList(Arrays::quoteValues($validFormats), 'or');
+            throw new DomainException("Invalid format specifier: '$specifier'. Must be $formatsString.");
+        }
+
+        // Validate the precision.
+        if ($precision !== null && ($precision < 0 || $precision > 17)) {
+            throw new DomainException("Invalid precision: $precision. Must be between 0 and 17.");
+        }
+
+        // Set $trimZeros if not set.
+        if ($trimZeros === null) {
+            $trimZeros = $precision === null;
+        }
+
+        // Canonicalize -0.0 to 0.0.
+        $value = self::normalizeZero($value);
+
+        // Format with the desired precision and specifier.
+        // If the precision is null, omit it from the format string to use the sprintf default (usually 6).
+        $formatString = $precision === null ? "%$specifier" : "%.$precision$specifier";
+        $valueStr = sprintf($formatString, $value);
+
+        // Look for an 'e' or 'E'.
+        $ePos = stripos($valueStr, 'e');
+
+        // Check for fixed point format.
+        if ($ePos === false) {
+            // Trim zeros if requested.
+            if ($trimZeros && str_contains($valueStr, '.')) {
+                $valueStr = rtrim(rtrim($valueStr, '0'), '.');
+            }
+
+            return $valueStr;
+        }
+
+        // Disassemble the value string.
+        $mantissa = substr($valueStr, 0, $ePos);
+        $expSeparator = $valueStr[$ePos];
+        $exp = substr($valueStr, $ePos + 1);
+
+        // Trim zeros from the mantissa if requested.
+        if ($trimZeros && str_contains($mantissa, '.')) {
+            $mantissa = rtrim(rtrim($mantissa, '0'), '.');
+        }
+
+        // If we want Unicode format and there's an exponent, replace it with the Unicode version.
+        if (!$ascii) {
+            $expSeparator = '×10';
+            $exp = Integers::toSuperscript((int)$exp);
+        }
+
+        // Reassemble the value string.
+        return $mantissa . $expSeparator . $exp;
+    }
+
     // endregion
 
     // region Random methods

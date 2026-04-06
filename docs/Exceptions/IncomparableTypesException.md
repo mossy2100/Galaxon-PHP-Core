@@ -88,5 +88,5 @@ Throw this exception in your `compare()` or `approxCompare()` implementations wh
 
 ## See Also
 
-- **[Comparable](../Traits/Comparable.md)** - Trait that uses this exception
-- **[ApproxComparable](../Traits/ApproxComparable.md)** - Trait that uses this exception
+- **[Comparable](../Traits/Comparison/Comparable.md)** - Trait that uses this exception
+- **[ApproxComparable](../Traits/Comparison/ApproxComparable.md)** - Trait that uses this exception

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Galaxon\Core\Traits;
+namespace Galaxon\Core\Traits\Asserts;
 
 use Galaxon\Core\Floats;
 

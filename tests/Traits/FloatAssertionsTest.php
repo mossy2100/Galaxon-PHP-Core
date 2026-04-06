@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Galaxon\Core\Tests\Traits;
 
-use Galaxon\Core\Traits\FloatAssertions;
+use Galaxon\Core\Traits\Asserts\FloatAssertions;
 use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\TestCase;
 

@@ -44,7 +44,7 @@ abstract public function equal(mixed $other): bool
 ### Using Equatable for Value Objects
 
 ```php
-use Galaxon\Core\Traits\Equatable;
+use Galaxon\Core\Traits\Comparison\Equatable;
 
 class Point
 {
@@ -84,7 +84,7 @@ Equatable is the base trait in the comparison hierarchy. Other traits extend it:
 - **ApproxEquatable** adds approximate equality
 - **ApproxComparable** combines both
 
-See [Traits.md](Traits.md) for complete hierarchy and usage guide.
+See [ComparisonTraits.md](ComparisonTraits.md) for complete hierarchy and usage guide.
 
 ---
 

@@ -1040,4 +1040,102 @@ final class FloatsTest extends TestCase
     }
 
     // endregion
+
+    // region format() tests
+
+    /**
+     * Test format() with default parameters trims trailing zeros.
+     */
+    public function testFormatDefaultTrimsZeros(): void
+    {
+        $this->assertSame('5', Floats::format(5.0));
+    }
+
+    /**
+     * Test format() with explicit precision preserves trailing zeros.
+     */
+    public function testFormatExplicitPrecisionPreservesZeros(): void
+    {
+        $this->assertSame('5.00', Floats::format(5.0, 'f', 2));
+    }
+
+    /**
+     * Test format() with explicit precision and trimZeros true forces trimming.
+     */
+    public function testFormatExplicitPrecisionWithTrimZerosTrue(): void
+    {
+        $this->assertSame('5', Floats::format(5.0, 'f', 2, true));
+    }
+
+    /**
+     * Test format() with null precision and trimZeros false preserves zeros.
+     */
+    public function testFormatNullPrecisionWithTrimZerosFalse(): void
+    {
+        $this->assertSame('5.000000', Floats::format(5.0, 'f', null, false));
+    }
+
+    /**
+     * Test format() normalizes negative zero.
+     */
+    public function testFormatNormalizesNegativeZero(): void
+    {
+        $this->assertSame('0', Floats::format(-0.0));
+    }
+
+    /**
+     * Test format() with scientific notation and explicit precision preserves zeros.
+     */
+    public function testFormatScientificPrecisionPreservesZeros(): void
+    {
+        $this->assertSame('3.0000e+3', Floats::format(3000.0, 'e', 4, ascii: true));
+    }
+
+    /**
+     * Test format() with scientific notation and null precision trims zeros.
+     */
+    public function testFormatScientificNullPrecisionTrimsZeros(): void
+    {
+        $this->assertSame('3e+3', Floats::format(3000.0, 'e', ascii: true));
+    }
+
+    /**
+     * Test format() with scientific notation and ASCII output.
+     */
+    public function testFormatScientificAscii(): void
+    {
+        $this->assertSame('1.50e+3', Floats::format(1500.0, 'e', 2, ascii: true));
+    }
+
+    /**
+     * Test format() with invalid specifier throws exception.
+     */
+    public function testFormatInvalidSpecifierThrowsException(): void
+    {
+        $this->expectException(DomainException::class);
+
+        Floats::format(1.0, 'x');
+    }
+
+    /**
+     * Test format() with invalid precision throws exception.
+     */
+    public function testFormatInvalidPrecisionThrowsException(): void
+    {
+        $this->expectException(DomainException::class);
+
+        Floats::format(1.0, 'f', -1);
+    }
+
+    /**
+     * Test format() trimming strips decimal trailing zeros but not integer zeros.
+     */
+    public function testFormatTrimStripsDecimalButNotIntegerZeros(): void
+    {
+        // f specifier with precision 2 on 1500.0 produces "1500.00".
+        // With trimming, the ".00" is removed but "1500" is preserved.
+        $this->assertSame('1500', Floats::format(1500.0, 'f', 2, true));
+    }
+
+    // endregion
 }

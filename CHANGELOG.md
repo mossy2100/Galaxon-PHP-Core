@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **NullArgumentException** — New exception class extending `InvalidArgumentException` for when a required argument is null. Includes `paramName` property and default message generation.
+- **Floats::format()** — New method for formatting floats as strings with control over precision, notation, and trailing zeros. Supports Unicode scientific notation (e.g. `1.50×10³`) as well as ASCII. Moved from `Quantity::formatValue()`.
+- **Traits reorganisation** — Traits split into `Traits/Asserts/` (testing assertion traits) and `Traits/Comparison/` (value comparison traits).
 
 ### Fixed
 

@@ -15,8 +15,8 @@ use InvalidArgumentException;
  * The exception automatically generates a descriptive message based on the types of
  * the values being compared, using `get_debug_type()` for accurate type names.
  *
- * @see \Galaxon\Core\Traits\Comparable
- * @see \Galaxon\Core\Traits\ApproxComparable
+ * @see \Galaxon\Core\Traits\Comparison\Comparable
+ * @see \Galaxon\Core\Traits\Comparison\ApproxComparable
  */
 class IncomparableTypesException extends InvalidArgumentException
 {

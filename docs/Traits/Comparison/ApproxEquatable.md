@@ -51,7 +51,7 @@ abstract public function approxEqual(
 
 ```php
 use Galaxon\Core\Floats;
-use Galaxon\Core\Traits\ApproxEquatable;
+use Galaxon\Core\Traits\Comparison\ApproxEquatable;
 
 class Complex
 {
@@ -100,7 +100,7 @@ var_dump($z1->approxEqual($z3));  // true (within default tolerance)
 
 ```php
 use Galaxon\Core\Floats;
-use Galaxon\Core\Traits\ApproxEquatable;
+use Galaxon\Core\Traits\Comparison\ApproxEquatable;
 
 class Measurement
 {
@@ -155,7 +155,7 @@ ApproxEquatable extends Equatable and adds approximate equality for types with f
 
 Use this for types without natural ordering (e.g., Complex numbers). For types with ordering, use **ApproxComparable** instead.
 
-See [Traits.md](Traits.md) for complete hierarchy and usage guide.
+See [ComparisonTraits.md](ComparisonTraits.md) for complete hierarchy and usage guide.
 
 ---
 

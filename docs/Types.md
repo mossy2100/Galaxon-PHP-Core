@@ -288,7 +288,7 @@ function processItems(array $items): void
 
 ```php
 use Galaxon\Core\Types;
-use Galaxon\Core\Traits\Comparable;
+use Galaxon\Core\Traits\Comparison\Comparable;
 
 function sortIfComparable(array $items): array
 {

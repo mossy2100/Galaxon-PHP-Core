@@ -142,7 +142,7 @@ Check if this object is greater than or equal to another.
 
 ```php
 use Galaxon\Core\Exceptions\IncomparableTypesException;
-use Galaxon\Core\Traits\Comparable;
+use Galaxon\Core\Traits\Comparison\Comparable;
 
 class Score
 {
@@ -184,7 +184,7 @@ var_dump($s1->lessThanOrEqual($s3));    // true
 ```php
 use Galaxon\Core\Exceptions\IncomparableTypesException;
 use Galaxon\Core\Numbers;
-use Galaxon\Core\Traits\Comparable;
+use Galaxon\Core\Traits\Comparison\Comparable;
 
 class Version
 {
@@ -230,7 +230,7 @@ var_dump($v3->greaterThan($v1));  // true (2.0.0 > 1.2.3)
 ```php
 use Galaxon\Core\Exceptions\IncomparableTypesException;
 use Galaxon\Core\Numbers;
-use Galaxon\Core\Traits\Comparable;
+use Galaxon\Core\Traits\Comparison\Comparable;
 
 class Priority
 {
@@ -270,7 +270,7 @@ Comparable extends Equatable and adds ordering operations. It automatically prov
 
 For approximate comparison with ordering, use **ApproxComparable** instead.
 
-See [Traits.md](Traits.md) for complete hierarchy and usage guide.
+See [ComparisonTraits.md](ComparisonTraits.md) for complete hierarchy and usage guide.
 
 ---
 
@@ -294,8 +294,8 @@ See [Traits.md](Traits.md) for complete hierarchy and usage guide.
 
 ## See Also
 
-- [Traits.md](Traits.md) - Trait hierarchy overview
-- [IncomparableTypesException.md](../Exceptions/IncomparableTypesException.md) - Exception for type mismatches
+- [ComparisonTraits.md](ComparisonTraits.md) - Trait hierarchy overview
+- [IncomparableTypesException.md](../../Exceptions/IncomparableTypesException.md) - Exception for type mismatches
 
 ---
 

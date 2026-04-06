@@ -71,7 +71,7 @@ Asserts that a floating-point value is approximately zero within specified absol
 ### Basic Usage
 
 ```php
-use Galaxon\Core\Traits\FloatAssertions;
+use Galaxon\Core\Traits\Asserts\FloatAssertions;
 use PHPUnit\Framework\TestCase;
 
 class CalculationTest extends TestCase
@@ -163,5 +163,5 @@ $this->assertApproxEqual(3.14159, $result);
 
 ## See Also
 
-- [Floats.md](../Floats.md) - The `Floats::approxEqual()` method used internally
-- [ApproxEquatable.md](ApproxEquatable.md) - Trait for value objects needing approximate equality
+- [Floats.md](../../Floats.md) - The `Floats::approxEqual()` method used internally
+- [ApproxEquatable.md](../Comparison/ApproxEquatable.md) - Trait for value objects needing approximate equality

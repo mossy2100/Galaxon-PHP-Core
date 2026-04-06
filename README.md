@@ -78,27 +78,24 @@ Convenience functions in the `Galaxon\Core` namespace, including `println()` for
 
 ## Traits
 
-**See [Traits Overview](docs/Traits/Traits.md) for how these traits work together.**
+### Comparison Traits
 
-### [Equatable](docs/Traits/Equatable.md)
+Equality and ordering comparison operations for custom types. See [ComparisonTraits.md](docs/Traits/Comparison/ComparisonTraits.md) for the trait hierarchy and usage guide.
 
-Base trait providing exact equality comparison. Defines an abstract `equal()` method for type-safe equality checks.
+| Trait | Description |
+|-------|-------------|
+| [Equatable](docs/Traits/Comparison/Equatable.md) | Base trait for exact equality comparison via `equal()`. |
+| [Comparable](docs/Traits/Comparison/Comparable.md) | Extends Equatable with ordering: `lessThan()`, `greaterThan()`, etc. |
+| [ApproxEquatable](docs/Traits/Comparison/ApproxEquatable.md) | Extends Equatable with tolerance-based `approxEqual()`. |
+| [ApproxComparable](docs/Traits/Comparison/ApproxComparable.md) | Combines Comparable and ApproxEquatable with `approxCompare()`. |
 
-### [Comparable](docs/Traits/Comparable.md)
+### Assert Traits
 
-Trait extending Equatable with ordering operations. Provides `lessThan()`, `greaterThan()`, etc. based on a single `compare()` method implementation.
+Custom PHPUnit assertions for test cases. See [TestingTraits.md](docs/Traits/Asserts/TestingTraits.md) for usage examples.
 
-### [ApproxEquatable](docs/Traits/ApproxEquatable.md)
-
-Trait extending Equatable with tolerance-based comparison. Adds `approxEqual()` for comparing floating-point values within configurable tolerances.
-
-### [ApproxComparable](docs/Traits/ApproxComparable.md)
-
-Trait combining Comparable and ApproxEquatable for complete comparison support. Adds `approxCompare()` for comparing floating-point values within configurable tolerances. Provides both exact and approximate equality with full ordering operations.
-
-### [FloatAssertions](docs/Traits/FloatAssertions.md)
-
-Trait for PHPUnit test cases providing `assertApproxEqual()` and `assertApproxZero()` methods. Produces informative failure messages showing expected/actual values and differences.
+| Trait | Description |
+|-------|-------------|
+| [FloatAssertions](docs/Traits/Asserts/FloatAssertions.md) | Provides `assertApproxEqual()` and `assertApproxZero()` with informative failure messages. |
 
 ---
 

@@ -924,6 +924,74 @@ Floats::toHex($a) !== Floats::toHex($b);  // true
 - **Consistency**: Always produces exactly 16 characters
 - **Precision**: Preserves the exact binary representation of the float
 
+### format()
+
+```php
+public static function format(
+    float $value,
+    string $specifier = 'g',
+    ?int $precision = null,
+    ?bool $trimZeros = null,
+    bool $ascii = false
+): string
+```
+
+Format a float as a string with control over precision, notation, and trailing zeros. A richer alternative to `sprintf()` with built-in support for Unicode scientific notation (e.g. `1.50×10³` instead of `1.50e+3`).
+
+**Parameters:**
+
+- `$value` (float) - The numeric value to format.
+- `$specifier` (string) - The format specifier. Default: `'g'`.
+
+| Specifier | Description                                                                    |
+| --------- |--------------------------------------------------------------------------------|
+| `'e'`     | Scientific notation with lowercase `e`.                                        |
+| `'E'`     | Scientific notation with uppercase `E`.                                        |
+| `'f'`     | Fixed-point notation (locale-aware).                                           |
+| `'F'`     | Fixed-point notation (non-locale-aware, always uses `.` as decimal separator). |
+| `'g'`     | Shortest of `e` or `f` (lower-case `e`, locale-aware). **Default.**            |
+| `'G'`     | Shortest of `E` or `f` (upper-case `E`, locale-aware).                         |
+| `'h'`     | Shortest of `e` or `F` (lower-case `e`, non-locale-aware).                     |
+| `'H'`     | Shortest of `E` or `F` (upper-case `E`, non-locale-aware).                     |
+
+- `$precision` (?int) - Number of decimal places for `e`/`E`/`f`/`F` or significant digits for `g`/`G`/`h`/`H`. `null` uses the `sprintf` default (usually 6).
+- `$trimZeros` (?bool) - Controls trailing zero trimming:
+  - `null` (default) — auto: trims when `$precision` is null, preserves when `$precision` is explicit.
+  - `true` — always trim trailing zeros (and trailing decimal point).
+  - `false` — never trim; preserve all digits.
+- `$ascii` (bool) - If `true`, use ASCII `e` notation. If `false` (default), scientific notation uses `×10` with superscript exponents (e.g. `1.50×10³`).
+
+**Returns:**
+- `string` - The formatted value string.
+
+**Throws:**
+- `DomainException` - If the specifier is invalid or precision is outside 0–17.
+
+**Examples:**
+
+```php
+// Default: shortest form, trims trailing zeros.
+Floats::format(5.0);                           // "5"
+Floats::format(1234.56);                       // "1234.56"
+
+// Fixed precision preserves trailing zeros by default.
+Floats::format(5.0, 'f', 2);                   // "5.00"
+Floats::format(5.0, 'f', 2, true);             // "5" (explicit trim)
+
+// Scientific notation with Unicode (default).
+Floats::format(1500.0, 'e', 2);                // "1.50×10³"
+Floats::format(0.0025, 'e', 2);                // "2.50×10⁻³"
+
+// Scientific notation with ASCII.
+Floats::format(1500.0, 'e', 2, ascii: true);   // "1.50e+3"
+
+// Scientific notation with null precision trims zeros.
+Floats::format(3000.0, 'e');                   // "3×10³"
+
+// -0.0 is normalized to 0.
+Floats::format(-0.0);                          // "0"
+```
+
 ---
 
 ## Random Methods
