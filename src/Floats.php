@@ -482,7 +482,7 @@ final class Floats
      *
      * @param float $value The numeric value to format.
      * @param string $specifier The format specifier (default 'g').
-     * @param ?int $precision Number of decimal places for e/f, or significant digits for g/h (default null = 6).
+     * @param ?int $precision Number of decimal places for e/f (default null = 6), or significant digits for g/h (default null = 7).
      * @param ?bool $trimZeros If trailing zeros should be trimmed (default null for auto).
      * @param bool $ascii If true, use ASCII e notation. If false (default), use ×10 with superscript exponents.
      * @return string The formatted value string.
@@ -516,8 +516,12 @@ final class Floats
         $value = self::normalizeZero($value);
 
         // Format with the desired precision and specifier.
-        // If the precision is null, omit it from the format string to use the sprintf default (usually 6).
-        $formatString = $precision === null ? "%$specifier" : "%.$precision$specifier";
+        // If precision is null, default to 7 for g/G/h/H (matching %e's 7 significant digits) and 6
+        // for e/E/f/F (matching sprintf's default decimal places). This makes 'g' genuinely "the
+        // shorter of e and f at matching precision".
+        $effectivePrecision = $precision
+            ?? (in_array($specifier, ['g', 'G', 'h', 'H'], true) ? 7 : 6);
+        $formatString = "%.$effectivePrecision$specifier";
         $valueStr = sprintf($formatString, $value);
 
         // Look for an 'e' or 'E'.

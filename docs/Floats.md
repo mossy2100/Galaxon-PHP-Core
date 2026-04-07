@@ -954,7 +954,7 @@ Format a float as a string with control over precision, notation, and trailing z
 | `'h'`     | Shortest of `e` or `F` (lower-case `e`, non-locale-aware).                     |
 | `'H'`     | Shortest of `E` or `F` (upper-case `E`, non-locale-aware).                     |
 
-- `$precision` (?int) - Number of decimal places for `e`/`E`/`f`/`F` or significant digits for `g`/`G`/`h`/`H`. `null` uses the `sprintf` default (usually 6).
+- `$precision` (?int) - Number of decimal places for `e`/`E`/`f`/`F` or significant digits for `g`/`G`/`h`/`H`. When `null`, defaults to `6` for `e`/`E`/`f`/`F` and `7` for `g`/`G`/`h`/`H`. The `g`/`h` default is one higher so that the result has the same precision as `e` (which uses 6 decimal places = 7 significant digits), making `g` genuinely "the shorter of `e` and `f` at matching precision".
 - `$trimZeros` (?bool) - Controls trailing zero trimming:
   - `null` (default) — auto: trims when `$precision` is null, preserves when `$precision` is explicit.
   - `true` — always trim trailing zeros (and trailing decimal point).
