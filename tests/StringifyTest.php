@@ -662,7 +662,6 @@ final class StringifyTest extends TestCase
     }
 
     // endregion
-
 }
 
 /**

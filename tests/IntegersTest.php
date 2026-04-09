@@ -6,6 +6,7 @@ namespace Galaxon\Core\Tests;
 
 use ArgumentCountError;
 use DomainException;
+use Galaxon\Core\Exceptions\FormatException;
 use Galaxon\Core\Integers;
 use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -523,7 +524,7 @@ final class IntegersTest extends TestCase
      */
     public function testFromSubscriptInvalidCharacter(): void
     {
-        $this->expectException(DomainException::class);
+        $this->expectException(FormatException::class);
         $this->expectExceptionMessage('Invalid subscript character');
         Integers::fromSubscript('₁2₃');
     }
@@ -533,7 +534,7 @@ final class IntegersTest extends TestCase
      */
     public function testFromSubscriptSuperscriptCharacter(): void
     {
-        $this->expectException(DomainException::class);
+        $this->expectException(FormatException::class);
         $this->expectExceptionMessage('Invalid subscript character');
         Integers::fromSubscript('¹²³');
     }
@@ -543,7 +544,7 @@ final class IntegersTest extends TestCase
      */
     public function testFromSubscriptRegularDigits(): void
     {
-        $this->expectException(DomainException::class);
+        $this->expectException(FormatException::class);
         $this->expectExceptionMessage('Invalid subscript character');
         Integers::fromSubscript('123');
     }
@@ -575,7 +576,7 @@ final class IntegersTest extends TestCase
      */
     public function testFromSuperscriptInvalidCharacter(): void
     {
-        $this->expectException(DomainException::class);
+        $this->expectException(FormatException::class);
         $this->expectExceptionMessage('Invalid superscript character');
         Integers::fromSuperscript('¹2³');
     }
@@ -585,7 +586,7 @@ final class IntegersTest extends TestCase
      */
     public function testFromSuperscriptSubscriptCharacter(): void
     {
-        $this->expectException(DomainException::class);
+        $this->expectException(FormatException::class);
         $this->expectExceptionMessage('Invalid superscript character');
         Integers::fromSuperscript('₁₂₃');
     }
@@ -595,7 +596,7 @@ final class IntegersTest extends TestCase
      */
     public function testFromSuperscriptRegularDigits(): void
     {
-        $this->expectException(DomainException::class);
+        $this->expectException(FormatException::class);
         $this->expectExceptionMessage('Invalid superscript character');
         Integers::fromSuperscript('123');
     }

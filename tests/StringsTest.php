@@ -7,6 +7,7 @@ namespace Galaxon\Core\Tests;
 use Galaxon\Core\Strings;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use Stringable;
 
 /**
  * Tests for the Strings utility class.
@@ -30,7 +31,7 @@ final class StringsTest extends TestCase
      */
     public function testToStringWithStringableObject(): void
     {
-        $obj = new class implements \Stringable {
+        $obj = new class implements Stringable {
             public function __toString(): string
             {
                 return 'stringable object';
@@ -133,7 +134,7 @@ final class StringsTest extends TestCase
      */
     public function testPrintlnWithStringableObject(): void
     {
-        $obj = new class implements \Stringable {
+        $obj = new class implements Stringable {
             public function __toString(): string
             {
                 return 'from __toString';

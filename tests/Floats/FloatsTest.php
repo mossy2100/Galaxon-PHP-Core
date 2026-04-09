@@ -1108,6 +1108,31 @@ final class FloatsTest extends TestCase
     }
 
     /**
+     * Test format() with scientific notation and Unicode output (ascii: false, the default).
+     *
+     * Covers the `!$ascii` branch in format() that replaces the `e+N` exponent with `×10ⁿ`
+     * using superscript digits.
+     */
+    public function testFormatScientificUnicode(): void
+    {
+        // Positive exponent.
+        $this->assertSame('1.50×10³', Floats::format(1500.0, 'e', 2));
+
+        // Negative exponent — minus sign also becomes a superscript.
+        $this->assertSame('2.5×10⁻³', Floats::format(0.0025, 'e', 1));
+
+        // Zero exponent.
+        $this->assertSame('1×10⁰', Floats::format(1.0, 'e', 0));
+
+        // Multi-digit exponent.
+        $this->assertSame('1×10²³', Floats::format(1e23, 'e', 0));
+
+        // The 'g' specifier should also use Unicode when the value is large enough to trigger
+        // exponential form.
+        $this->assertSame('1.234568×10⁷', Floats::format(12345678.9, 'g'));
+    }
+
+    /**
      * Test format() with invalid specifier throws exception.
      */
     public function testFormatInvalidSpecifierThrowsException(): void

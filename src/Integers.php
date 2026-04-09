@@ -6,6 +6,7 @@ namespace Galaxon\Core;
 
 use ArgumentCountError;
 use DomainException;
+use Galaxon\Core\Exceptions\FormatException;
 use OverflowException;
 
 /**
@@ -68,7 +69,7 @@ final class Integers
 
     // endregion
 
-    // region Arithmetic methods
+    // region Binary arithmetic methods
 
     /**
      * Add two integers with overflow check.
@@ -141,6 +142,10 @@ final class Integers
         // Return the result.
         return $c;
     }
+
+    // endregion
+
+    // region Power methods
 
     /**
      * Raise one integer to the power, to either produce an integer result or throw an exception.
@@ -294,7 +299,7 @@ final class Integers
      *
      * @param string $s The subscript string to convert (e.g., ₁₂₃ → 123, ₋₅ → -5).
      * @return int The integer value.
-     * @throws DomainException If the string contains invalid subscript characters.
+     * @throws FormatException If the string contains invalid subscript characters.
      */
     public static function fromSubscript(string $s): int
     {
@@ -309,7 +314,7 @@ final class Integers
         $chars = mb_str_split($s);
         foreach ($chars as $char) {
             if (!isset($reverseMap[$char])) {
-                throw new DomainException("Invalid subscript character: '$char'.");
+                throw new FormatException("Invalid subscript character: '$char'.");
             }
             $result .= $reverseMap[$char];
         }
@@ -322,7 +327,7 @@ final class Integers
      *
      * @param string $s The superscript string to convert (e.g., ¹²³ → 123, ⁻⁵ → -5).
      * @return int The integer value.
-     * @throws DomainException If the string contains invalid superscript characters.
+     * @throws FormatException If the string contains invalid superscript characters.
      */
     public static function fromSuperscript(string $s): int
     {
@@ -337,7 +342,7 @@ final class Integers
         $chars = mb_str_split($s);
         foreach ($chars as $char) {
             if (!isset($reverseMap[$char])) {
-                throw new DomainException("Invalid superscript character: '$char'.");
+                throw new FormatException("Invalid superscript character: '$char'.");
             }
             $result .= $reverseMap[$char];
         }

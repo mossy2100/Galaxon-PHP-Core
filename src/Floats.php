@@ -482,7 +482,8 @@ final class Floats
      *
      * @param float $value The numeric value to format.
      * @param string $specifier The format specifier (default 'g').
-     * @param ?int $precision Number of decimal places for e/f (default null = 6), or significant digits for g/h (default null = 7).
+     * @param ?int $precision Number of decimal places for e/f (default null = 6), or significant digits for g/h
+     * (default null = 7).
      * @param ?bool $trimZeros If trailing zeros should be trimmed (default null for auto).
      * @param bool $ascii If true, use ASCII e notation. If false (default), use ×10 with superscript exponents.
      * @return string The formatted value string.

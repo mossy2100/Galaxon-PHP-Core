@@ -90,7 +90,7 @@ final class Arrays
      * The default conjunction is 'and'; a common alternative would be 'or'.
      * Of course, you could use words from other languages, such as 'y' or 'o' (Spanish), or 'et' or 'ou' (French).
      *
-     * @param list<string> $arr Array of strings.
+     * @param array<string> $arr Array of strings.
      * @param string $conjunction The conjunction to use between the last two items, e.g. 'and'.
      * @return string Serial list of strings.
      * @throws InvalidArgumentException If any array value is not a string.

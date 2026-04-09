@@ -40,7 +40,7 @@ Unicode superscript characters for digits 0-9 and minus sign. Maps ASCII charact
 
 ---
 
-## Arithmetic Methods
+## Binary Arithmetic Methods
 
 ### add()
 
@@ -120,6 +120,10 @@ Integers::mul(-3, 4);           // -12
 Integers::mul(PHP_INT_MAX, 2);  // throws OverflowException
 ```
 
+---
+
+## Power Methods
+
 ### pow()
 
 ```php
@@ -194,7 +198,7 @@ Integers::gcd(0, 0);        // 0
 
 ---
 
-## Subscript/Superscript Methods
+## Conversion Methods
 
 ### toSubscript()
 
@@ -314,7 +318,7 @@ Convert a string of Unicode subscript characters to an integer.
 - `int` - The integer value
 
 **Throws:**
-- `DomainException` - If the string contains invalid subscript characters
+- [`FormatException`](Exceptions/FormatException.md) - If the string contains invalid subscript characters
 
 **Examples:**
 
@@ -324,8 +328,8 @@ Integers::fromSubscript('₋₄₂');   // -42
 Integers::fromSubscript('₀');     // 0
 Integers::fromSubscript('₅');     // 5
 
-Integers::fromSubscript('123');   // throws DomainException
-Integers::fromSubscript('¹²³');   // throws DomainException
+Integers::fromSubscript('123');   // throws FormatException
+Integers::fromSubscript('¹²³');   // throws FormatException
 ```
 
 **Note:** Use `isSubscript()` to validate input before calling this method if you need to handle invalid input gracefully.
@@ -345,7 +349,7 @@ Convert a string of Unicode superscript characters to an integer.
 - `int` - The integer value
 
 **Throws:**
-- `DomainException` - If the string contains invalid superscript characters
+- [`FormatException`](Exceptions/FormatException.md) - If the string contains invalid superscript characters
 
 **Examples:**
 
@@ -355,8 +359,8 @@ Integers::fromSuperscript('⁻⁴²');   // -42
 Integers::fromSuperscript('⁰');     // 0
 Integers::fromSuperscript('⁵');     // 5
 
-Integers::fromSuperscript('123');   // throws DomainException
-Integers::fromSuperscript('₁₂₃');   // throws DomainException
+Integers::fromSuperscript('123');   // throws FormatException
+Integers::fromSuperscript('₁₂₃');   // throws FormatException
 ```
 
 **Note:** Use `isSuperscript()` to validate input before calling this method if you need to handle invalid input gracefully.

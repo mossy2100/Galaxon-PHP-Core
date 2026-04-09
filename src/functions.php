@@ -8,8 +8,6 @@ declare(strict_types=1);
 
 namespace Galaxon\Core;
 
-use Stringable;
-
 /**
  * Print a value and append a newline character.
  *
